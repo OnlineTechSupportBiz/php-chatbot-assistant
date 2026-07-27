@@ -112,7 +112,7 @@ ob_start(); ?>
     <div class="row g-3 mb-4">
         <div class="col-lg-8">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header flex-column align-items-start gap-2">
                     <span>Messages (This month)</span>
                     <div class="d-flex align-items-center gap-2 flex-wrap" id="date-range-controls">
                         <div class="btn-group btn-group-sm" role="group">
@@ -303,9 +303,9 @@ $pageScripts = <<<'HEREDOC'
         for (var i = 0; i < data.length; i += xLabelStep) {
             var xx = xPos(i);
             var label = data[i].date ? data[i].date.slice(5) : '';
-            xLabels += '<text x="' + xx + '" y="' + (pad.top + plotH + 17) + '" text-anchor="middle" font-size="10" fill="var(--text-muted,#888)">' + label + '</text>';
+            xLabels += '<text x="' + xx + '" y="' + (pad.top + plotH + 17) + '" text-anchor="middle" font-size="11" fill="var(--text-secondary,#888)">' + label + '</text>';
             if (i > 0) {
-                xLabels += '<line x1="' + xx + '" y1="' + pad.top + '" x2="' + xx + '" y2="' + (pad.top + plotH) + '" stroke="var(--border-light)" stroke-width="1" />';
+                xLabels += '<line x1="' + xx + '" y1="' + pad.top + '" x2="' + xx + '" y2="' + (pad.top + plotH) + '" stroke="var(--border)" stroke-width="1" />';
             }
         }
         if ((data.length - 1) % xLabelStep !== 0 && data.length > 1) {
@@ -336,7 +336,7 @@ $pageScripts = <<<'HEREDOC'
             + dots
             + tooltips
             + '</svg>'
-            + '<div id="chart-tooltip" style="display:none;"></div>'
+            + '<div id="chart-tooltip" style="display:none;position:absolute;"></div>'
             + '</div>';
 
         el.innerHTML = html;
