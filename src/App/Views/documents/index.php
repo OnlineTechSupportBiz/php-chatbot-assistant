@@ -86,7 +86,7 @@ ob_start(); ?>
         </div>
     <?php else: ?>
         <!-- ── Desktop table (md+) ── -->
-        <div class="table-responsive d-none d-md-block">
+        <div class="table-responsive d-none d-lg-block">
             <table class="table table-dark table-hover align-middle">
                 <thead>
                     <tr>
@@ -122,10 +122,10 @@ ob_start(); ?>
                         </td>
                         <td class="d-none d-lg-table-cell"><?= dt($doc['created_at'] ?? '', 'M j, Y g:i A') ?></td>
                         <td class="text-end">
-                            <a href="/chatbots/<?= (int)$chatbot['id'] ?>/documents/<?= (int)$doc['id'] ?>" class="btn btn-sm btn-outline-info">Status</a>
+                            <a href="/chatbots/<?= (int)$chatbot['id'] ?>/documents/<?= (int)$doc['id'] ?>" class="btn btn-sm btn-outline-primary">Status</a>
                             <form method="POST" action="/chatbots/<?= (int)$chatbot['id'] ?>/documents/<?= (int)$doc['id'] ?>/delete" class="d-inline" onsubmit="return confirm('Delete this document?');">
                                 <input type="hidden" name="_csrf" value="<?= \App\Auth\Session::csrfToken() ?>">
-                                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                <button class="btn btn-sm btn-danger" type="submit">Delete</button>
                             </form>
                         </td>
                     </tr>
@@ -135,7 +135,7 @@ ob_start(); ?>
         </div>
 
         <!-- ── Mobile card list (sm-) ── -->
-        <div class="d-md-none">
+        <div class="d-lg-none">
             <?php foreach ($documents as $doc): ?>
             <?php $fileSize = ($doc['file_size'] ?? 0) / 1024; ?>
             <?php $docStatus = $doc['status'] ?? 'pending'; ?>
@@ -163,10 +163,10 @@ ob_start(); ?>
                         <?= dt($doc['created_at'] ?? '', 'M j, Y g:i A') ?>
                     </div>
                     <div class="d-flex gap-2">
-                        <a href="/chatbots/<?= (int)$chatbot['id'] ?>/documents/<?= (int)$doc['id'] ?>" class="btn btn-sm btn-outline-info flex-fill">Status</a>
+                        <a href="/chatbots/<?= (int)$chatbot['id'] ?>/documents/<?= (int)$doc['id'] ?>" class="btn btn-sm btn-outline-primary flex-fill">Status</a>
                         <form method="POST" action="/chatbots/<?= (int)$chatbot['id'] ?>/documents/<?= (int)$doc['id'] ?>/delete" class="flex-fill" onsubmit="return confirm('Delete this document?');">
                             <input type="hidden" name="_csrf" value="<?= \App\Auth\Session::csrfToken() ?>">
-                            <button class="btn btn-sm btn-outline-danger w-100" type="submit">Delete</button>
+                            <button class="btn btn-sm btn-danger w-100" type="submit">Delete</button>
                         </form>
                     </div>
                 </div>

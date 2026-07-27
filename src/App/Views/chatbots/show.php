@@ -225,10 +225,10 @@ ob_start(); ?>
             <div class="card mb-4">
                 <div class="card-header"><h2 class="card-title h5 mb-0">Management</h2></div>
                 <div class="card-body d-flex flex-column gap-2">
-                    <a href="/chatbots/<?= $chatbot['id'] ?>/documents" class="btn btn-primary btn-sm">Manage Documents</a>
-                    <a href="/chatbots/<?= $chatbot['id'] ?>/quick-answers" class="btn btn-primary btn-sm">Quick Answers</a>
-                    <a href="/chatbots/<?= $chatbot['id'] ?>/conversations" class="btn btn-primary btn-sm">Conversations</a>
-                    <a href="/chatbots/<?= $chatbot['id'] ?>/leads" class="btn btn-primary btn-sm">Leads</a>
+                    <a href="/chatbots/<?= $chatbot['id'] ?>/documents" class="btn btn-outline-primary btn-sm">Manage Documents</a>
+                    <a href="/chatbots/<?= $chatbot['id'] ?>/quick-answers" class="btn btn-outline-primary btn-sm">Quick Answers</a>
+                    <a href="/chatbots/<?= $chatbot['id'] ?>/conversations" class="btn btn-outline-primary btn-sm">Conversations</a>
+                    <a href="/chatbots/<?= $chatbot['id'] ?>/leads" class="btn btn-outline-primary btn-sm">Leads</a>
                 </div>
             </div>
 
@@ -261,7 +261,7 @@ ob_start(); ?>
                     <div class="input-group input-group-sm">
                         <input type="text" id="chatInput" class="form-control"
                                placeholder="Type a message…" autocomplete="off">
-                        <button class="btn btn-primary" onclick="testChat()">Send</button>
+                        <button class="btn btn-outline-primary" onclick="testChat()">Send</button>
                     </div>
                 </div>
             </div>

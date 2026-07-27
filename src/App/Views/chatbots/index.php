@@ -98,7 +98,7 @@ ob_start(); ?>
                             </button>
                             <form method="POST" action="/chatbots/<?= (int)$bot['id'] ?>/delete" class="d-inline" onsubmit="return confirm('Delete this chatbot and all its data (messages, documents, conversations, leads)? This cannot be undone.');">
                                 <input type="hidden" name="_csrf" value="<?= \App\Auth\Session::csrfToken() ?>">
-                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                <button class="btn btn-sm btn-danger" type="submit">Delete</button>
                             </form>
                         </td>
                     </tr>
@@ -140,7 +140,7 @@ ob_start(); ?>
                         </button>
                         <form method="POST" action="/chatbots/<?= (int)$bot['id'] ?>/delete" class="flex-fill" onsubmit="return confirm('Delete this chatbot and all its data? This cannot be undone.');">
                             <input type="hidden" name="_csrf" value="<?= \App\Auth\Session::csrfToken() ?>">
-                            <button class="btn btn-sm btn-outline-danger w-100">Delete</button>
+                            <button class="btn btn-sm btn-danger w-100" type="submit">Delete</button>
                         </form>
                     </div>
                 </div>
