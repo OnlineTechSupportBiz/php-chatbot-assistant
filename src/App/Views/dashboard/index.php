@@ -351,9 +351,9 @@ $pageScripts = <<<'HEREDOC'
                 tipBox.style.display = 'block';
             });
             rect.addEventListener('mousemove', function(e) {
-                var svgRect = el.querySelector('svg').getBoundingClientRect();
-                tipBox.style.left = (e.clientX - svgRect.left + 10) + 'px';
-                tipBox.style.top = (e.clientY - svgRect.top - 30) + 'px';
+                var containerRect = el.querySelector('div[style*="position:relative"]').getBoundingClientRect();
+                tipBox.style.left = (e.clientX - containerRect.left + 12) + 'px';
+                tipBox.style.top = (e.clientY - containerRect.top + 12) + 'px';
             });
             rect.addEventListener('mouseleave', function() {
                 tipBox.style.display = 'none';
