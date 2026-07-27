@@ -1,6 +1,6 @@
 {
     "name": "onlinetechsupportbiz/php-chatbot-assistant",
-    "description": "Multi-tenant chatbot SaaS platform — AI-powered conversations, lead capture, document RAG, and multi-user management.",
+    "description": "Multi-tenant chatbot SaaS — RAG & PageIndex document Q&A, AI lead capture, embeddable widget. PHP + PostgreSQL/pgvector.",
     "type": "project",
     "license": "MIT",
     "authors": [
