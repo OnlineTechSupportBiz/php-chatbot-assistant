@@ -169,6 +169,9 @@ ob_start(); ?>
                 <div class="card-header">
                     <span>Conversations per Chatbot</span>
                 </div>
+                <div class="card-body pt-0">
+                    <small class="text-muted d-block mb-2">Lifetime conversation count per chatbot. Bar color reflects today's token budget usage when set.</small>
+                </div>
                 <div class="card-body" id="bot-chart-container">
                     <p class="text-muted mb-0">Loading…</p>
                 </div>
