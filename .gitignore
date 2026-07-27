@@ -1,0 +1,9 @@
+vendor/
+.env
+.phpunit.cache/
+*.log
+.DS_Store
+Thumbs.db
+strix_runs/
+.codegraph
+.hermes/

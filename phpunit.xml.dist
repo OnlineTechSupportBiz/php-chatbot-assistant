@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.5/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         cacheDirectory=".phpunit.cache"
+         executionOrder="depends,random"
+         failOnDeprecation="true"
+         failOnNotice="true"
+         failOnWarning="true"
+         colors="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnTestsThatTriggerNotices="true"
+         displayDetailsOnTestsThatTriggerWarnings="true"
+>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="5432"/>
+        <env name="DB_NAME" value="chatbot_assistant_test"/>
+        <env name="DB_USER" value="chatbot_user"/>
+        <env name="DB_PASS" value=""/>
+        <env name="DB_SCHEMA" value="chatbot_schema"/>
+        <env name="SMTP_HOST" value="localhost"/>
+        <env name="SMTP_PORT" value="587"/>
+        <env name="SMTP_AUTH" value="false"/>
+        <env name="OPENAI_API_KEY" value="test-key"/>
+        <env name="LLAMACLOUD_API_KEY" value="test-key"/>
+        <ini name="display_errors" value="1"/>
+        <ini name="error_reporting" value="-1"/>
+    </php>
+
+    <testsuites>
+        <testsuite name="unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
+</phpunit>
