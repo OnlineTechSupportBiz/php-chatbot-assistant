@@ -1000,7 +1000,7 @@ body.dark-mode .alert-warning {
 }
 .preview-footer {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
 .preview-color {
   display: inline-block;
