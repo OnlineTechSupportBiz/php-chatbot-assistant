@@ -962,8 +962,8 @@ function include_component(string $component): void
         <div class="form-group">
             <label for="app_url">App URL</label>
             <input type="url" id="app_url" name="app_url"
-                   value="<?= formVal('app_url', 'http://localhost:8000') ?>" required
-                   placeholder="http://localhost:8000">
+                   value="<?= formVal('app_url', 'https://example.com') ?>" required
+                   placeholder="https://example.com">
         </div>
         <hr>
         <div class="form-row">

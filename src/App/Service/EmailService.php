@@ -114,7 +114,7 @@ class EmailService
      */
     public function sendPasswordReset(string $to, string $token): bool
     {
-        $appUrl  = env('APP_URL', 'http://localhost:8000');
+        $appUrl  = env('APP_URL', 'https://example.com');
         $link    = $appUrl . '/reset-password?token=' . urlencode($token);
         $subject = 'Reset Your Password';
 
@@ -150,7 +150,7 @@ HTML;
      */
     public function sendMagicLink(string $to, string $token): bool
     {
-        $appUrl  = env('APP_URL', 'http://localhost:8000');
+        $appUrl  = env('APP_URL', 'https://example.com');
         $link    = $appUrl . '/magic-login?token=' . urlencode($token);
         $subject = 'Sign in to ' . $this->brandName;
 
@@ -186,7 +186,7 @@ HTML;
      */
     public function sendVerification(string $to, string $token): bool
     {
-        $appUrl  = env('APP_URL', 'http://localhost:8000');
+        $appUrl  = env('APP_URL', 'https://example.com');
         $link    = $appUrl . '/verify-email?token=' . urlencode($token);
         $subject = 'Verify Your Email Address';
 

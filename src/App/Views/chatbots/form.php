@@ -730,9 +730,9 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
             <!-- ── Embed Code ──────────────────────────────────────── -->
             <div class="mb-0">
                 <label class="form-label">Embed Code</label>
-                <pre class="bg-dark text-light p-3 rounded" style="overflow-x: auto; font-size: 0.875rem;"><code id="embed-code-snippet" data-token="<?= htmlspecialchars($chatbot['widget_token'] ?? '') ?>" data-api-base="<?= htmlspecialchars(env('APP_URL', 'http://localhost:8000')) ?>">&lt;script src=&quot;<?= htmlspecialchars((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')) ?>/widget.js&quot;
+                <pre class="bg-dark text-light p-3 rounded" style="overflow-x: auto; font-size: 0.875rem;"><code id="embed-code-snippet" data-token="<?= htmlspecialchars($chatbot['widget_token'] ?? '') ?>" data-api-base="<?= htmlspecialchars(env('APP_URL', 'https://example.com')) ?>">&lt;script src=&quot;<?= htmlspecialchars((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')) ?>/widget.js&quot;
         data-widget-token=&quot;<?= htmlspecialchars($chatbot['widget_token'] ?? '') ?>&quot;
-        data-api-base=&quot;<?= htmlspecialchars(env('APP_URL', 'http://localhost:8000')) ?>&quot;
+        data-api-base=&quot;<?= htmlspecialchars(env('APP_URL', 'https://example.com')) ?>&quot;
         data-bot-name=&quot;<?= htmlspecialchars($styling['bot_name'] ?? 'Assistant') ?>&quot;
         data-primary-color=&quot;<?= htmlspecialchars($styling['primary_color'] ?? '#0d6efd') ?>&quot;
         data-header-text-color=&quot;<?= htmlspecialchars($styling['header_text_color'] ?? '#ffffff') ?>&quot;
@@ -768,13 +768,13 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
                     site's <code>&lt;head&gt;</code> or server config:
                 </div>
                 <pre class="bg-dark text-light p-3 rounded mt-1" style="overflow-x: auto; font-size: 0.8rem;">&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;
-    script-src 'self' <?= htmlspecialchars(env('APP_URL', 'http://localhost:8000')) ?>;
-    connect-src 'self' <?= htmlspecialchars(env('APP_URL', 'http://localhost:8000')) ?>;
-    frame-src 'self' <?= htmlspecialchars(env('APP_URL', 'http://localhost:8000')) ?>;
+    script-src 'self' <?= htmlspecialchars(env('APP_URL', 'https://example.com')) ?>;
+    connect-src 'self' <?= htmlspecialchars(env('APP_URL', 'https://example.com')) ?>;
+    frame-src 'self' <?= htmlspecialchars(env('APP_URL', 'https://example.com')) ?>;
     style-src 'self' 'unsafe-inline';
 &quot;&gt;</pre>
                 <div class="form-text">
-                    Replace <code><?= htmlspecialchars(env('APP_URL', 'http://localhost:8000')) ?></code> with your
+                    Replace <code><?= htmlspecialchars(env('APP_URL', 'https://example.com')) ?></code> with your
                     actual server URL (the same as <code>data-api-base</code> in the embed code). The CSP prevents
                     unauthorized scripts from running on your visitors&rsquo; browsers and blocks data exfiltration.
                 </div>

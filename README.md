@@ -71,9 +71,9 @@ All guardrails are evaluated **before** any OpenAI API call — a blocked reques
 ## The Widget
 
 ```html
-<script src="https://yourdomain.com/widget.js"
+<script src="https://example.com/widget.js"
         data-widget-token="YOUR_TOKEN"
-        data-api-base="https://yourdomain.com"
+        data-api-base="https://example.com"
         data-bot-name="Support"
         data-primary-color="#2563eb"
         data-position="bottom-right"
@@ -154,7 +154,7 @@ cd php-chatbot-assistant
 composer install
 ```
 
-Open `https://yourdomain.com/install.php` to create the admin account. Then:
+Open `https://example.com/install.php` to create the admin account. Then:
 
 1. At the login screen, register a user account
 2. Configure your OpenAI and LlamaCloud API keys in **Settings**
@@ -184,13 +184,13 @@ By default, email tests use a mock PHPMailer and never contact an SMTP server. T
 
 ```bash
 # Export your SMTP credentials (must match your .env or environment config)
-export SMTP_HOST=mail.yourdomain.com
+export SMTP_HOST=mail.example.com
 export SMTP_PORT=465
 export SMTP_AUTH=true
-export SMTP_USER=noreply@yourdomain.com
+export SMTP_USER=noreply@example.com
 export SMTP_PASS="your-password"
 export SMTP_ENCRYPTION=ssl
-export MAIL_FROM_ADDRESS=noreply@yourdomain.com
+export MAIL_FROM_ADDRESS=noreply@example.com
 export MAIL_FROM_NAME="Your App"
 
 # Set the recipient for the real send test
@@ -215,7 +215,7 @@ If the SMTP test fails, the error message includes the PHPMailer diagnostic (con
 | `DB_USER` | `chatbot_user` | Database user |
 | `DB_PASS` | — | Database password |
 | `APP_ENV` | `production` | Controls HSTS and error handling |
-| `APP_URL` | `https://yourdomain.com` | Application URL (used in email links) |
+| `APP_URL` | `https://example.com` | Application URL (used in email links) |
 | `SESSION_LIFETIME` | `1440` | Session idle timeout in minutes |
 | `SMTP_HOST` | `localhost` | SMTP server |
 | `SMTP_PORT` | `465` | SMTP port |

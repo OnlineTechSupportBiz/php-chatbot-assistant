@@ -2,9 +2,9 @@
  * Chatbot Assistant Embed Widget
  *
  * Usage:
- *   <script src="https://yourdomain.com/widget.js"
+ *   <script src="https://example.com/widget.js"
  *           data-widget-token="YOUR_WIDGET_TOKEN"
- *           data-api-base="https://yourdomain.com"
+ *           data-api-base="https://example.com"
  *           data-bot-name="Assistant"
  *           data-primary-color="#2563eb"
  *           data-header-gradient-to="#1d4ed8"

@@ -36,7 +36,7 @@ class EmailServiceTest extends TestCase
             $this->savedEnv[$key] = $_ENV[$key] ?? null;
         }
 
-        $_ENV['APP_URL'] = 'http://localhost:8000';
+        $_ENV['APP_URL'] = 'https://example.com';
     }
 
     protected function tearDown(): void

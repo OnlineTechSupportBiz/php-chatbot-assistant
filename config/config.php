@@ -57,7 +57,7 @@ function env(string $key, mixed $default = null): mixed
 
 return [
     'env'     => env('APP_ENV', 'production'),
-    'url'     => env('APP_URL', 'http://localhost:8000'),
+    'url'     => env('APP_URL', 'https://example.com'),
     'session' => [
         'lifetime'    => (int) env('SESSION_LIFETIME', 120),
         'cookie_name' => env('SESSION_COOKIE_NAME', 'chatbot_session'),
