@@ -23,103 +23,96 @@
  */
 
 /**
- * Dashboard index view (admin account landing page after login).
+ * Dashboard index view (user account landing page after login).
  * Requires $user from Auth::requireAuth().
  */
 $pageTitle = 'Dashboard - ' . ($user['brand_name'] ?? 'Chatbot Assistant');
 
 ob_start(); ?>
-<div class="container mt-4">
+<div class="page-container">
     <?php if ($msg = \App\Auth\Session::getFlash('success')): ?>
         <div class="alert alert-success"><?= htmlspecialchars($msg) ?></div>
     <?php endif; ?>
 
-    <h1 class="mb-4">Dashboard</h1>
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Overview of your chatbot activity</p>
+    </div>
 
-    <!-- Row 1: Big stat cards -->
-    <div class="row">
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card stat-card-primary">
+    <!-- Row 1: Primary metrics (4 stat cards) -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="ph ph-chat-circle-text"></i></div>
+                <div class="card-title">Chatbots</div>
+                <div class="display-6" id="bot-count">--</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="ph ph-file-text"></i></div>
+                <div class="card-title">Documents</div>
+                <div class="display-6" id="doc-count">--</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="ph ph-chats-circle"></i></div>
+                <div class="card-title">Conversations</div>
+                <div class="display-6" id="conv-count">--</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="ph ph-speech-bubble"></i></div>
+                <div class="card-title">Messages</div>
+                <div class="display-6" id="msg-count">--</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Secondary metrics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card">
                 <div class="card-body">
-                    <div class="stat-icon">
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+                    <div class="stat-secondary">
+                        <div class="stat-label">Unique Visitors</div>
+                        <div class="stat-value" id="visitor-count">--</div>
+                        <div class="stat-note">Distinct people who have interacted with your chatbots</div>
                     </div>
-                    <h2 class="card-title h5">Chatbots</h2>
-                    <p class="card-text display-6" id="bot-count">—</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card stat-card-accent2">
+        <div class="col-md-4">
+            <div class="card">
                 <div class="card-body">
-                    <div class="stat-icon">
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM6 20V4h5v7h7v9H6z"/></svg>
+                    <div class="stat-secondary">
+                        <div class="stat-label">Tokens Used</div>
+                        <div class="stat-value" id="token-count">--</div>
+                        <div class="stat-note">Rough estimate of AI text processed (1 token ~ 4 characters)</div>
                     </div>
-                    <h2 class="card-title h5">Documents</h2>
-                    <p class="card-text display-6" id="doc-count">—</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card stat-card-accent">
+        <div class="col-md-4">
+            <div class="card">
                 <div class="card-body">
-                    <div class="stat-icon">
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+                    <div class="stat-secondary">
+                        <div class="stat-label">Avg Response Time</div>
+                        <div class="stat-value" id="avg-time">--</div>
+                        <div class="stat-note">Average time for the AI to respond to a user message</div>
                     </div>
-                    <h2 class="card-title h5">Conversations</h2>
-                    <p class="card-text display-6" id="conv-count">—</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card stat-card-amber">
-                <div class="card-body">
-                    <div class="stat-icon">
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
-                    </div>
-                    <h2 class="card-title h5">Messages</h2>
-                    <p class="card-text display-6" id="msg-count">—</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Row 2: Secondary stat cards -->
-    <div class="row">
-        <div class="col-md-4 mb-3">
+    <!-- Row 3: Line chart + Source breakdown -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
             <div class="card">
-                <div class="card-body">
-                    <h6 class="card-subtitle mb-1 text-muted">Unique Visitors</h6>
-                    <p class="card-text display-6" id="visitor-count">—</p>
-                    <small class="text-muted" style="font-size:0.75rem;">Distinct people who have interacted with your chatbots</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="card-subtitle mb-1 text-muted">Tokens Used</h6>
-                    <p class="card-text display-6" id="token-count">—</p>
-                    <small class="text-muted" style="font-size:0.75rem;">Rough estimate of AI text processed (1 token ≈ 4 characters)</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="card-subtitle mb-1 text-muted">Avg Response Time</h6>
-                    <p class="card-text display-6" id="avg-time">—</p>
-                    <small class="text-muted" style="font-size:0.75rem;">Average time for the AI to respond to a user message</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Row 3: Charts -->
-    <div class="row mt-2">
-        <div class="col-lg-8 mb-4">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="card-header">
                     <span>Messages (This month)</span>
                     <div class="d-flex align-items-center gap-2 flex-wrap" id="date-range-controls">
                         <div class="btn-group btn-group-sm" role="group">
@@ -127,44 +120,54 @@ ob_start(); ?>
                             <button type="button" class="btn btn-outline-secondary" data-range="30d">30 Days</button>
                             <button type="button" class="btn btn-outline-secondary" data-range="month">This Month</button>
                         </div>
-                        <input type="date" id="date-from" class="form-control form-control-sm" style="width:140px;">
-                        <input type="date" id="date-to" class="form-control form-control-sm" style="width:140px;">
+                        <input type="date" id="date-from" class="form-control form-control-sm date-range-input">
+                        <input type="date" id="date-to" class="form-control form-control-sm date-range-input">
                         <button type="button" class="btn btn-sm btn-primary" id="apply-range">Apply</button>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="message-chart" style="min-height:200px;width:100%;"></div>
+                    <div class="chart-container" id="message-chart" style="min-height:200px;width:100%;"></div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 mb-4">
+        <div class="col-lg-4">
             <div class="card">
                 <div class="card-header">
                     <span>Response Sources</span>
-                    <small class="text-muted d-block" style="font-size:0.75rem;">Where the AI pulls each answer from</small>
                 </div>
                 <div class="card-body" id="source-breakdown">
-                    <p class="text-muted mb-0">Loading…</p>
+                    <p class="text-muted mb-0">Loading...</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Row 4: Quick Actions & Per-Bot Stats -->
-    <div class="row mt-2">
-        <div class="col-md-6 mb-4">
+    <!-- Row 4: Quick actions + Per-chatbot -->
+    <div class="row g-3">
+        <div class="col-md-6">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header">
                     <span>Quick Actions</span>
                 </div>
-                <div class="card-body d-flex gap-2 flex-wrap">
-                    <a href="/chatbots" class="btn btn-outline-primary">Manage Chatbots</a>
-                    <a href="/chatbots/create" class="btn btn-primary">Create Chatbot</a>
-                    <a href="/settings" class="btn btn-outline-secondary">Settings</a>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-2">
+                        <a href="/chatbots" class="quick-action">
+                            <span class="quick-icon"><i class="ph ph-chat-circle-text"></i></span>
+                            <span class="quick-label">Manage Chatbots</span>
+                        </a>
+                        <a href="/chatbots/create" class="quick-action">
+                            <span class="quick-icon"><i class="ph ph-plus-circle"></i></span>
+                            <span class="quick-label">Create Chatbot</span>
+                        </a>
+                        <a href="/settings" class="quick-action">
+                            <span class="quick-icon"><i class="ph ph-gear"></i></span>
+                            <span class="quick-label">Settings</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6 mb-4">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
                     <span>Conversations per Chatbot</span>
@@ -173,7 +176,7 @@ ob_start(); ?>
                     <small class="text-muted d-block mb-2">Lifetime conversation count per chatbot. Bar color reflects today's token budget usage when set.</small>
                 </div>
                 <div class="card-body" id="bot-chart-container">
-                    <p class="text-muted mb-0">Loading…</p>
+                    <p class="text-muted mb-0">Loading...</p>
                 </div>
             </div>
         </div>
@@ -186,18 +189,18 @@ $pageScripts = <<<'HEREDOC'
     fetch('/api/stats/summary')
         .then(r => r.json())
         .then(data => {
-            document.getElementById('bot-count').textContent = data.chatbots ?? '—';
-            document.getElementById('doc-count').textContent = data.documents ?? '—';
-            document.getElementById('conv-count').textContent = data.conversations ?? '—';
-            document.getElementById('msg-count').textContent = data.messages ?? '—';
-            document.getElementById('visitor-count').textContent = data.unique_visitors ?? '—';
+            document.getElementById('bot-count').textContent = data.chatbots ?? '--';
+            document.getElementById('doc-count').textContent = data.documents ?? '--';
+            document.getElementById('conv-count').textContent = data.conversations ?? '--';
+            document.getElementById('msg-count').textContent = data.messages ?? '--';
+            document.getElementById('visitor-count').textContent = data.unique_visitors ?? '--';
             document.getElementById('token-count').textContent = (data.tokens_used ?? 0).toLocaleString();
-            document.getElementById('avg-time').innerHTML = data.avg_response_time ? Math.round(data.avg_response_time).toLocaleString() + ' <small>ms</small>' : '—';
+            document.getElementById('avg-time').innerHTML = data.avg_response_time ? Math.round(data.avg_response_time).toLocaleString() + ' <small style="font-size:0.75rem;color:var(--text-muted);font-weight:400;">ms</small>' : '--';
 
-            // ── Message chart (SVG line chart) ──
+            // Line chart
             renderLineChart(data.message_chart || []);
 
-            // ── Source breakdown ──
+            // Source breakdown
             var srcEl = document.getElementById('source-breakdown');
             var sources = data.sources || [];
             if (sources.length === 0) {
@@ -208,15 +211,16 @@ $pageScripts = <<<'HEREDOC'
                 sources.forEach(function(r) {
                     var pct = totalSrc > 0 ? (r.count / totalSrc * 100).toFixed(1) : 0;
                     var label = (r.source || 'unknown').replace(/_/g, ' ');
+                    var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#1e3a5f';
                     html += '<div class="mb-2">'
-                        + '<div class="d-flex justify-content-between"><span>' + label + '</span><span>' + r.count + '</span></div>'
-                        + '<div class="progress" style="height:6px;"><div class="progress-bar" style="width:' + pct + '%;background:var(--accent,#2563eb);"></div></div>'
+                        + '<div class="d-flex justify-content-between mb-1"><span style="font-size:0.875rem;">' + label + '</span><span style="font-size:0.875rem;font-weight:500;">' + r.count + '</span></div>'
+                        + '<div class="progress" style="height:4px;"><div class="progress-bar" style="width:' + pct + '%;"></div></div>'
                         + '</div>';
                 });
                 srcEl.innerHTML = html;
             }
 
-            // ── Conversations per chatbot ──
+            // Conversations per chatbot
             var botEl = document.getElementById('bot-chart-container');
             var bots = data.bot_chart || [];
             if (bots.length === 0) {
@@ -225,24 +229,24 @@ $pageScripts = <<<'HEREDOC'
                 var maxBot = Math.max(1, ...bots.map(function(b) {
                     return (typeof b.count === 'number') ? b.count : parseInt(b.count || 0);
                 }));
-                function getLimitGradient(pct) {
-                    if (pct >= 100) return 'linear-gradient(90deg, #dc2626, #ef4444)';
-                    if (pct >= 80)  return 'linear-gradient(90deg, #ea580c, #f97316)';
-                    if (pct >= 60)  return 'linear-gradient(90deg, #ca8a04, #eab308)';
-                    return 'linear-gradient(90deg, #0d9488, #14b8a6)';
+                function getUsageColor(pct) {
+                    if (pct >= 100) return '#dc2626';
+                    if (pct >= 80)  return '#ea580c';
+                    if (pct >= 60)  return '#ca8a04';
+                    return 'var(--accent)';
                 }
                 var html2 = '';
                 bots.forEach(function(b) {
                     var count = typeof b.count === 'number' ? b.count : parseInt(b.count || 0);
                     var pct = (count / maxBot * 100).toFixed(0);
-                    var bg = 'var(--accent2,#0d9488)';
+                    var barColor = 'var(--accent)';
                     if (b.daily_token_budget !== null && b.daily_token_budget > 0) {
                         var usagePct = Math.round((b.tokens_today || 0) / b.daily_token_budget * 100);
-                        bg = getLimitGradient(usagePct);
+                        barColor = getUsageColor(usagePct);
                     }
                     html2 += '<div class="mb-2">'
-                        + '<div class="d-flex justify-content-between"><span>' + (b.chatbot_name || 'Unknown') + '</span><span>' + count + '</span></div>'
-                        + '<div class="progress" style="height:8px;"><div class="progress-bar" style="width:' + pct + '%;background:' + bg + ';"></div></div>'
+                        + '<div class="d-flex justify-content-between mb-1"><span style="font-size:0.875rem;">' + (b.chatbot_name || 'Unknown') + '</span><span style="font-size:0.875rem;font-weight:500;">' + count + '</span></div>'
+                        + '<div class="progress-bot"><div class="bar" style="width:' + pct + '%;background:' + barColor + ';"></div></div>'
                         + '</div>';
                 });
                 botEl.innerHTML = html2;
@@ -252,7 +256,7 @@ $pageScripts = <<<'HEREDOC'
             console.error('Stats load failed', err);
         });
 
-    // ── SVG Line Chart Renderer ──
+    // SVG Line Chart
     function renderLineChart(data) {
         var el = document.getElementById('message-chart');
         if (!data || data.length === 0) {
@@ -260,7 +264,6 @@ $pageScripts = <<<'HEREDOC'
             return;
         }
 
-        // Determine responsive width
         var rect = el.getBoundingClientRect();
         var w = Math.max(rect.width, 300);
         var h = 200;
@@ -269,37 +272,31 @@ $pageScripts = <<<'HEREDOC'
         var plotH = h - pad.top - pad.bottom;
 
         var maxVal = Math.max(1, Math.ceil(Math.max.apply(null, data.map(function(d) { return d.count; })) * 1.1));
-        // Round max to a nice number
         var nice = Math.pow(10, Math.floor(Math.log10(maxVal)));
         maxVal = Math.ceil(maxVal / nice) * nice;
-        // At least 4 y-axis ticks
         var yStep = Math.max(1, Math.ceil(maxVal / 4 / nice) * nice);
         maxVal = Math.max(yStep * 4, maxVal);
 
         function xPos(i) { return pad.left + (i / (data.length - 1 || 1)) * plotW; }
         function yPos(v) { return pad.top + plotH - (v / maxVal) * plotH; }
 
-        // Build polyline points
         var points = data.map(function(d, i) {
             return (i === 0 ? '' : ' ') + xPos(i).toFixed(1) + ',' + yPos(d.count).toFixed(1);
         }).join('');
 
-        // Build area fill points (polygon: start at bottom-left, trace line, back to bottom-right)
         var areaPoints = (pad.left).toFixed(1) + ',' + (pad.top + plotH).toFixed(1)
             + ' ' + points
             + ' ' + xPos(data.length - 1).toFixed(1) + ',' + (pad.top + plotH).toFixed(1);
 
-        // Y-axis labels (4 ticks)
         var yLabels = '';
         for (var y = 0; y <= maxVal; y += yStep) {
             var yy = yPos(y);
             yLabels += '<text x="' + (pad.left - 6) + '" y="' + (yy + 4) + '" text-anchor="end" font-size="11" fill="var(--text-muted,#888)">' + y + '</text>';
             if (y > 0) {
-                yLabels += '<line x1="' + pad.left + '" y1="' + yy + '" x2="' + (w - pad.right) + '" y2="' + yy + '" stroke="var(--border-color,rgba(128,128,128,0.15))" stroke-width="1" />';
+                yLabels += '<line x1="' + pad.left + '" y1="' + yy + '" x2="' + (w - pad.right) + '" y2="' + yy + '" stroke="var(--border-light)" stroke-width="1" />';
             }
         }
 
-        // X-axis labels (show up to ~10 evenly spaced)
         var xLabelCount = Math.min(data.length, 10);
         var xLabelStep = Math.max(1, Math.floor((data.length - 1) / (xLabelCount - 1)));
         var xLabels = '';
@@ -307,62 +304,43 @@ $pageScripts = <<<'HEREDOC'
             var xx = xPos(i);
             var label = data[i].date ? data[i].date.slice(5) : '';
             xLabels += '<text x="' + xx + '" y="' + (pad.top + plotH + 17) + '" text-anchor="middle" font-size="10" fill="var(--text-muted,#888)">' + label + '</text>';
-            // Vertical gridline
             if (i > 0) {
-                xLabels += '<line x1="' + xx + '" y1="' + pad.top + '" x2="' + xx + '" y2="' + (pad.top + plotH) + '" stroke="var(--border-color,rgba(128,128,128,0.08))" stroke-width="1" />';
+                xLabels += '<line x1="' + xx + '" y1="' + pad.top + '" x2="' + xx + '" y2="' + (pad.top + plotH) + '" stroke="var(--border-light)" stroke-width="1" />';
             }
         }
-        // Ensure last label
         if ((data.length - 1) % xLabelStep !== 0 && data.length > 1) {
             var lastI = data.length - 1;
             xLabels += '<text x="' + xPos(lastI) + '" y="' + (pad.top + plotH + 17) + '" text-anchor="middle" font-size="10" fill="var(--text-muted,#888)">' + (data[lastI].date ? data[lastI].date.slice(5) : '') + '</text>';
         }
 
-        // Data point circles
         var dots = data.map(function(d, i) {
-            return '<circle cx="' + xPos(i).toFixed(1) + '" cy="' + yPos(d.count).toFixed(1) + '" r="3.5" fill="var(--accent,#2563eb)" stroke="#fff" stroke-width="1.5" />';
+            return '<circle cx="' + xPos(i).toFixed(1) + '" cy="' + yPos(d.count).toFixed(1) + '" r="3.5" fill="var(--accent,#1e3a5f)" stroke="var(--surface,#ffffff)" stroke-width="1.5" />';
         }).join('');
 
-        // Tooltip overlay (invisible rects per data point)
         var tooltips = data.map(function(d, i) {
             var cx = xPos(i);
-            var cy = yPos(d.count);
             var ww = (data.length > 1) ? (xPos(1) - xPos(0)) : 60;
             return '<rect x="' + (cx - ww/2) + '" y="' + pad.top + '" width="' + ww + '" height="' + plotH + '" fill="transparent" class="chart-bar-tip" data-count="' + d.count + '" data-date="' + (d.date || '') + '" />';
         }).join('');
 
-        // Hover tooltip element
+        var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#1e3a5f';
+
         var html = ''
             + '<div style="position:relative;">'
             + '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" style="display:block;width:100%;height:auto;">'
-            // Bottom axis line
             + '<line x1="' + pad.left + '" y1="' + (pad.top + plotH) + '" x2="' + (w - pad.right) + '" y2="' + (pad.top + plotH) + '" stroke="var(--text-muted,#888)" stroke-width="1" />'
-            // Left axis line
             + '<line x1="' + pad.left + '" y1="' + pad.top + '" x2="' + pad.left + '" y2="' + (pad.top + plotH) + '" stroke="var(--text-muted,#888)" stroke-width="1" />'
-            // Gridlines and labels
             + yLabels + xLabels
-            // Area fill
-            + '<polygon points="' + areaPoints + '" fill="url(#chartGrad)" opacity="0.3" />'
-            // Line
-            + '<polyline points="' + points + '" fill="none" stroke="var(--accent,#2563eb)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />'
-            // Dots
+            + '<polygon points="' + areaPoints + '" fill="' + accentColor + '" opacity="0.12" />'
+            + '<polyline points="' + points + '" fill="none" stroke="' + accentColor + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />'
             + dots
-            // Tooltip hover targets
             + tooltips
-            // Gradient def
-            + '<defs>'
-            + '<linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">'
-            + '<stop offset="0%" stop-color="var(--accent,#2563eb)" stop-opacity="0.4" />'
-            + '<stop offset="100%" stop-color="var(--accent,#2563eb)" stop-opacity="0.02" />'
-            + '</linearGradient>'
-            + '</defs>'
             + '</svg>'
-            + '<div id="chart-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--surface,#1a1a2e);color:var(--text-primary,#fff);border:1px solid var(--border-color,rgba(255,255,255,0.1));border-radius:6px;padding:6px 10px;font-size:12px;white-space:nowrap;z-index:10;"></div>'
+            + '<div id="chart-tooltip" style="display:none;"></div>'
             + '</div>';
 
         el.innerHTML = html;
 
-        // Hover tooltip logic
         var tips = el.querySelectorAll('.chart-bar-tip');
         var tipBox = document.getElementById('chart-tooltip');
         tips.forEach(function(rect) {
@@ -383,7 +361,7 @@ $pageScripts = <<<'HEREDOC'
         });
     }
 
-    // ── Date range selector logic ──
+    // Date range logic
     function loadChart(from, to) {
         var params = 'from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to);
         fetch('/api/stats/summary?' + params)
@@ -396,7 +374,6 @@ $pageScripts = <<<'HEREDOC'
             });
     }
 
-    // Set default date inputs to first/last of this month
     (function initDates() {
         var now = new Date();
         var y = now.getFullYear();
@@ -407,7 +384,6 @@ $pageScripts = <<<'HEREDOC'
         document.getElementById('date-to').value = lastDay;
     })();
 
-    // Preset buttons
     document.querySelectorAll('[data-range]').forEach(function(btn) {
         btn.addEventListener('click', function() {
             document.querySelectorAll('[data-range]').forEach(function(b) { b.classList.remove('active'); });
@@ -429,7 +405,7 @@ $pageScripts = <<<'HEREDOC'
                 var d30 = new Date(now);
                 d30.setDate(d30.getDate() - 30);
                 from = d30.getFullYear() + '-' + String(d30.getMonth() + 1).padStart(2, '0') + '-' + String(d30.getDate()).padStart(2, '0');
-            } else { // month
+            } else {
                 from = y + '-' + m + '-01';
                 to = y + '-' + m + '-' + String(new Date(y, now.getMonth() + 1, 0).getDate()).padStart(2, '0');
             }
@@ -440,7 +416,6 @@ $pageScripts = <<<'HEREDOC'
         });
     });
 
-    // Apply button
     document.getElementById('apply-range').addEventListener('click', function() {
         var from = document.getElementById('date-from').value;
         var to = document.getElementById('date-to').value;

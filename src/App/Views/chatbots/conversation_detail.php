@@ -34,25 +34,19 @@
  */
 $pageTitle = 'Session — ' . htmlspecialchars($chatbot['name']) . ' — ' . ($user['brand_name'] ?? 'Chatbot Assistant');
 
-$avatarColor = function ($seed) {
-    return match ($seed) {
-        'user'      => '#f65c5c',
-        'assistant' => '#3b82f6',
-        default     => '#2563eb',
-    };
-};
-
 ob_start(); ?>
 <style>
     .conv-message { display: flex; gap: 10px; padding: 12px 16px; border-radius: 10px; margin-bottom: 8px; }
-    .conv-message.user { background: var(--surface); border: 1px solid var(--table-border); }
-    .conv-message.assistant { background: var(--surface); border: 1px solid var(--table-border); }
+    .conv-message.user { background: var(--surface); border: 1px solid var(--border); }
+    .conv-message.assistant { background: var(--surface); border: 1px solid var(--border); }
     .conv-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+    .conv-avatar.user { background: var(--avatar-user); }
+    .conv-avatar.assistant { background: var(--avatar-assistant); }
     .conv-bubble { flex: 1; min-width: 0; }
     .conv-role { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
-    .conv-role.user-role { color: #60a5fa; }
-    .conv-role.assistant-role { color: #34d399; }
-    .conv-role.system-role { color: #fbbf24; }
+    .conv-role.user-role { color: var(--role-user); }
+    .conv-role.assistant-role { color: var(--role-assistant); }
+    .conv-role.system-role { color: var(--role-system); }
     .conv-text { font-size: 0.875rem; line-height: 1.6; word-break: break-word; }
     .conv-text p { margin-bottom: 6px; }
     .conv-text p:last-child { margin-bottom: 0; }
@@ -142,7 +136,6 @@ ob_start(); ?>
                 foreach ($messages as $msg):
                     $msgDate = dt($msg['created_at'], 'Y-m-d');
                     $initial = strtoupper($msg['role'][0]);
-                    $color   = $avatarColor($msg['role']);
                 ?>
                 <?php if ($msgDate !== $lastDate): ?>
                     <?php $lastDate = $msgDate; ?>
@@ -150,7 +143,7 @@ ob_start(); ?>
                 <?php endif; ?>
 
                 <div class="conv-message <?= htmlspecialchars($msg['role']) ?>">
-                    <div class="conv-avatar" style="background: <?= $color ?>"><?= htmlspecialchars($initial) ?></div>
+                    <div class="conv-avatar <?= htmlspecialchars($msg['role']) ?>"><?= htmlspecialchars($initial) ?></div>
                     <div class="conv-bubble">
                         <div class="conv-role <?= htmlspecialchars($msg['role']) ?>-role">
                             <?= htmlspecialchars(ucfirst($msg['role'])) ?>

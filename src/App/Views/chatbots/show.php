@@ -39,41 +39,7 @@ $modelCfg  = $chatbot['model_config'] ?? [];
 $styling   = $chatbot['styling'] ?? [];
 
 $pageTitle = htmlspecialchars($chatbot['name']) . ' — ' . ($user['brand_name'] ?? 'Chatbot Assistant');
-?>
-<style>
-    /* Test Chat — matches conversation session message styling */
-    .conv-message { display: flex; gap: 10px; padding: 12px 16px; border-radius: 10px; margin-bottom: 8px; }
-    .conv-message.user { background: var(--surface); border: 1px solid var(--table-border); }
-    .conv-message.assistant { background: var(--surface); border: 1px solid var(--table-border); }
-    .conv-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
-    .conv-bubble { flex: 1; min-width: 0; }
-    .conv-role { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
-    .conv-role.user-role { color: #60a5fa; }
-    .conv-role.assistant-role { color: #34d399; }
-    .conv-text { font-size: 0.875rem; line-height: 1.6; word-break: break-word; }
-    .conv-text p { margin-bottom: 6px; }
-    .conv-text p:last-child { margin-bottom: 0; }
-    .conv-text ul, .conv-text ol { padding-left: 1.25rem; margin-bottom: 6px; }
-    .conv-text li { margin-bottom: 2px; }
-    .conv-text pre { background: var(--bs-secondary-bg); border-radius: 6px; padding: 10px 12px; overflow-x: auto; margin-bottom: 8px; font-size: 0.8rem; }
-    .conv-text code { font-size: 0.8rem; padding: 1px 4px; border-radius: 3px; background: var(--bs-secondary-bg); }
-    .conv-text pre code { padding: 0; background: none; border-radius: 0; }
-    .conv-text blockquote { border-left: 3px solid var(--bs-border-color); padding-left: 12px; margin-bottom: 8px; color: var(--bs-secondary-color); }
-    .conv-text table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 0.8rem; }
-    .conv-text table th, .conv-text table td { border: 1px solid var(--bs-border-color); padding: 4px 8px; text-align: left; }
-    .conv-text table th { background: var(--bs-secondary-bg); font-weight: 600; }
-    .conv-text a { color: var(--bs-link-color); }
-    .conv-meta { font-size: 0.7rem; color: var(--bs-secondary-color); margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
-    .conv-meta span { display: inline-flex; align-items: center; gap: 4px; }
-    .conv-typing { display: flex; gap: 10px; padding: 12px 16px; border-radius: 10px; margin-bottom: 8px; background: var(--surface); border: 1px solid var(--table-border); }
-    .source-badge { font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background: rgba(128,128,128,0.12); color: var(--bs-secondary-color); }
-    .sortable { cursor: pointer; user-select: none; }
-    .sortable:hover { color: var(--accent); }
-    .sort-indicator { opacity: 0.4; font-size: 0.75em; }
-    th.sort-asc .sort-indicator::after { content: ' ▲'; opacity: 1; }
-    th.sort-desc .sort-indicator::after { content: ' ▼'; opacity: 1; }
-</style>
-<?php
+
 /**
  * Format a MIME type into a short display label.
  */
@@ -108,6 +74,41 @@ function formatBytes(int $bytes): string
 }
 
 ob_start(); ?>
+<style>
+    /* Test Chat — matches conversation session message styling */
+    .conv-message { display: flex; gap: 10px; padding: 12px 16px; border-radius: 10px; margin-bottom: 8px; }
+    .conv-message.user { background: var(--surface); border: 1px solid var(--border); }
+    .conv-message.assistant { background: var(--surface); border: 1px solid var(--border); }
+    .conv-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+    .conv-avatar.user { background: var(--avatar-user); }
+    .conv-avatar.assistant { background: var(--avatar-assistant); }
+    .conv-bubble { flex: 1; min-width: 0; }
+    .conv-role { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+    .conv-role.user-role { color: var(--role-user); }
+    .conv-role.assistant-role { color: var(--role-assistant); }
+    .conv-text { font-size: 0.875rem; line-height: 1.6; word-break: break-word; }
+    .conv-text p { margin-bottom: 6px; }
+    .conv-text p:last-child { margin-bottom: 0; }
+    .conv-text ul, .conv-text ol { padding-left: 1.25rem; margin-bottom: 6px; }
+    .conv-text li { margin-bottom: 2px; }
+    .conv-text pre { background: var(--surface-2); border-radius: 6px; padding: 10px 12px; overflow-x: auto; margin-bottom: 8px; font-size: 0.8rem; }
+    .conv-text code { font-size: 0.8rem; padding: 1px 4px; border-radius: 3px; background: var(--surface-2); }
+    .conv-text pre code { padding: 0; background: none; border-radius: 0; }
+    .conv-text blockquote { border-left: 3px solid var(--border); padding-left: 12px; margin-bottom: 8px; color: var(--text-secondary); }
+    .conv-text table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 0.8rem; }
+    .conv-text table th, .conv-text table td { border: 1px solid var(--border); padding: 4px 8px; text-align: left; }
+    .conv-text table th { background: var(--surface-2); font-weight: 600; }
+    .conv-text a { color: var(--accent); }
+    .conv-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .conv-meta span { display: inline-flex; align-items: center; gap: 4px; }
+    .conv-typing { display: flex; gap: 10px; padding: 12px 16px; border-radius: 10px; margin-bottom: 8px; background: var(--surface); border: 1px solid var(--border); }
+    .source-badge { font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background: var(--hover-bg); color: var(--text-secondary); }
+    .sortable { cursor: pointer; user-select: none; }
+    .sortable:hover { color: var(--accent); }
+    .sort-indicator { opacity: 0.4; font-size: 0.75em; }
+    th.sort-asc .sort-indicator::after { content: ' ▲'; opacity: 1; }
+    th.sort-desc .sort-indicator::after { content: ' ▼'; opacity: 1; }
+</style>
 <div class="container-fluid">
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
@@ -282,7 +283,7 @@ async function testChat() {
 
     // Show user message (rendered via marked for consistency with session view)
     box.innerHTML += '<div class="conv-message user">'
-        + '<div class="conv-avatar" style="background:#f65c5c">U</div>'
+        + '<div class="conv-avatar user" style="background:var(--avatar-user)">U</div>'
         + '<div class="conv-bubble">'
         + '<div class="conv-role user-role">User</div>'
         + '<div class="conv-text">' + marked.parse(htmlEsc(msg)) + '</div>'
@@ -292,7 +293,7 @@ async function testChat() {
     // Add loading indicator
     const loadingId = 'loading-' + Date.now();
     box.innerHTML += '<div id="' + loadingId + '" class="conv-typing">'
-        + '<div class="conv-avatar" style="background:#3b82f6">A</div>'
+        + '<div class="conv-avatar assistant" style="background:var(--avatar-assistant)">A</div>'
         + '<div class="conv-bubble">'
         + '<div class="conv-role assistant-role">Assistant</div>'
         + '<div class="conv-text"><em>Thinking&hellip;</em></div>'
@@ -312,7 +313,7 @@ async function testChat() {
         var sourceBadge = source ? '<span class="source-badge">' + source.replace(/_/g, ' ') + '</span>' : '';
         document.getElementById(loadingId).outerHTML =
             '<div class="conv-message assistant">'
-            + '<div class="conv-avatar" style="background:#3b82f6">A</div>'
+            + '<div class="conv-avatar assistant" style="background:var(--avatar-assistant)">A</div>'
             + '<div class="conv-bubble">'
             + '<div class="conv-role assistant-role">Assistant ' + sourceBadge + '</div>'
             + '<div class="conv-text">' + marked.parse(data.reply || data.error || '(empty)') + '</div>'
@@ -321,7 +322,7 @@ async function testChat() {
     } catch (e) {
         document.getElementById(loadingId).outerHTML =
             '<div class="conv-message assistant" style="border-left: 3px solid #ef4444;">'
-            + '<div class="conv-avatar" style="background:#3b82f6">A</div>'
+            + '<div class="conv-avatar assistant" style="background:var(--avatar-assistant)">A</div>'
             + '<div class="conv-bubble">'
             + '<div class="conv-role assistant-role" style="color:#ef4444;">Error</div>'
             + '<div class="conv-text">Request failed: ' + htmlEsc(e.message) + '</div>'

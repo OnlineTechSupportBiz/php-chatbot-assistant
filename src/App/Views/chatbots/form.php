@@ -233,15 +233,19 @@ $iconOptions = [
 
 // Status (edit only)
 $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
-?><style>
+
+/**
+ * Cost & token estimation helpers (called from JS below).
+ */
+?>
+<?php ob_start(); ?>
+<style>
     .preview-color { width: 2rem; height: 2rem; border-radius: 50%; display: inline-block; vertical-align: middle; }
     .industry-group { font-weight: 600; }
     .card-header h5 { margin: 0; font-size: 1rem; }
-    /* ── Collapsible Sections ──────────────────────────────────────── */
     .collapse-toggle { cursor: pointer; user-select: none; }
     .collapse-toggle::after { content: ' \25BC'; font-size: 0.7rem; opacity: 0.5; }
     .collapse-toggle.collapsed::after { content: ' \25B6'; }
-    /* ── Widget Live Preview ──────────────────────────────────────── */
     #widget-preview {
         position: fixed; z-index: 2147483647;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -316,8 +320,6 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
         display: flex; align-items: center; justify-content: center;
     }
     .preview-send svg { width: 18px; height: 18px; display: block; }
-    /* ── Panel Theme CSS Variables (overridden by JS) ────────────── */
-    /* Light panel defaults */
     :root {
         --surface: #ffffff;
         --primary: #f5f7fa;
@@ -325,14 +327,12 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
         --border-color: rgba(0,0,0,0.08);
         --surface-2: #f0f2f5;
     }
-    /* ── Responsive tweaks ─────────────────────────────────────────── */
     @media (max-width: 767.98px) {
         .container-fluid { padding-left: 10px; padding-right: 10px; }
         .preview-panel { height: 50vh; }
         pre code { font-size: 0.75rem; word-break: break-all; white-space: pre-wrap; }
     }
 </style>
-<?php ob_start(); ?>
 <div class="container-fluid">
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
