@@ -233,21 +233,21 @@ class OpenAIClient
     }
 
     /**
-     * Send a chat completion request to OpenAI.
+     * Call OpenAI Chat Completions API.
      *
-     * @param  array  $messages   Array of ['role' => 'system'|'user'|'assistant', 'content' => string]
-     * @param  array  $overrides  Optional overrides for model, temperature, max_tokens, etc.
-     * @return string             The assistant's response text
+     * @param  array $messages  Array of message objects (role + content)
+     * @param  array $overrides Optional overrides for model, temperature, max_tokens, etc.
+     * @return array{content: string, total_tokens: int}  The assistant's reply and token usage
      * @throws \RuntimeException
      */
-    public function chatCompletion(array $messages, array $overrides = []): string
+    public function chatCompletion(array $messages, array $overrides = []): array
     {
         $url = $this->baseUrl . '/chat/completions';
 
         $body = json_encode(array_merge([
             'model'       => 'gpt-4o-mini',
             'messages'    => $messages,
-            'temperature' => 0.7,
+            'temperature' => 0.0,
             'max_tokens'  => 1024,
         ], $overrides));
 
@@ -281,7 +281,10 @@ class OpenAIClient
             throw new \RuntimeException('OpenAI chat: unexpected response structure');
         }
 
-        return $data['choices'][0]['message']['content'];
+        return [
+            'content'      => $data['choices'][0]['message']['content'],
+            'total_tokens' => (int) ($data['usage']['total_tokens'] ?? 0),
+        ];
     }
 
     /**

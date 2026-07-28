@@ -96,10 +96,10 @@ $selectedCategoryEsc = htmlspecialchars($selectedCategory);
 $selectedLabelEsc = htmlspecialchars($selectedLabel);
 
 // Model config defaults
-$defaultConfig = ['temperature' => 0.7, 'max_tokens' => 1024, 'model' => 'gpt-4.1-mini'];
+$defaultConfig = ['temperature' => 0.0, 'max_tokens' => 1024, 'model' => 'gpt-4.1-mini'];
 $modelConfig   = $isEdit && isset($chatbot['model_config']) && is_array($chatbot['model_config'])
     ? $chatbot['model_config'] : $defaultConfig;
-$temperature = htmlspecialchars((string) ($modelConfig['temperature'] ?? 0.7));
+$temperature = htmlspecialchars((string) ($modelConfig['temperature'] ?? 0.0));
 $maxTokens   = htmlspecialchars((string) ($modelConfig['max_tokens'] ?? 1024));
 $model       = htmlspecialchars($modelConfig['model'] ?? 'gpt-4.1-mini');
 

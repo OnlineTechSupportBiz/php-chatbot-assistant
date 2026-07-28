@@ -145,7 +145,7 @@ Document Outline:
 PROMPT;
 
         try {
-            $reply = $this->openai->chatCompletion([
+            $chatResult = $this->openai->chatCompletion([
                 ['role' => 'system', 'content' => $systemPrompt],
                 ['role' => 'user', 'content' => "User question: {$query}"],
             ], [
@@ -153,6 +153,7 @@ PROMPT;
                 'temperature' => 0.1,
                 'max_tokens'  => 500,
             ]);
+            $reply = $chatResult['content'];
 
             $reply = trim($reply);
 

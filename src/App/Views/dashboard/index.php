@@ -90,7 +90,7 @@ ob_start(); ?>
                     <div class="stat-secondary">
                         <div class="stat-label">Tokens Used</div>
                         <div class="stat-value" id="token-count">--</div>
-                        <div class="stat-note">Rough estimate of AI text processed (1 token ~ 4 characters)</div>
+                        <div class="stat-note">Total tokens processed by the AI (prompt + response)</div>
                     </div>
                 </div>
             </div>

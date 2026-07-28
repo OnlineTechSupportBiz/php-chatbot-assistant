@@ -550,24 +550,24 @@ class ChatController
         }
 
         // 8. Call OpenAI Chat Completions
-        $temperature = (float) ($modelConfig['temperature'] ?? 0.7);
+        $temperature = (float) ($modelConfig['temperature'] ?? 0.0);
         $maxTokens = (int) ($modelConfig['max_tokens'] ?? 1024);
         $model = $modelConfig['model'] ?? 'gpt-4o-mini';
 
-        $reply = $openai->chatCompletion($messages, [
+        $chatResult = $openai->chatCompletion($messages, [
             'model'       => $model,
             'temperature' => $temperature,
             'max_tokens'  => $maxTokens,
         ]);
+        $reply = $chatResult['content'];
 
         // 9. Calculate response time
         $endTime = (int) (microtime(true) * 1000);
         $responseTimeMs = $endTime - $startTime;
 
-        // 10. Store the assistant's response
+        // 10. Store the assistant's response with real token count from the API
         $source = $chunksUsed > 0 ? 'rag' : 'llm_only';
-        // Rough token estimate (4 chars ≈ 1 token)
-        $tokensUsed = (int) ((strlen($userMessage) + strlen($reply)) / 4);
+        $tokensUsed = $chatResult['total_tokens'];
         Message::create(
             $adminId, $chatbotId, $conversationId, $visitorSessionId,
             'assistant', $reply, $tokensUsed, $responseTimeMs, $source
@@ -652,21 +652,24 @@ class ChatController
         }
 
         $systemMessage = 'You are a data extraction assistant. Extract the person\'s full name, email address, '
-            . 'and phone number from the conversation text below. '
+            . 'and phone number from the conversation text below if available. '
+            . 'Return EXACTLY what the person explicitly stated — NEVER invent, guess, or infer a value that was not explicitly mentioned. '
+            . 'If a field was not explicitly provided, return null for that field. '
             . 'Also write a brief 1-2 sentence summary of what the visitor is contacting about based on the entire conversation. '
             . 'Return ONLY valid JSON in this exact structure (use null for missing fields): '
             . '{"name": "Full Name or null", "email": "email@example.com or null", "phone": "phone number or null", "summary": "1-2 sentence summary of the conversation or null"}';
 
         try {
-            $reply = $openai->chatCompletion([
+            $chatResult = $openai->chatCompletion([
                 ['role' => 'system', 'content' => $systemMessage],
                 ['role' => 'user', 'content' => $allUserText],
             ], [
                 'model'           => $modelConfig['model'] ?? 'gpt-4o-mini',
-                'temperature'     => (float) ($modelConfig['temperature'] ?? 0.7),
+                'temperature'     => (float) ($modelConfig['temperature'] ?? 0.0),
                 'max_tokens'      => (int) ($modelConfig['max_tokens'] ?? 1024),
                 'response_format' => ['type' => 'json_object'],
             ]);
+            $reply = $chatResult['content'];
 
             $data = json_decode($reply, true, 512, JSON_THROW_ON_ERROR);
 

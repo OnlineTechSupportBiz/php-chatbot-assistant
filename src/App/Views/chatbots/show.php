@@ -162,7 +162,7 @@ ob_start(); ?>
                         </div>
                         <div class="col-md-4">
                             <strong>Temperature</strong><br>
-                            <span class="text-muted"><?= htmlspecialchars((string) ($modelCfg['temperature'] ?? 0.7)) ?></span>
+                            <span class="text-muted"><?= htmlspecialchars((string) ($modelCfg['temperature'] ?? 0.0)) ?></span>
                         </div>
                         <div class="col-md-4">
                             <strong>Max Tokens</strong><br>
