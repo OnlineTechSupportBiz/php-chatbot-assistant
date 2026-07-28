@@ -180,7 +180,9 @@ The test suite uses mocked databases and injected dependencies — no external s
 
 ### Real SMTP Integration Test
 
-By default, email tests use a mock PHPMailer and never contact an SMTP server. To test actual email delivery against your configured SMTP server:
+By default, email tests use a mock PHPMailer and never contact an SMTP server. 
+Under the hood, this uses the [PHPMailer](https://github.com/PHPMailer/PHPMailer) library.
+To test actual email delivery against your configured SMTP server:
 
 ```bash
 # Export your SMTP credentials (must match your .env or environment config)
