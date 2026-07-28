@@ -145,6 +145,7 @@ class Auth
             'email'      => $_SESSION['user_email'] ?? '',
             'brand_name' => $brandName ?: 'Chatbot Assistant',
             'company_name' => $_SESSION['company_name'] ?? '',
+            'timezone'   => $_SESSION['timezone'] ?? 'UTC',
         ];
     }
 
