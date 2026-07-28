@@ -193,11 +193,11 @@ export SMTP_ENCRYPTION=ssl
 export MAIL_FROM_ADDRESS=noreply@example.com
 export MAIL_FROM_NAME="Your App"
 
-# Set the recipient for the real send test
+# Set the recipient for the test to work
 export SMTP_REAL_TEST=you@example.com
 
-# Or run the full suite
-php vendor/bin/phpunit tests/Unit/
+# Then run the unit test
+php vendor/bin/phpunit tests/Unit/Service/EmailServiceTest.php
 ```
 
 If the SMTP test fails, the error message includes the PHPMailer diagnostic (connection refused, auth failure, certificate issue, etc.).
