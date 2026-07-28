@@ -64,7 +64,7 @@ ob_start(); ?>
         </div>
         <div class="col-md-3">
             <div class="stat-card">
-                <div class="stat-icon"><i class="ph ph-speech-bubble"></i></div>
+                <div class="stat-icon"><i class="ph ph-chat-text"></i></div>
                 <div class="card-title">Messages</div>
                 <div class="display-6" id="msg-count">--</div>
             </div>
