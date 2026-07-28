@@ -781,7 +781,7 @@ body.dark-mode .alert-warning {
   color: var(--text-secondary);
 }
 .table > tbody td {
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border);
   padding: 0.625rem 1rem;
   vertical-align: middle;
 }

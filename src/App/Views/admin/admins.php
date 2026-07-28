@@ -54,7 +54,7 @@ $csrfToken = \App\Auth\Session::csrfToken();
     <!-- Admins table -->
     <div class="table-responsive">
         <table class="table table-hover align-middle">
-            <thead class="table-light">
+            <thead>
                 <tr>
                     <th>#</th>
                     <th>Name</th>

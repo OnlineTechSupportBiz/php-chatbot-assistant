@@ -109,13 +109,11 @@ $nextPage = min($totalPages, $currentPage + 1);
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle" id="audit-log-table">
-                    <thead class="table-light">
+                    <thead>
                         <tr>
                             <th style="width:160px;">Timestamp</th>
                             <th style="width:140px;">User</th>
                             <th>Action</th>
-                            <th><a href="#" onclick="return false;" class="text-reset text-decoration-none" style="cursor:help;border-bottom:1px dotted #6c757d;" title="The type of object that was affected by this action (e.g., User, Chatbot, Document, Admin Account) — not the person who performed it">Entity</a></th>
-                            <th style="width:70px;"><a href="#" onclick="return false;" class="text-reset text-decoration-none" style="cursor:help;border-bottom:1px dotted #6c757d;" title="The unique identifier (ID) of the affected object within its type">Entity ID</a></th>
                             <th>Old Value</th>
                             <th>New Value</th>
                             <th style="width:130px;" class="d-none d-lg-table-cell">IP Address</th>
@@ -146,15 +144,6 @@ $nextPage = min($totalPages, $currentPage + 1);
                                     };
                                     echo $actionColor;
                                 ?>"><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $row['action']))) ?></span>
-                            </td>
-                            <td class="small">
-                                <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $row['entity_type'] ?? '-'))) ?>
-                                <?php if ($row['entity_id']): ?>
-                                <br><code class="small">#<?= (int) $row['entity_id'] ?></code>
-                                <?php endif; ?>
-                            </td>
-                            <td class="small text-muted text-center">
-                                <?= $row['entity_id'] ? '#' . (int) $row['entity_id'] : '-' ?>
                             </td>
                             <td class="small" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                                 <?php if ($oldVal): ?>

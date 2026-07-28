@@ -87,7 +87,7 @@ $search = htmlspecialchars($_GET['q'] ?? '');
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                    <thead>
                         <tr>
                             <th>Name</th>
                             <th class="text-center">Chatbots</th>
@@ -126,7 +126,7 @@ $search = htmlspecialchars($_GET['q'] ?? '');
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                    <thead>
                         <tr>
                             <th>Name</th>
                             <th>Company</th>
