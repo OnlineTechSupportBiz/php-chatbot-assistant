@@ -131,7 +131,7 @@
                         <span class="text-muted">Authenticator app is configured.</span>
                     </div>
                     <div class="mb-3">
-                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#disableMfaModal">
                             Disable MFA
                         </button>

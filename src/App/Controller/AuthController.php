@@ -795,8 +795,7 @@ class AuthController
         // Generate new TOTP secret
         $totp = \OTPHP\TOTP::create();
         $totp->setLabel($user['email']);
-        $adminId = (int) ($user['admin_id'] ?? 0);
-        $brandName = $adminId > 0 ? \App\Model\Admin::getBrandName($adminId) : 'Chatbot Assistant';
+        $brandName = !empty($user['brand_name']) ? $user['brand_name'] : (\App\Model\Admin::getBrandName((int) ($user['admin_id'] ?? 0)) ?: 'Chatbot Assistant');
         $totp->setIssuer($brandName);
         $secret = $totp->getSecret();
 
