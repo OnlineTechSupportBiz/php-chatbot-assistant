@@ -258,4 +258,12 @@ class Session
     {
         return $_SESSION[$key] ?? $default;
     }
+
+    /**
+     * Remove a session value.
+     */
+    public static function remove(string $key): void
+    {
+        unset($_SESSION[$key]);
+    }
 }
