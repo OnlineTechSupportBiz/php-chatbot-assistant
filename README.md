@@ -4,6 +4,8 @@
 
 Manage hundreds of chatbots across dozens of tenants, each with full data isolation, one-click document training, configurable retrieval strategies, granular user permissions, and a complete authentication suite. No external dependencies beyond what you host yourself.
 
+**[Product overview →](https://onlinetechsupport.biz/portfolio/php-chatbot-assistant/index.html)** — what it does, how it looks, and what ships with it.
+
 ---
 
 ## At a Glance
@@ -141,6 +143,18 @@ Widget (browser) ──→ Public API ──→ OpenAI Chat Completions
 
 ---
 
+## Directory Layout
+
+The project keeps exactly two directories so it never sprawls across a hosting home directory. Point your web server's document root at `public_html/`; everything else lives in `pca/` and is never web-reachable.
+
+```
+php-chatbot-assistant/        ← unzip/clone this into your hosting home directory
+├── public_html/              ← document root: front controller, installer, widget, assets
+├── pca/                      ← app: config, migrations, src, storage, tests, vendor, composer
+├── README.md                 ← repo docs (kept at the root for GitHub)
+└── LICENSE
+```
+
 ## Quick Start
 
 ```bash
@@ -150,8 +164,17 @@ Widget (browser) ──→ Public API ──→ OpenAI Chat Completions
 #   Composer
 
 git clone https://github.com/OnlineTechSupportBiz/php-chatbot-assistant
-cd php-chatbot-assistant
+cd php-chatbot-assistant/pca
 composer install
+```
+
+Point your web server's document root at the sibling `public_html/` directory. For a local run:
+
+```bash
+# from the repository root
+php -S localhost:8000 -t public_html
+# or, from pca/
+composer serve
 ```
 
 Open `https://example.com/install.php` to create the admin account. Then:
@@ -170,6 +193,8 @@ That's it. Your website has an AI assistant that answers questions from your own
 ---
 
 ## Running Tests
+
+Run these from the `pca/` directory (where `composer.json` and `phpunit.xml.dist` live):
 
 ```bash
 # Run all unit tests
@@ -225,6 +250,13 @@ If the SMTP test fails, the error message includes the PHPMailer diagnostic (con
 | `SMTP_USER` | — | SMTP username |
 | `SMTP_PASS` | — | SMTP password |
 | `SMTP_ENCRYPTION` | `ssl` | SMTP encryption |
+
+---
+
+## Links
+
+- **Product overview:** https://onlinetechsupport.biz/portfolio/php-chatbot-assistant/index.html
+- **Source & issue tracker:** https://github.com/OnlineTechSupportBiz/php-chatbot-assistant
 
 ---
 

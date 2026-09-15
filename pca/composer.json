@@ -41,7 +41,7 @@
     "scripts": {
         "migrate": "php migrations/run.php",
         "test": "phpunit",
-        "serve": "php -S localhost:8000 -t public_html"
+        "serve": "php -S localhost:8000 -t ../public_html"
     },
     "config": {
         "optimize-autoloader": true

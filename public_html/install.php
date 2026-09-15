@@ -36,6 +36,9 @@ declare(strict_types=1);
  * ── DELETE THIS FILE AFTER SUCCESSFUL INSTALLATION ──
  */
 
+// Everything except this web root lives in the sibling pca/ directory.
+$appDir = dirname(__DIR__) . '/pca';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Bootstrap (minimal — no app config, no .env)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -137,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "MAIL_FROM_ADDRESS={$mailFrom}\n" .
                 "MAIL_FROM_NAME={$mailName}\n";
 
-            $envPath = __DIR__ . '/../.env';
+            $envPath = $appDir . '/.env';
 
             // Test the DB connection first
             try {
@@ -197,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
 
                 // Run SQL migrations in order (sorted by filename)
-                $migrationDir = __DIR__ . '/../migrations';
+                $migrationDir = $appDir . '/migrations';
                 $migrationFiles = glob($migrationDir . '/*.sql');
                 if ($migrationFiles === false) {
                     $errors[] = 'Failed to scan migrations directory.';
@@ -475,7 +478,7 @@ $_SESSION['install_success'] = '';
 // 3. Detect if .env already exists (show warning)
 // ─────────────────────────────────────────────────────────────────────────────
 
-$envExists = file_exists(__DIR__ . '/../.env');
+$envExists = file_exists($appDir . '/.env');
 
 // If .env exists and user hasn't started or has reset, and step is 0,
 // warn but let them re-run if they want
@@ -825,7 +828,7 @@ if ($envExists && $step === 0 && $_SERVER['REQUEST_METHOD'] !== 'POST') {
                 <p>The following migration files will be executed:</p>
                 <ul style="margin:.5rem 0 0 1.25rem;font-size:.85rem;color:#4b5563;">
                     <?php
-                    $migrationDir = __DIR__ . '/../migrations';
+                    $migrationDir = $appDir . '/migrations';
                     $migrationFiles = glob($migrationDir . '/*.sql');
                     if ($migrationFiles !== false) {
                         $migrationFiles = array_map('basename', $migrationFiles);

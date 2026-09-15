@@ -27,7 +27,7 @@ declare(strict_types=1);
 /**
  * Front controller — all requests route through here.
  *
- * Start dev server: php -S localhost:8000 -t public_html
+ * Start dev server (from the project root): php -S localhost:8000 -t public_html
  */
 
 // ── Normalize script-name requests to root ────────────────────────────────
@@ -39,8 +39,11 @@ if ($requestUri === '/index.php') {
     exit;
 }
 
+// ── Application root (everything except the web root lives here) ──────────
+$appDir = __DIR__ . '/../pca';
+
 // ── Autoload ──────────────────────────────────────────────────────────────
-$autoload = __DIR__ . '/../vendor/autoload.php';
+$autoload = $appDir . '/vendor/autoload.php';
 if (!file_exists($autoload)) {
     http_response_code(500);
     echo 'Run: composer install';
@@ -49,8 +52,8 @@ if (!file_exists($autoload)) {
 require $autoload;
 
 // ── Bootstrap ────────────────────────────────────────────────────────────
-$config = require __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../config/database.php';
+$config = require $appDir . '/config/config.php';
+require_once $appDir . '/config/database.php';
 
 use App\Auth\Session;
 use App\Controller\AdminController;
@@ -105,13 +108,13 @@ $router->get('/', function (Request $req, Response $res) {
 });
 
 // ── Auth routes ──────────────────────────────────────────────────────────
-$router->get('/login', function (Request $req, Response $res) {
+$router->get('/login', function (Request $req, Response $res) use ($appDir) {
     $brandName = \App\Model\Admin::getBrandName();
-    require __DIR__ . '/../src/App/Views/auth/login.php';
+    require $appDir . '/src/App/Views/auth/login.php';
 });
 $router->post('/login', [$auth, 'login']);
 
-$router->get('/register', function (Request $req, Response $res) {
+$router->get('/register', function (Request $req, Response $res) use ($appDir) {
     // Check if registration is enabled (platform setting)
     if (\App\Model\Setting::get('registration_enabled', '1') !== '1') {
         Session::flash('error', 'New user registration is currently disabled.');
@@ -119,7 +122,7 @@ $router->get('/register', function (Request $req, Response $res) {
         return;
     }
     $brandName = \App\Model\Admin::getBrandName();
-    require __DIR__ . '/../src/App/Views/auth/register.php';
+    require $appDir . '/src/App/Views/auth/register.php';
 });
 $router->post('/register', [$auth, 'register']);
 
@@ -127,15 +130,15 @@ $router->get('/verify-email', [$auth, 'verifyEmail']);
 $router->post('/resend-verification', [$auth, 'resendVerification']);
 $router->post('/logout', [$auth, 'logout']);
 
-$router->get('/forgot-password', function (Request $req, Response $res) {
+$router->get('/forgot-password', function (Request $req, Response $res) use ($appDir) {
     $brandName = \App\Model\Admin::getBrandName();
-    require __DIR__ . '/../src/App/Views/auth/forgot_password.php';
+    require $appDir . '/src/App/Views/auth/forgot_password.php';
 });
 $router->post('/forgot-password', [$auth, 'forgotPassword']);
 
-$router->get('/reset-password', function (Request $req, Response $res) {
+$router->get('/reset-password', function (Request $req, Response $res) use ($appDir) {
     $brandName = \App\Model\Admin::getBrandName();
-    require __DIR__ . '/../src/App/Views/auth/reset_password.php';
+    require $appDir . '/src/App/Views/auth/reset_password.php';
 });
 $router->post('/reset-password', [$auth, 'resetPassword']);
 
