@@ -551,7 +551,7 @@
     document.addEventListener('touchmove', doResize, { passive: true });
     document.addEventListener('touchend', endResize);
 
-    // ── Rating prompt (5 min inactivity after a conversation) ──────────────
+    // ── Rating prompt (2 min inactivity after a conversation) ──────────────
     var RATING_GIVEN_KEY = 'chatbot_rating_given';
     var RATE_URL = API_URL.replace('/chat', '/rate');
 
