@@ -27,7 +27,7 @@ Create, clone and manage as many bots as you like. Each one carries its own mode
 
 Upload PDF, DOC, DOCX, TXT or Markdown. The pipeline parses, chunks, embeds and indexes it automatically, and shows you the status of every step.
 
-### Document processing and conversion
+### Prefer we do document processing and conversion for you?
 
 Most of the work behind a document chatbot is the paperwork itself: scanned PDFs with no text layer, pages that need OCR, DOCX exports with the headings mangled, sheets and manuals spread across dozens of files. None of it can be indexed until it is cleaned up. Send it to us and we will convert it, cut it into chunks that suit your retrieval strategy, and hand back files that upload cleanly under vector RAG or PageIndex.
 
