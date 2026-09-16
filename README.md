@@ -6,14 +6,9 @@ Open source · MIT licensed · PHP 8.2+
 
 [Product overview and screenshots](https://onlinetechsupport.biz/portfolio/php-chatbot-assistant/index.html) · [GitHub repository](https://github.com/OnlineTechSupportBiz/php-chatbot-assistant)
 
-- **2** retrieval strategies: vector RAG or PageIndex
-- **26** industries, 101 prompt presets
-- **1** script tag to put a bot on any website
-- **$0** per seat, per bot, per conversation
+## A complete chatbot product, built for paying clients
 
-## A complete chatbot product, not a demo script
-
-Clone it, run the installer, add your API keys. Tenancy, the training pipeline, the widget, lead capture, permissions and the audit trail are all in the box.
+Clone it, run the installer, add your API keys. Tenancy, the training pipeline, the widget, lead capture, permissions and the audit trail are all in the box: the parts a client engagement needs from day one, written and maintained by someone who has had to do exactly that.
 
 ### Chatbots per tenant
 
@@ -38,6 +33,46 @@ Trigger-based canned replies that fire before the model is ever called. Common q
 ### Authentication, finished
 
 Argon2id passwords, magic links, TOTP with recovery codes, account lockout after five failed attempts, per-IP rate limiting on login, CSRF tokens and rotating sessions.
+
+## Features
+
+| Area | What is in it |
+|---|---|
+| Core platform | Multi-tenant chatbot management · Document Q&A pipeline · Two retrieval strategies · One-tag embed widget · AI lead capture · Quick answer chips · Full authentication system |
+| Retrieval | Vector search (pgvector) · PageIndex vectorless navigation · Per-chatbot strategy choice |
+| Document handling | PDF/DOCX/TXT/Markdown upload · Automatic parse, chunk, embed and index · LlamaCloud parsing |
+| Widget | Shadow DOM isolation · Light and dark themes · Custom colour styling · Typing indicators · Resizable panel · Star ratings · Domain-restricted CORS |
+| Security and auth | Argon2id password hashing · Magic link login · TOTP with recovery codes · Account lockout · Per-IP rate limiting · CSRF protection · Rotating sessions |
+| Abuse protection | Message rate limiting · Daily token budgets · Maximum message length · Maximum messages per conversation · Prompt-injection detection · Audit trail logging |
+| Multi-tenancy | Row-Level Security isolation · Per-tenant API keys · Super admin dashboard · Per-account permissions |
+| Admin and analytics | Dashboard with stats · Response-source chart · Conversation history view · Captured leads table · Chatbot cloning |
+| Licensing and cost | MIT license (free) · No per-seat fees · Self-hosted deployment |
+
+### Use cases
+
+| Audience | What they build with it |
+|---|---|
+| Agencies and freelancers | White-label chatbots for clients · Website support widget as a deliverable |
+| Small and medium businesses | FAQ and support deflection · Lead qualification on a marketing site · Internal knowledge base bot |
+| Content-heavy sites | Long-document Q&A · Product documentation assistant |
+| Regulated or privacy-sensitive industries | Data residency requirements · Cost-capped deployments |
+| Developers and technical users | SaaS chatbot product foundation · Learning reference |
+
+#### Pros
+
+- No recurring platform fees
+- Data stays under your control
+- Two retrieval strategies, chosen per bot
+- Real multi-tenancy, not bolted on
+- Cost guardrails built in
+- Simple tech stack
+- Complete test coverage
+- Widget isolation
+- Fast to embed
+
+#### Cons
+
+- Self-hosting is on you, though we offer installation services
 
 ## Two ways to answer from your documents
 
@@ -267,12 +302,11 @@ Start with vector RAG for FAQ-shaped content where answers sit inside individual
 
 [MIT](LICENSE). Run it on your own infrastructure, keep the data on your own server, and pay nothing per seat or per conversation.
 
-
-### Prefer it installed for you?
+## Prefer it installed for you?
 
 If you would rather not wrestle with the server and database setup yourself, we will install it on your hosting for **$150 USD**. The price covers the whole job: the PHP and PostgreSQL prerequisites checked, pgvector enabled, the installer run end to end, your OpenAI and LlamaCloud keys saved, one chatbot trained on your own document, and the widget snippet handed over ready to paste. Email [contact@onlinetechsupport.biz](mailto:contact@onlinetechsupport.biz) to arrange it.
 
-### Prefer we do document processing and conversion for you?
+## Prefer we do document processing and conversion for you?
 
 Most of the work behind a document chatbot is the paperwork itself: scanned PDFs with no text layer, pages that need OCR, DOCX exports with the headings mangled, sheets and manuals spread across dozens of files. None of it can be indexed until it is cleaned up. Send it to us and we will convert it, cut it into chunks that suit your retrieval strategy, and hand back files that upload cleanly under vector RAG or PageIndex.
 
