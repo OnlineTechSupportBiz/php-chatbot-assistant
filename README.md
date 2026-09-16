@@ -15,10 +15,6 @@ Open source · MIT licensed · PHP 8.2+
 
 Clone it, run the installer, add your API keys. Tenancy, the training pipeline, the widget, lead capture, permissions and the audit trail are all in the box.
 
-### Prefer it installed for you?
-
-If you would rather not wrestle with the server and database setup yourself, we will install it on your hosting for **$150 USD**. The price covers the whole job: the PHP and PostgreSQL prerequisites checked, pgvector enabled, the installer run end to end, your OpenAI and LlamaCloud keys saved, one chatbot trained on your own document, and the widget snippet handed over ready to paste. Email [contact@onlinetechsupport.biz](mailto:contact@onlinetechsupport.biz) to arrange it.
-
 ### Chatbots per tenant
 
 Create, clone and manage as many bots as you like. Each one carries its own model settings, system prompt, widget styling and allowed domains.
@@ -26,12 +22,6 @@ Create, clone and manage as many bots as you like. Each one carries its own mode
 ### Document Q&A
 
 Upload PDF, DOC, DOCX, TXT or Markdown. The pipeline parses, chunks, embeds and indexes it automatically, and shows you the status of every step.
-
-### Prefer we do document processing and conversion for you?
-
-Most of the work behind a document chatbot is the paperwork itself: scanned PDFs with no text layer, pages that need OCR, DOCX exports with the headings mangled, sheets and manuals spread across dozens of files. None of it can be indexed until it is cleaned up. Send it to us and we will convert it, cut it into chunks that suit your retrieval strategy, and hand back files that upload cleanly under vector RAG or PageIndex.
-
-We price it whichever way suits you: a flat rate agreed up front for the whole batch, or a per-document fee if neither of us knows the volume until we have seen the files. Tell us roughly what you have and we will quote it. A signed NDA comes as standard, yours or ours, and we keep your documents only for the conversion and delete them on request.
 
 ### Two retrieval strategies
 
@@ -276,6 +266,17 @@ Start with vector RAG for FAQ-shaped content where answers sit inside individual
 ## License
 
 [MIT](LICENSE). Run it on your own infrastructure, keep the data on your own server, and pay nothing per seat or per conversation.
+
+
+### Prefer it installed for you?
+
+If you would rather not wrestle with the server and database setup yourself, we will install it on your hosting for **$150 USD**. The price covers the whole job: the PHP and PostgreSQL prerequisites checked, pgvector enabled, the installer run end to end, your OpenAI and LlamaCloud keys saved, one chatbot trained on your own document, and the widget snippet handed over ready to paste. Email [contact@onlinetechsupport.biz](mailto:contact@onlinetechsupport.biz) to arrange it.
+
+### Prefer we do document processing and conversion for you?
+
+Most of the work behind a document chatbot is the paperwork itself: scanned PDFs with no text layer, pages that need OCR, DOCX exports with the headings mangled, sheets and manuals spread across dozens of files. None of it can be indexed until it is cleaned up. Send it to us and we will convert it, cut it into chunks that suit your retrieval strategy, and hand back files that upload cleanly under vector RAG or PageIndex.
+
+We price it whichever way suits you: a flat rate agreed up front for the whole batch, or a per-document fee if neither of us knows the volume until we have seen the files. Tell us roughly what you have and we will quote it. A signed NDA comes as standard, yours or ours, and we keep your documents only for the conversion and delete them on request.
 
 ## Donations
 
