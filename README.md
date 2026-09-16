@@ -1,4 +1,4 @@
-# php-chatbot-assistant
+# PHP Chatbot Assistant
 
 **A self-hosted AI chatbot platform.** Train it on your own documents and drop one script tag on your site. Answers come out of your content, the conversations stay in your PostgreSQL database, and nobody bills you per seat, per bot or per message.
 
