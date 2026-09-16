@@ -13,7 +13,11 @@ Open source · MIT licensed · PHP 8.2+
 
 ## A complete chatbot product, not a demo script
 
-Clone it, run the installer, add your API keys. Everything a client-facing chatbot needs — tenancy, training pipeline, widget, lead capture, permissions and audit trail — is already in the box.
+Clone it, run the installer, add your API keys. Tenancy, the training pipeline, the widget, lead capture, permissions and the audit trail are all in the box.
+
+### Prefer it installed for you?
+
+If you would rather not wrestle with the server and database setup yourself, we will install it on your hosting for **$150 USD**. The price covers the whole job: the PHP and PostgreSQL prerequisites checked, pgvector enabled, the installer run end to end, your OpenAI and LlamaCloud keys saved, one chatbot trained on your own document, and the widget snippet handed over ready to paste. Email [contact@onlinetechsupport.biz](mailto:contact@onlinetechsupport.biz) to arrange it.
 
 ### Chatbots per tenant
 
@@ -23,13 +27,19 @@ Create, clone and manage as many bots as you like. Each one carries its own mode
 
 Upload PDF, DOC, DOCX, TXT or Markdown. The pipeline parses, chunks, embeds and indexes it automatically, and shows you the status of every step.
 
+### Document processing and conversion
+
+Most of the work behind a document chatbot is the paperwork itself: scanned PDFs with no text layer, pages that need OCR, DOCX exports with the headings mangled, sheets and manuals spread across dozens of files. None of it can be indexed until it is cleaned up. Send it to us and we will convert it, cut it into chunks that suit your retrieval strategy, and hand back files that upload cleanly under vector RAG or PageIndex.
+
+We price it whichever way suits you: a flat rate agreed up front for the whole batch, or a per-document fee if neither of us knows the volume until we have seen the files. Tell us roughly what you have and we will quote it. A signed NDA comes as standard, yours or ours, and we keep your documents only for the conversion and delete them on request.
+
 ### Two retrieval strategies
 
 Classic vector search in pgvector, or PageIndex: an LLM navigating a document outline with no embeddings at all. Choose per chatbot.
 
 ### AI lead capture
 
-The bot asks for a name, email and phone inside the conversation — no modal, no form. Leads are extracted, stored and summarised per conversation.
+The bot asks for a name, email and phone inside the conversation, with no modal and no form. Leads are extracted, stored and summarised per conversation.
 
 ### Quick answers
 
@@ -53,7 +63,7 @@ Documents are chunked, embedded with `text-embedding-3-small` (1536 dimensions) 
 
 ### PageIndex: vectorless navigation
 
-Documents are parsed into a hierarchy of headings and sections. The model skims the outline, picks the sections that matter and reads only those — the way a person uses a table of contents.
+Documents are parsed into a hierarchy of headings and sections. The model skims the outline, picks the sections that matter and reads only those, the way a person uses a table of contents.
 
 - No chunk boundaries to split an answer in half
 - Strong on long, well-structured documents
@@ -89,9 +99,9 @@ The snippet is generated from the chatbot's own settings, so colours, header tex
 
 - Light and dark panels, custom primary colour, bot name and position
 - Quick answer chips loaded when the panel opens, plus typing indicators
-- Expandable — drag either edge to resize the panel width
-- Ratings — an inactivity-triggered 1 to 5 star bar per conversation, two minutes after the last message
-- Locked down — allowed-domain CORS restriction, so a copied snippet is useless on someone else's site
+- Expandable: drag either edge to resize the panel width
+- Ratings: an inactivity-triggered 1 to 5 star bar per conversation, two minutes after the last message
+- Locked down: allowed-domain CORS restriction, so a copied snippet is useless on someone else's site
 
 ## Lead capture inside the conversation
 
@@ -99,8 +109,8 @@ When a chatbot has lead capture enabled, its system prompt teaches the bot to as
 
 Two trigger patterns are available:
 
-- **Proactive** — after the greeting, ask once for name, email and phone together
-- **Off-scope** — when the visitor wants something the bot cannot do, offer a human follow-up
+- **Proactive:** after the greeting, ask once for name, email and phone together
+- **Off-scope:** when the visitor wants something the bot cannot do, offer a human follow-up
 
 The bot asks once, in one message. If the visitor declines, it drops the subject and carries on helping.
 
@@ -112,15 +122,15 @@ Agriculture · Automotive · Construction & Engineering · E-Commerce & Retail �
 
 ## Guardrails before the model is called
 
-Every guardrail is evaluated before any API request goes out, so a blocked request costs you nothing and a hostile one does not reach your invoice.
+Every guardrail runs before any API request goes out, so a blocked message costs you nothing and a hostile one never reaches your invoice.
 
-- **Rate limiting** — a configurable number of messages per minute per session
-- **Daily token budget** — a hard per-chatbot cap
-- **Maximum message length** — oversized prompts are rejected outright
-- **Maximum messages per conversation** — limits how deep one session can run
-- **Prompt-injection detection** — pattern scanning with a polite, silent refusal
-- **Audit trail** — every guardrail trigger is logged with its context
-- **Tenant isolation** — Row-Level Security, never a user id trusted from client input
+- Rate limiting, with a configurable number of messages per minute per session
+- A daily token budget as a hard cap per chatbot
+- A maximum message length, so oversized prompts are rejected outright
+- A maximum number of messages per conversation, so one session cannot run away
+- Prompt-injection patterns, scanned for and quietly refused
+- An audit trail: every guardrail trigger is logged with its context
+- Tenant isolation through Row-Level Security, never a user id taken from client input
 
 ## Tech stack
 
@@ -174,7 +184,7 @@ composer serve
 
 **3. Open `install.php` and work through the installer**
 
-Visit `https://your-server.com/install.php`. The three-step wizard configures the database connection, runs the migrations and creates the super-admin account — it checks the PHP extensions, the PostgreSQL version and the vector extension before it writes anything.
+Visit `https://your-server.com/install.php`. The three-step wizard configures the database connection, runs the migrations and creates the super-admin account. Before it writes anything it checks the PHP extensions, the PostgreSQL version and the vector extension.
 
 **4. Register a user account and add its API keys**
 
@@ -244,7 +254,7 @@ A failure prints the PHPMailer diagnostic: connection refused, authentication fa
 
 ### What does it cost to run?
 
-The software is free under the MIT license, with no per-seat, per-bot or per-conversation fee. Your real costs are the server you already have, your OpenAI usage (embeddings at ingestion plus chat completions) and a LlamaCloud key for parsing. Quick answers and guardrail rejections never reach the model, and each chatbot can carry a daily token budget as a hard ceiling.
+The software is free under the MIT license, with no per-seat, per-bot or per-conversation fee. Your real costs are the server you already have, your OpenAI usage (embeddings at ingestion plus chat completions) and a LlamaCloud key for parsing. Quick answers and guardrail rejections never reach the model, and each chatbot can carry a daily token budget as a hard ceiling. The two things we charge for are optional: installing it for you at $150 USD once, and processing your documents at a flat rate or per document, both under a signed NDA.
 
 ### Do I need Docker or a Node toolchain?
 
@@ -256,7 +266,7 @@ In your PostgreSQL database, on your server. The only outbound calls are the one
 
 ### Traditional RAG or PageIndex?
 
-Start with vector RAG for FAQ-shaped content where answers sit inside individual paragraphs. Choose PageIndex for long, well-structured documents — manuals, policies, long reports — where chunk boundaries tend to cut an answer in half. It is a per-chatbot setting, so you can upload the same document under both and compare.
+Start with vector RAG for FAQ-shaped content where answers sit inside individual paragraphs. Choose PageIndex for long, well-structured documents such as manuals, policies and lengthy reports, where chunk boundaries tend to cut an answer in half. It is a per-chatbot setting, so you can upload the same document under both and compare.
 
 ## Links
 
@@ -266,3 +276,18 @@ Start with vector RAG for FAQ-shaped content where answers sit inside individual
 ## License
 
 [MIT](LICENSE). Run it on your own infrastructure, keep the data on your own server, and pay nothing per seat or per conversation.
+
+## Donations
+
+The project stays free and MIT licensed. If it saved you time and you want to send something back, the addresses below are ours. Send on the network named in each row, never a testnet, and any amount is welcome.
+
+| Network | Address |
+|---|---|
+| Bitcoin (BTC) | `bc1qnkclf2pzg3pvyhgfz75vj74tdptk82h7k90xpa` |
+| Ethereum (ETH) | `0x33f6EcA24DF4D68cDd3A0A01f1EFE9dF9710d4a7` |
+| XRP (XRP Ledger) | `rGHexxe7EpYzkvDoq2HLdiCqQeLdH8HWus` |
+| Solana (SOL) | `DMCsqz2s52QvyyuSbA943JLjt7tYR1uGAZr6iNCXJQTV` |
+| VeChain (VET) | `0x86806548E8CA67e58c6D1c1B3fB32FBF3b08878D` |
+| Cardano (ADA) | `addr1qxpusclv4kzp36xqvq55mlmlcs4v3cugd5z96ctup55pg5vrep37etvyrr5vqcpffhlhl3p2er3csmgyt4shcrfgz3gsjmt9hh` |
+
+Ethereum and VeChain are both EVM chains: the two `0x` addresses look alike but they are not interchangeable, so check the whole address before you send.
