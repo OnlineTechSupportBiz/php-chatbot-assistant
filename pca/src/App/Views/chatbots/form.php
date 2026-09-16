@@ -483,6 +483,7 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
                         <option value="gpt-5.6-luna" <?= $model === 'gpt-5.6-luna' ? 'selected' : '' ?>>GPT-5.6-Luna</option>
                         <option value="gpt-5.6-terra" <?= $model === 'gpt-5.6-terra' ? 'selected' : '' ?>>GPT-5.6-Terra</option>
                         <option value="gpt-5.6-sol" <?= $model === 'gpt-5.6-sol' ? 'selected' : '' ?>>GPT-5.6-Sol</option>
+                        <option value="gpt-6-astr" <?= $model === 'gpt-6-astr' ? 'selected' : '' ?>>GPT-6-Astr</option>
                     </select>
                 </div>
                 <div class="col-md-4 mb-3">
