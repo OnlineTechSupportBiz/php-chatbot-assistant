@@ -34,7 +34,7 @@ $escapedBrand = urlencode($brandName);
 $qrCodeUrl = 'otpauth://totp/' . $escapedBrand . ':' . urlencode($_SESSION['user_email'] ?? '')
     . '?secret=' . urlencode($mfaSecret ?? '')
     . '&issuer=' . $escapedBrand;
-?><div class="container mt-4">
+?><div class="container">
     <h1 class="mb-1">Setup Two-Factor Authentication</h1>
     <p class="text-muted mb-4" style="font-size:0.85rem;">Enhance your account security with TOTP-based two-factor authentication.</p>
 

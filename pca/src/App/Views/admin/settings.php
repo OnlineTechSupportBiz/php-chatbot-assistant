@@ -31,7 +31,7 @@
  *   $mfaEnabled       — bool
  *   $auditLogEntries  — array (recent audit log rows)
  */
-?><div class="container-fluid mt-4">
+?><div class="container-fluid">
     <?php if ($msg = \App\Auth\Session::getFlash('success')): ?>
         <div class="alert alert-success alert-dismissible fade show"><?= htmlspecialchars(is_string($msg) ? $msg : implode('<br>', $msg)) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>

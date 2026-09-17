@@ -45,7 +45,7 @@ $pageTitle = 'Document Status — ' . $docName . ' - ' . ($user['brand_name'] ??
 ob_start(); ?>
 <div class="container-fluid">
     <div class="mb-3">
-        <a href="/chatbots/<?= (int)$chatbot['id'] ?>/documents" class="btn btn-outline-light btn-sm">← Back to Documents</a>
+        <a href="/chatbots/<?= (int)$chatbot['id'] ?>/documents" class="btn btn-outline-secondary">&larr; Back to Documents</a>
     </div>
 
     <h1 class="mb-4">Document Details</h1>

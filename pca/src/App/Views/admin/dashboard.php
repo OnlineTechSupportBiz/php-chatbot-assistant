@@ -33,7 +33,7 @@
  *   $flashSuccess        — flash message (if any)
  */
 $search = htmlspecialchars($_GET['q'] ?? '');
-?><div class="container mt-4">
+?><div class="container">
     <?php if ($msg = \App\Auth\Session::getFlash('success')): ?>
         <div class="alert alert-success alert-dismissible fade show"><?= $msg ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php endif; ?>

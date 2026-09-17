@@ -387,17 +387,19 @@ pre {
 }
 
 /* ── Main content ─────────────────────────────────────────────────────── */
+/* The page inset from the top of the viewport is set here, once, for every
+   logged-in page. Individual pages must not add their own top margin. */
 .main-content {
   flex: 1;
   margin-left: 240px;
   min-height: 100vh;
-  padding-top: 0;
+  padding-top: 1.5rem;
 }
 
 .page-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 1.5rem 2rem 3rem;
+  padding: 0 2rem 3rem;
 }
 
 /* Page header */
@@ -1112,17 +1114,18 @@ pre.bg-dark code {
 
   .main-content {
     margin-left: 0;
-    padding-top: 52px;
+    /* 52px fixed mobile header, plus breathing room below it */
+    padding-top: 68px;
   }
 
   .page-container {
-    padding: 1rem 1rem 2rem;
+    padding: 0 1rem 2rem;
   }
 }
 
 @media (max-width: 767.98px) {
   .page-container {
-    padding: 0.75rem 0.75rem 2rem;
+    padding: 0 0.75rem 2rem;
   }
 
   .stat-card {

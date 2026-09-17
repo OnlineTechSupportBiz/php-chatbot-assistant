@@ -31,7 +31,7 @@
  */
 $csrfToken = \App\Auth\Session::csrfToken();
 ?>
-<div class="container mt-4">
+<div class="container">
     <?php if ($flashSuccess): ?>
         <div class="alert alert-success alert-dismissible fade show"><?= $flashSuccess ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php endif; ?>
