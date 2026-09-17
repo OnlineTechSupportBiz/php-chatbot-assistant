@@ -4,7 +4,7 @@
 
 Open source · MIT licensed · PHP 8.2+
 
-[Product overview and screenshots](https://onlinetechsupport.biz/portfolio/php-chatbot-assistant/index.html) · [GitHub repository](https://github.com/OnlineTechSupportBiz/php-chatbot-assistant)
+[Product overview and screenshots](https://onlinetechsupport.biz/portfolio/php-chatbot-assistant/index.html) · [GitHub repository](https://github.com/OnlineTechSupportBiz/php-chatbot-assistant) · [Installation](https://github.com/OnlineTechSupportBiz/php-chatbot-assistant#installation)
 
 ## A complete chatbot product, built for paying clients
 
