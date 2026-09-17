@@ -52,7 +52,7 @@ class Message extends Model
      * @param  string|null $source     'rag', 'quick_answer', 'llm_only', 'blocked'
      * @param  int|null    $tokensUsed
      * @param  int|null    $responseTimeMs
-     * @param  string|null $model      Model name used (e.g. 'gpt-4o-mini')
+     * @param  string|null $model      Model name used (e.g. 'gpt-4.1-mini')
      * @return int  Inserted message ID
      */
     public static function create(

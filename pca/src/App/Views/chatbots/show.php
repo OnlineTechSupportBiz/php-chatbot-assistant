@@ -158,7 +158,7 @@ ob_start(); ?>
                     <div class="row">
                         <div class="col-md-4">
                             <strong>Model</strong><br>
-                            <span class="text-muted"><?= htmlspecialchars($modelCfg['model'] ?? 'gpt-4o-mini') ?></span>
+                            <span class="text-muted"><?= htmlspecialchars($modelCfg['model'] ?? 'gpt-4.1-mini') ?></span>
                         </div>
                         <div class="col-md-4">
                             <strong>Temperature</strong><br>

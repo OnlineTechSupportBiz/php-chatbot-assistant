@@ -118,7 +118,7 @@ class PageIndexStrategy implements RetrievalStrategy
     private function selectRelevantSections(string $query, string $outlineText, array $chatbot, array $options): array
     {
         $modelConfig = !empty($chatbot['model_config']) ? json_decode($chatbot['model_config'], true) : [];
-        $model = $modelConfig['model'] ?? 'gpt-4o-mini';
+        $model = $modelConfig['model'] ?? 'gpt-4.1-mini';
         $maxNodes = (int) ($options['max_nodes'] ?? 5);
 
         $systemPrompt = <<<PROMPT

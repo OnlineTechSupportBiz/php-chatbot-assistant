@@ -245,7 +245,7 @@ class OpenAIClient
         $url = $this->baseUrl . '/chat/completions';
 
         $body = json_encode(array_merge([
-            'model'       => 'gpt-4o-mini',
+            'model'       => 'gpt-4.1-mini',
             'messages'    => $messages,
             'temperature' => 0.0,
             'max_tokens'  => 1024,

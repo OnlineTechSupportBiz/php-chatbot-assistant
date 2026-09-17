@@ -552,7 +552,7 @@ class ChatController
         // 8. Call OpenAI Chat Completions
         $temperature = (float) ($modelConfig['temperature'] ?? 0.0);
         $maxTokens = (int) ($modelConfig['max_tokens'] ?? 1024);
-        $model = $modelConfig['model'] ?? 'gpt-4o-mini';
+        $model = $modelConfig['model'] ?? 'gpt-4.1-mini';
 
         $chatResult = $openai->chatCompletion($messages, [
             'model'       => $model,
@@ -664,7 +664,7 @@ class ChatController
                 ['role' => 'system', 'content' => $systemMessage],
                 ['role' => 'user', 'content' => $allUserText],
             ], [
-                'model'           => $modelConfig['model'] ?? 'gpt-4o-mini',
+                'model'           => $modelConfig['model'] ?? 'gpt-4.1-mini',
                 'temperature'     => (float) ($modelConfig['temperature'] ?? 0.0),
                 'max_tokens'      => (int) ($modelConfig['max_tokens'] ?? 1024),
                 'response_format' => ['type' => 'json_object'],
