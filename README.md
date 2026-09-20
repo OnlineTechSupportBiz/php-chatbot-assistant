@@ -1,14 +1,32 @@
 # PHP Chatbot Assistant
 
-**A self-hosted AI chatbot platform.** Train it on your own documents and drop one script tag on your site. Answers come out of your content, the conversations stay in your PostgreSQL database, and nobody bills you per seat, per bot or per message.
+**A free, self-hosted AI chatbot platform.** Train it on your own documents and drop one script tag on your site. Answers come out of your content, the conversations stay in your PostgreSQL database, and nobody bills you per seat, per bot or per message.
 
-Open source · MIT licensed · PHP 8.2+
+**Free software, and not a SaaS.** There is no subscription, no plan to buy, no account with us and no API key sold by us. You download the code and run it on your own server. If you use OpenAI or LlamaCloud, you open those accounts yourself and pay those providers directly at their published rates: we never resell, proxy or mark up API access, and none of your usage is billed through us.
+
+Open source · MIT licensed · PHP 8.2+ · No subscription · No account with OnlineTechSupport.biz
 
 [Product overview and screenshots](https://onlinetechsupport.biz/portfolio/php-chatbot-assistant/index.html) · [GitHub repository](https://github.com/OnlineTechSupportBiz/php-chatbot-assistant) · [Installation](https://github.com/OnlineTechSupportBiz/php-chatbot-assistant#installation)
 
-## A complete chatbot product, built for paying clients
+## What it costs
 
-Clone it, run the installer, add your API keys. Tenancy, the training pipeline, the widget, lead capture, permissions and the audit trail are all in the box: the parts a client engagement needs from day one, written and maintained by someone who has had to do exactly that.
+Nothing, unless you choose one of the two optional services listed at the end of this page. There is no paid tier, no trial that expires and no per-seat licence.
+
+| What | Who you pay | What it costs |
+|---|---|---|
+| The software | Nobody | **$0.** MIT licensed. Install it, run it commercially, modify it. No seat, bot, message or revenue limit, and nothing in the code checks a licence or phones home. |
+| An account with OnlineTechSupport.biz | Nobody | **Not needed.** No sign-up, no licence key, no dashboard on our servers. The only account anywhere in the picture is the admin account inside your own installation. |
+| OpenAI API key (embeddings and chat) | OpenAI | OpenAI's published rates, billed to your own OpenAI account |
+| LlamaCloud key (document parsing) | LlamaCloud | LlamaCloud's published rates, billed to your own LlamaCloud account |
+| Hosting | Your host | Any server running PHP 8.2+ and PostgreSQL 16 with pgvector |
+| Optional: installation | Us | $150 USD once, if you would rather not do the server setup — see [Prefer it installed for you?](#prefer-it-installed-for-you) |
+| Optional: document conversion | Us | Flat rate or per document, quoted up front — see [Prefer we do document processing and conversion for you?](#prefer-we-do-document-processing-and-conversion-for-you) |
+
+Skip both optional services and this is still a complete, working product.
+
+## What you get: a complete product, ready for client work
+
+Clone it, run the installer, add your own OpenAI and LlamaCloud keys. Tenancy, the training pipeline, the widget, lead capture, permissions and the audit trail are all in the box: the parts a client engagement needs from day one, written and maintained by someone who has had to do exactly that.
 
 ### Chatbots per tenant
 
@@ -46,7 +64,7 @@ Argon2id passwords, magic links, TOTP with recovery codes, account lockout after
 | Abuse protection | Message rate limiting · Daily token budgets · Maximum message length · Maximum messages per conversation · Prompt-injection detection · Audit trail logging |
 | Multi-tenancy | Row-Level Security isolation · Per-tenant API keys · Super admin dashboard · Per-account permissions |
 | Admin and analytics | Dashboard with stats · Response-source chart · Conversation history view · Captured leads table · Chatbot cloning |
-| Licensing and cost | MIT license (free) · No per-seat fees · Self-hosted deployment |
+| Licensing and cost | MIT license — free software, no subscription and no paid plan · No per-seat, per-bot or per-conversation fee · Self-hosted on your own server · No licence check in the code |
 
 ### Use cases
 
@@ -72,7 +90,7 @@ Argon2id passwords, magic links, TOTP with recovery codes, account lockout after
 
 #### Cons
 
-- Self-hosting is on you, though we offer installation services
+- Self-hosting is on you: you need a server with PHP 8.2+, PostgreSQL 16 and pgvector. The software stays free either way; optional installation help is $150
 
 ## Two ways to answer from your documents
 
@@ -242,7 +260,7 @@ Visit `https://your-server.com/install.php`. The three-step wizard configures th
 
 **4. Register a user account and add its API keys**
 
-Create a user account from the login screen, sign in, then open Settings to save the OpenAI key (embeddings and chat) and the LlamaCloud key (document parsing). Keys belong to the account, not the server, so each tenant brings its own. You can switch registration off in the admin dashboard and create client accounts yourself.
+Create a user account from the login screen, sign in, then open Settings to save the OpenAI key (embeddings and chat) and the LlamaCloud key (document parsing). Both are your own accounts with those providers — nothing is bought from OnlineTechSupport.biz. Keys belong to the account, not the server, so each tenant brings its own. You can switch registration off in the admin dashboard and create client accounts yourself.
 
 **5. Create a chatbot, train it, then embed it**
 
@@ -308,7 +326,13 @@ A failure prints the PHPMailer diagnostic: connection refused, authentication fa
 
 ### What does it cost to run?
 
-The software is free under the MIT license, with no per-seat, per-bot or per-conversation fee. Your real costs are the server you already have, your OpenAI usage (embeddings at ingestion plus chat completions) and a LlamaCloud key for parsing. Quick answers and guardrail rejections never reach the model, and each chatbot can carry a daily token budget as a hard ceiling. The two things we charge for are optional: installing it for you at $150 USD once, and processing your documents at a flat rate or per document, both under a signed NDA.
+The software is free under the MIT license, with no per-seat, per-bot or per-conversation fee. There is no paid tier, no trial that expires, no subscription to cancel and no licence key to buy: you never purchase an API key, credits or a plan from OnlineTechSupport.biz, and the OpenAI and LlamaCloud keys are your own accounts with those providers, billed by them directly.
+
+Your real costs are the server you already have, your OpenAI usage (embeddings at ingestion plus chat completions) and a LlamaCloud key for parsing. Quick answers and guardrail rejections never reach the model, and each chatbot can carry a daily token budget as a hard ceiling. The two things we charge for are optional and separate from the software: installing it for you at $150 USD once, and processing your documents at a flat rate or per document, both under a signed NDA. Take neither and the product is still complete.
+
+### Is this a SaaS product I have to subscribe to?
+
+No. It is software you download and run yourself. There is no hosted version sold by us, no monthly or annual plan, no per-seat licence, no usage-based billing and no account to create on our side. The only interface is the admin dashboard inside your own installation, and the only credentials it needs are your own OpenAI and LlamaCloud keys. Clone the repository and you have the whole product.
 
 ### Do I need Docker or a Node toolchain?
 
@@ -329,7 +353,7 @@ Start with vector RAG for FAQ-shaped content where answers sit inside individual
 
 ## License
 
-[MIT](LICENSE). Run it on your own infrastructure, keep the data on your own server, and pay nothing per seat or per conversation.
+[MIT](LICENSE). Run it on your own infrastructure, keep the data on your own server, and pay nothing per seat or per conversation. The licence is the only thing you need from us: there is no subscription, no seat count and no key to request.
 
 ## Prefer it installed for you?
 
