@@ -49,7 +49,7 @@ ob_start(); ?>
 </div>
 
 <div class="tab-bar">
-    <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>">Overview</a>
+    <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>">Settings</a>
     <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>/documents">Documents</a>
     <a class="tab tab-active" href="/chatbots/<?= (int) $chatbot['id'] ?>/quick-answers" aria-current="page">Quick answers</a>
     <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>/leads">Leads</a>

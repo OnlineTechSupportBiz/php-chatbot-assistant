@@ -44,7 +44,7 @@ ob_start(); ?>
 </div>
 
 <div class="tab-bar">
-    <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>">Overview</a>
+    <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>">Settings</a>
     <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>/documents">Documents</a>
     <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>/quick-answers">Quick answers</a>
     <a class="tab tab-active" href="/chatbots/<?= (int) $chatbot['id'] ?>/leads" aria-current="page">Leads</a>
@@ -55,7 +55,7 @@ ob_start(); ?>
     <div class="empty">
         No leads captured yet.
         <?php if (empty($chatbot['lead_capture_enabled'])): ?>
-            <a href="/chatbots/<?= (int) $chatbot['id'] ?>/edit">Enable lead capture</a> to start collecting visitor information.
+            <a href="/chatbots/<?= (int) $chatbot['id'] ?>">Enable lead capture</a> to start collecting visitor information.
         <?php else: ?>
             Leads will appear here once the chatbot collects a visitor's name, email, or phone.
         <?php endif; ?>

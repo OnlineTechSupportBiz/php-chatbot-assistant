@@ -194,7 +194,6 @@ $router->get('/chatbots', [$chatbot, 'index']);
 $router->get('/chatbots/create', [$chatbot, 'create']);
 $router->get('/chatbots/{id}', [$chatbot, 'show']);
 $router->post('/chatbots', [$chatbot, 'store']);
-$router->get('/chatbots/{id}/edit', [$chatbot, 'edit']);
 $router->post('/chatbots/{id}', [$chatbot, 'update']);   // POST (no PUT natively in browser forms)
 $router->post('/chatbots/{id}/delete', [$chatbot, 'destroy']);
 $router->post('/chatbots/{id}/clone', [$chatbot, 'clone']);

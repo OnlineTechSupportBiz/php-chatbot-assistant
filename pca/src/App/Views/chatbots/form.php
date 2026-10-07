@@ -250,13 +250,6 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
 
 ?>
 <?php ob_start(); ?>
-<div class="page-head">
-    <div>
-        <h1><?= $isEdit ? htmlspecialchars($chatbot['name']) : 'New chatbot' ?></h1>
-        <p class="subtitle"><?= $isEdit ? 'Update this chatbot\'s behaviour, model, and widget.' : 'Set up a new customer-facing assistant.' ?></p>
-    </div>
-</div>
-
 <?php if ($success): ?>
     <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
 <?php endif; ?>
@@ -276,25 +269,6 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
         <input type="hidden" name="_method" value="PUT">
     <?php endif; ?>
 
-    <?php if ($isEdit): ?>
-    <div class="card">
-        <h2>Status</h2>
-        <div class="field">
-            <label class="label">Visibility</label>
-            <div class="row">
-                <label style="display:inline-flex;align-items:center;gap:0.4rem;">
-                    <input type="radio" name="status" value="active" <?= $currentStatus === 'active' ? 'checked' : '' ?>>
-                    Active
-                </label>
-                <label style="display:inline-flex;align-items:center;gap:0.4rem;">
-                    <input type="radio" name="status" value="paused" <?= $currentStatus === 'paused' ? 'checked' : '' ?>>
-                    Paused
-                </label>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
-
     <div class="card">
         <h2>Basics</h2>
         <div class="form-row">
@@ -302,6 +276,15 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
                 <label class="label" for="name">Chatbot name <span style="color:var(--danger);">*</span></label>
                 <input type="text" class="input" id="name" name="name" value="<?= $name ?>" required maxlength="255">
             </div>
+            <?php if ($isEdit): ?>
+            <div class="field">
+                <label class="label" for="status">Status</label>
+                <select class="select" id="status" name="status">
+                    <option value="active" <?= $currentStatus === 'active' ? 'selected' : '' ?>>Active</option>
+                    <option value="paused" <?= $currentStatus === 'paused' ? 'selected' : '' ?>>Paused</option>
+                </select>
+            </div>
+            <?php endif; ?>
             <div class="field">
                 <label class="label" for="industry">Industry / prompt template</label>
                 <select class="select" id="industry" name="industry">
@@ -351,7 +334,7 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
     </div>
 
     <div class="card">
-        <h2>Model configuration</h2>
+        <h2>Model</h2>
         <div class="form-row">
             <div class="field">
                 <label class="label" for="model">Model</label>
@@ -453,7 +436,7 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
     </div>
 
     <div class="card">
-        <h2>Widget styling</h2>
+        <h2>Widget appearance</h2>
 
         <div class="form-row">
             <div class="field">
@@ -633,7 +616,7 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
     </div>
 
     <div class="card">
-        <h2>Cost &amp; abuse protection</h2>
+        <h2>Anti-abuse guardrails</h2>
         <p class="muted">Setting a sensible budget will limit the cost you incur from a visitor abusing your chatbot.</p>
         <div class="form-row">
             <div class="field">
@@ -1025,4 +1008,12 @@ $previewHtml = ob_get_clean();
 // Inject the preview markup just before the layout renders </body>: the layout
 // prints $pageScripts before </body>, so piggyback on that variable.
 $pageScripts = ($pageScripts ?? '') . $previewHtml;
-require __DIR__ . '/../dashboard/layout.php';
+
+// Render mode: form.php doubles as the Settings tab of the chatbot detail
+// page. When included by show.php, $renderAsPartial is true and the captured
+// content is echoed; standalone (create page) it still requires the layout.
+if (!empty($renderAsPartial)) {
+    echo $pageContent . ($pageScripts ?? '');
+} else {
+    require __DIR__ . '/../dashboard/layout.php';
+}

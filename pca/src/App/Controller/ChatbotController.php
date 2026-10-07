@@ -97,10 +97,8 @@ class ChatbotController
             $chatbot['styling'] = is_array($decoded) ? $decoded : [];
         }
 
-        $documents      = \App\Model\Document::findByChatbot((int) $user['admin_id'], $id);
-        $indexedCount   = \App\Model\Document::countIndexedByChatbot((int) $user['admin_id'], $id);
-        $totalFileSize  = \App\Model\Document::totalFileSizeByChatbot((int) $user['admin_id'], $id);
-        $vectorStorage  = \App\Model\Document::vectorStorageByChatbot((int) $user['admin_id'], $id);
+        // The Settings tab (form.php) needs the industry preset list.
+        $industryPresetsGrouped = IndustryTemplate::allGrouped();
 
         require __DIR__ . '/../Views/chatbots/show.php';
     }
@@ -209,35 +207,6 @@ class ChatbotController
         $res->redirect('/chatbots')->send();
     }
 
-    /**
-     * GET /chatbots/{id}/edit — show edit form.
-     */
-    public function edit(Request $req, Response $res, array $params): void
-    {
-        $user = Auth::requireAuth();
-        Auth::requireRole($user, ['admin', 'user']);
-        Auth::requirePermission($user, 'manage_chatbots');
-        $id = (int) ($params['id'] ?? 0);
-
-        $chatbot = Chatbot::find($id);
-        if (!$chatbot || !self::canAccessChatbot($chatbot, $user)) {
-            $res->setStatus(404)->html('<h1>Chatbot not found.</h1>', 404)->send();
-            exit;
-        }
-
-        // Decode JSON
-        if (isset($chatbot['model_config']) && is_string($chatbot['model_config'])) {
-            $decoded = json_decode($chatbot['model_config'], true);
-            $chatbot['model_config'] = is_array($decoded) ? $decoded : [];
-        }
-        if (isset($chatbot['styling']) && is_string($chatbot['styling'])) {
-            $decoded = json_decode($chatbot['styling'], true);
-            $chatbot['styling'] = is_array($decoded) ? $decoded : [];
-        }
-
-        $industryPresetsGrouped = IndustryTemplate::allGrouped();
-        require __DIR__ . '/../Views/chatbots/form.php';
-    }
 
     /**
      * POST /chatbots/{id} — update a chatbot.
@@ -253,7 +222,7 @@ class ChatbotController
         $csrf = (string) $req->get('_csrf');
         if (!Session::validateCsrf($csrf)) {
             Session::flash('error', 'Invalid form token. Please try again.');
-            $res->redirect("/chatbots/{$id}/edit")->send();
+            $res->redirect("/chatbots/{$id}")->send();
             return;
         }
 
@@ -279,7 +248,7 @@ class ChatbotController
 
         if (!empty($errors)) {
             Session::flash('errors', $errors);
-            $res->redirect("/chatbots/{$id}/edit")->send();
+            $res->redirect("/chatbots/{$id}")->send();
             return;
         }
 
@@ -352,7 +321,8 @@ class ChatbotController
         );
 
         Session::flash('success', "Chatbot \"{$name}\" updated successfully!");
-        $res->redirect('/chatbots')->send();
+        // Stay on the chatbot's Settings tab (the JS PATCH keeps you on the page).
+        $res->redirect('/chatbots/' . $id)->send();
     }
 
     /**
