@@ -117,40 +117,16 @@ ob_start(); ?>
 </div>
 
 <div class="card">
-    <h2>API keys</h2>
+    <h2>Model management</h2>
+    <p class="muted" style="margin-top:0;">
+        Add one or more LLM models. The first is the primary; on a failure the app
+        fails over to the next in the list. Every provider is OpenAI-compatible,
+        so self-hosted or local servers (Ollama, LM Studio, vLLM) work the same way.
+    </p>
     <form method="POST" action="/settings/api-keys">
         <input type="hidden" name="_csrf" value="<?= \App\Auth\Session::csrfToken() ?>">
 
-        <div class="field">
-            <label class="label" for="openai_api_key">OpenAI API key</label>
-            <input type="password" class="input" id="openai_api_key" name="openai_api_key"
-                   value=""
-                   placeholder="<?= htmlspecialchars($keys['openai_api_key_hint'] ?? 'sk-...') ?>">
-            <div class="muted" style="font-size:0.8rem;">Used for embeddings and chat when no LLM models are configured below. Leave blank to keep the current key.</div>
-        </div>
-
-        <div class="field">
-            <label class="label" for="llamacloud_api_key">LlamaCloud API key</label>
-            <input type="password" class="input" id="llamacloud_api_key" name="llamacloud_api_key"
-                   value=""
-                   placeholder="<?= htmlspecialchars($keys['llamacloud_api_key_hint'] ?? 'llx-...') ?>">
-            <div class="muted" style="font-size:0.8rem;">Used for parsing uploaded documents via LlamaParse. Required for document ingestion. Leave blank to keep the current key.</div>
-        </div>
-
-        <h2 style="margin-top:1.25rem;">Model management</h2>
-        <p class="muted" style="margin-top:0;">
-            Add one or more LLM models. The first is the primary; on a failure the app
-            fails over to the next in the list. Every provider is OpenAI-compatible,
-            so self-hosted or local servers (Ollama, LM Studio, vLLM) work the same way.
-        </p>
-        <div class="field">
-            <label class="label" for="llm_base_url">LLM base URL</label>
-            <input type="text" class="input" id="llm_base_url" name="llm_base_url"
-                   value="<?= htmlspecialchars($keys['llm_base_url'] ?? '') ?>"
-                   placeholder="https://api.openai.com/v1">
-            <div class="muted" style="font-size:0.8rem;">Used for chat when no model list entry carries its own base URL. Leave blank for OpenAI.</div>
-        </div>
-
+        <h3 style="margin:1rem 0 0.5rem;">LLM models</h3>
         <div id="llm-model-rows">
             <?php if (($keys['llm_models'] ?? []) === []): ?>
                 <p class="muted" id="no-models-note">No models configured yet. Add one to select it in a chatbot's settings.</p>
@@ -189,8 +165,8 @@ ob_start(); ?>
             <button type="button" class="btn" onclick="addModelRow()">Add model</button>
         </div>
 
-        <h2 style="margin-top:1.25rem;">Embeddings</h2>
-        <p class="muted" style="margin-top:0;">Falls back to the LLM provider above, then to OpenAI, when left blank.</p>
+        <h3 style="margin:1.25rem 0 0.5rem;">Embeddings</h3>
+        <p class="muted" style="margin-top:0;">Falls back to a configured LLM provider, then to OpenAI, when left blank.</p>
         <div class="form-row">
             <div class="field">
                 <label class="label" for="embedding_base_url">Base URL</label>
@@ -208,12 +184,36 @@ ob_start(); ?>
                 <label class="label" for="embedding_model">Model</label>
                 <input type="text" class="input" id="embedding_model" name="embedding_model"
                        value="<?= htmlspecialchars($keys['embedding_model'] ?? '') ?>"
+                       list="embedding-models"
                        placeholder="text-embedding-3-small">
+                <datalist id="embedding-models">
+                    <option value="text-embedding-3-small"></option>
+                    <option value="text-embedding-3-large"></option>
+                </datalist>
             </div>
         </div>
 
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save provider settings</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Document parsing</h2>
+    <form method="POST" action="/settings/api-keys">
+        <input type="hidden" name="_csrf" value="<?= \App\Auth\Session::csrfToken() ?>">
+        <div class="field">
+            <label class="label" for="llamacloud_api_key">LlamaCloud API key</label>
+            <input type="password" class="input" id="llamacloud_api_key" name="llamacloud_api_key"
+                   value="" autocomplete="off"
+                   placeholder="<?= htmlspecialchars($keys['llamacloud_api_key_hint'] ?? 'Not set') ?>">
+            <div class="muted" style="font-size:0.8rem;">
+                Used to parse uploaded documents before indexing. Leave blank to keep the current key.
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save parsing key</button>
         </div>
     </form>
 </div>

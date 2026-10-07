@@ -172,11 +172,15 @@ class AdminSettingsController
         // Submitted as parallel arrays: llm_model_name[], llm_model_base_url[],
         // llm_model_key[], llm_model_id[]. Blank key = keep the previous key for
         // that entry (matched by name, like the JS merge). Empty model id or
-        // completely blank rows are dropped.
+        // completely blank rows are dropped. The arrays are only present on the
+        // Model management form; the Document parsing form omits them, so a
+        // parsing-key save never touches the model list.
         $names    = (array) $req->get('llm_model_name');
         $baseUrls = (array) $req->get('llm_model_base_url');
         $keysIn   = (array) $req->get('llm_model_key');
         $modelIds = (array) $req->get('llm_model_id');
+        $modelsSubmitted = $req->get('llm_model_name') !== null
+            || $req->get('llm_model_id') !== null;
 
         $previousByName = [];
         foreach ($previous['llm_models'] as $m) {
@@ -244,10 +248,10 @@ class AdminSettingsController
             return;
         }
 
-        Admin::setLlmModels($userId, $models);
+        Admin::setLlmModels($userId, $modelsSubmitted ? $models : $previous['llm_models']);
 
-        $maskOpen = $openAiKey !== '' ? substr($openAiKey, 0, 8) . '…' : 'unchanged';
         $maskLlama = $llamaKey !== '' ? substr($llamaKey, 0, 8) . '…' : 'unchanged';
+        $auditModels = $modelsSubmitted ? $models : $previous['llm_models'];
 
         AuditLog::log(
             (int) $user['admin_id'],
@@ -257,15 +261,16 @@ class AdminSettingsController
             (int) $user['id'],
             null,
             [
-                'openai_key' => $maskOpen,
                 'llamacloud_key' => $maskLlama,
-                'llm_models' => array_map(fn($m) => ['name' => $m['name'], 'model' => $m['model']], $models),
+                'llm_models' => array_map(fn($m) => ['name' => $m['name'], 'model' => $m['model']], $auditModels),
             ]
         );
 
-        Session::flash('success', $models === []
-            ? 'Provider settings updated. No LLM models configured — the legacy OpenAI key is used.'
-            : 'Provider settings updated. ' . count($models) . ' LLM model' . (count($models) === 1 ? '' : 's') . ' configured.');
+        Session::flash('success', $modelsSubmitted
+            ? ($models === []
+                ? 'Provider settings saved. No LLM models configured.'
+                : 'Provider settings saved. ' . count($models) . ' LLM model' . (count($models) === 1 ? '' : 's') . ' configured.')
+            : 'Parsing key saved.');
         $res->redirect('/settings')->send();
     }
 
