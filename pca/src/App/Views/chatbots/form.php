@@ -35,7 +35,9 @@ $old     = \App\Auth\Session::getFlash('old') ?? [];
 
 $isEdit   = isset($chatbot) && is_array($chatbot);
 $action   = $isEdit ? '/chatbots/' . $chatbot['id'] : '/chatbots';
-$pageTitle = ($isEdit ? 'Edit Chatbot' : 'Create Chatbot') . ' - ' . ($user['brand_name'] ?? 'Chatbot Assistant');
+if (empty($pageTitle)) {
+    $pageTitle = ($isEdit ? 'Edit Chatbot' : 'Create Chatbot') . ' - ' . ($user['brand_name'] ?? 'Chatbot Assistant');
+}
 $submit   = $isEdit ? 'Save changes' : 'Create chatbot';
 
 // Fields: use old input first (validation flash), then chatbot data (edit), then defaults

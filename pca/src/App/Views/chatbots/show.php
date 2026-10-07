@@ -39,8 +39,6 @@ $errors  = \App\Auth\Session::getFlash('errors');
 $success = \App\Auth\Session::getFlash('success');
 
 $chatbotId = (int) $chatbot['id'];
-// form.php decides its own title; keep it chatbot-name-first for the tab.
-$pageTitle = htmlspecialchars($chatbot['name']) . ' — ' . ($user['brand_name'] ?? 'Chatbot Assistant');
 
 // The Settings tab is the old edit page: form.php holds the controller
 // prelude (flashes, old input, styling) and the form body, minus its own
@@ -49,7 +47,7 @@ $renderAsPartial = true;
 ob_start();
 require __DIR__ . '/form.php';
 $settingsTab = ob_get_clean();
-?><div class="page-head">
+ob_start(); ?><div class="page-head">
     <div>
         <h1><?= htmlspecialchars($chatbot['name']) ?></h1>
         <p class="subtitle">
@@ -75,4 +73,11 @@ $settingsTab = ob_get_clean();
     <a class="tab" href="/chatbots/<?= $chatbotId ?>/conversations">Conversations</a>
 </div>
 
-<?= $settingsTab ?>
+<?php
+// Merge the floating-preview script block (captured by form.php into
+// $pageScripts) with the page body, then render everything inside the admin
+// layout — the same way every other tab view does.
+$pageContent = ob_get_clean() . $settingsTab;
+$pageScripts = $pageScripts ?? '';
+$pageTitle = htmlspecialchars($chatbot['name']) . ' — ' . ($user['brand_name'] ?? 'Chatbot Assistant');
+require __DIR__ . '/../dashboard/layout.php';
