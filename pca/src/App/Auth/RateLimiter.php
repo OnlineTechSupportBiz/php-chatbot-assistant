@@ -106,9 +106,24 @@ class RateLimiter
     {
         $pdo = \getDb();
         if (self::$_tableChecked === null) {
-            // Bypass db() during table creation to avoid recursion
+            // Bypass db() during table creation to avoid recursion.
+            // Two-role RLS model: the app role has no CREATE privilege on the
+            // schema, and the table is created by the migration anyway. Only
+            // attempt the CREATE when it is actually missing (fresh single-role
+            // installs that never ran the migration); a permission error here
+            // is non-fatal by design.
             self::$_tableChecked = true;
-            self::ensureTableInternal($pdo);
+            $exists = $pdo->query(
+                "SELECT to_regclass('" . env('DB_SCHEMA', 'chatbot_schema') . "." . self::TABLE . "') IS NOT NULL"
+            )->fetchColumn();
+            if (!$exists) {
+                try {
+                    self::ensureTableInternal($pdo);
+                } catch (\PDOException $e) {
+                    // Leave $_tableChecked true; the migration owns DDL.
+                    error_log('[RateLimiter] rate_limits table unavailable: ' . $e->getMessage());
+                }
+            }
         }
         return $pdo;
     }

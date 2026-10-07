@@ -78,6 +78,71 @@ function setRlsContext(): void
 }
 
 /**
+ * Is this exception a "database unreachable" failure?
+ *
+ * Port of the JS port's lib/db-errors.ts classifier. Postgres driver/SQLSTATE
+ * codes for a refused connection, terminated connection, authentication
+ * failure, catalog or admin shutdown. When this returns true the front
+ * controller renders the 503 outage page (or 503 JSON for /api paths) instead
+ * of a raw stack-trace 500.
+ */
+function isDatabaseUnavailable(\Throwable $e): bool
+{
+    if (!$e instanceof \PDOException) {
+        return false;
+    }
+    $code = (string) $e->getCode();
+    if (preg_match('/^(08|57P0|3D000|28P01)/', $code)) {
+        return true;
+    }
+    // Drivers also put the SQLSTATE in the message when getCode() is generic.
+    $msg = $e->getMessage();
+    return (bool) preg_match('/SQLSTATE\[(08|57P0|3D000|28P01)/', $msg)
+        || str_contains($msg, 'Connection refused')
+        || str_contains($msg, 'connection refused')
+        || str_contains($msg, 'server has closed the connection');
+}
+
+/**
+ * Render the database-outage screen and exit.
+ *
+ * API paths get a machine-readable 503 JSON (widget.js shows its own message
+ * for any non-2xx); HTML paths get the styled outage page.
+ */
+function renderDatabaseUnavailable(): never
+{
+    http_response_code(503);
+    header('Retry-After: 30');
+    $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+    if (str_starts_with((string) $path, '/api/')) {
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode(['error' => 'The database is temporarily unavailable. Please try again shortly.']);
+        exit;
+    }
+    header('Content-Type: text/html; charset=UTF-8');
+    echo '<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service temporarily unavailable</title>
+<link href="/assets/css/theme.css" rel="stylesheet">
+</head>
+<body>
+<div class="outage-wrap">
+  <div class="outage-card">
+    <span class="outage-badge">503</span>
+    <h1>Service temporarily unavailable</h1>
+    <p class="outage-lead">The database is unreachable right now, so this page cannot load. Your data is safe; this is a connectivity problem, not a data problem.</p>
+    <a class="btn btn-primary outage-retry" href="/">Try again</a>
+  </div>
+</div>
+</body>
+</html>';
+    exit;
+}
+
+/**
  * Timezone-aware date formatting shortcut.
  *
  * Converts a UTC database timestamp to the user's preferred timezone for display.

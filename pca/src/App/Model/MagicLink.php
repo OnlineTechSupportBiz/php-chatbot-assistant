@@ -91,12 +91,12 @@ class MagicLink extends Model
     public static function hasRecentToken(string $email): bool
     {
         $stmt = self::db()->prepare(
-            'SELECT id FROM magic_links
+            "SELECT id FROM magic_links
              WHERE email = :email
                AND expires_at > NOW()
                AND used_at IS NULL
                AND created_at > NOW() - INTERVAL '60 seconds'
-             LIMIT 1'
+             LIMIT 1"
         );
         $stmt->bindValue(':email', $email, PDO::PARAM_STR);
         $stmt->execute();

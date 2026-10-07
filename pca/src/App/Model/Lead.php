@@ -59,6 +59,21 @@ class Lead extends Model
     }
 
     /**
+     * Find all leads for an admin account, newest first.
+     */
+    public static function findByAdmin(int $adminId): array
+    {
+        $stmt = self::db()->prepare(
+            'SELECT * FROM leads
+             WHERE admin_id = :aid
+             ORDER BY captured_at DESC'
+        );
+        $stmt->bindValue(':aid', $adminId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Find a lead by conversation (one lead per conversation).
      */
     public static function findByConversation(int $conversationId): ?array

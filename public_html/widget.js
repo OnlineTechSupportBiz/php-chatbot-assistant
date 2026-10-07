@@ -74,7 +74,13 @@
     (function () {
         if (typeof window.marked !== 'undefined') return;
         var s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/marked@15/marked.min.js';
+        // Pinned version + Subresource Integrity: a compromised or MITM'd CDN
+        // cannot substitute the parser in the embedding customer's page. If the
+        // hash ever fails to match, the browser refuses the script and the widget
+        // falls back to plain text (see addMessage) rather than rendering HTML.
+        s.src = 'https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js';
+        s.integrity = 'sha384-948ahk4ZmxYVYOc+rxN1H2gM1EJ2Duhp7uHtZ4WSLkV4Vtx5MUqnV+l7u9B+jFv+';
+        s.crossOrigin = 'anonymous';
         document.head.appendChild(s);
     })();
 
@@ -360,13 +366,64 @@
     var ratingBar = null;
 
     // ── Chat logic ────────────────────────────────────────────────────────
+
+    /**
+     * Escape HTML metacharacters before the text reaches `marked`.
+     *
+     * `marked.parse()` passes raw HTML straight through, so without this the reply
+     * — model output, tenant-authored quick-answer text, or retrieved document
+     * content — lands in the embedding customer's page as live HTML and script
+     * (innerHTML below). Markdown still renders; literal HTML in a reply no longer
+     * does. Blockquote syntax (`> `) is escaped too, which is the accepted trade.
+     */
+    function escapeHtml(text) {
+        return String(text === null || text === undefined ? '' : text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    /**
+     * Second pass: markdown can still build a link with a dangerous scheme
+     * (`[x](javascript:...)`), which `marked` does not filter. Render into a
+     * detached document and strip anything executable: event handlers, `style`,
+     * and href/src values that are not http(s)/mailto/tel/anchor/relative.
+     */
+    function sanitizeHtml(html) {
+        var doc = document.implementation.createHTMLDocument('');
+        doc.body.innerHTML = html;
+        var SAFE_URL = /^(https?:|mailto:|tel:|#|\/)/i;
+        var nodes = doc.body.querySelectorAll('*');
+        for (var i = 0; i < nodes.length; i++) {
+            var attrs = nodes[i].attributes;
+            for (var j = attrs.length - 1; j >= 0; j--) {
+                var name = attrs[j].name.toLowerCase();
+                var value = String(attrs[j].value || '');
+                if (name.indexOf('on') === 0 || name === 'style' || name === 'srcdoc') {
+                    nodes[i].removeAttribute(attrs[j].name);
+                    continue;
+                }
+                if (name === 'href' || name === 'src' || name === 'xlink:href') {
+                    // Control characters are ignored by browsers when resolving a
+                    // scheme, so strip them before the check.
+                    if (!SAFE_URL.test(value.replace(/[\u0000-\u0020]/g, ''))) {
+                        nodes[i].removeAttribute(attrs[j].name);
+                    }
+                }
+            }
+        }
+        return doc.body.innerHTML;
+    }
+
     function addMessage(role, content) {
         var msg = createElement('div', { class: 'message ' + role });
         var textEl = createElement('div', { class: 'message-text' });
         if (role === 'user') {
             textEl.textContent = content;
         } else if (window.marked) {
-            textEl.innerHTML = window.marked.parse(content);
+            textEl.innerHTML = sanitizeHtml(window.marked.parse(escapeHtml(content)));
         } else {
             textEl.textContent = content;
         }

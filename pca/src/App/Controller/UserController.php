@@ -48,12 +48,6 @@ class UserController
     {
         $user = Auth::requireAuth();
 
-        // Admin users should never see the user-facing dashboard
-        if (in_array($user['role'] ?? '', ['admin'], true)) {
-            $res->redirect('/admin')->send();
-            return;
-        }
-
         $userId = (int) $user['id'];
 
         // Compute dashboard stats (used as server-side fallback)

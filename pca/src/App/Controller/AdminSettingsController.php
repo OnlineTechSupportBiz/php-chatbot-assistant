@@ -62,8 +62,17 @@ class AdminSettingsController
             exit;
         }
 
-        // API keys (read from the current user's own record)
+        // API keys (read from the current user's own record). Raw keys are never sent
+        // to the page: the view shows a masked hint as the input placeholder (port of
+        // the JS port's maskKey behavior), and a blank submit means "unchanged".
         $keys = Admin::getApiKeys((int) $user['id']);
+        foreach (['openai_api_key', 'llamacloud_api_key'] as $keyField) {
+            $value = (string) ($keys[$keyField] ?? '');
+            $keys[$keyField . '_hint'] = $value === ''
+                ? null
+                : (strlen($value) > 8 ? substr($value, 0, 4) . '…' . substr($value, -4) : '••••');
+            unset($keys[$keyField]); // never hand the raw secret to the template
+        }
 
         // MFA status for this user
         $db = \getDb();
@@ -267,121 +276,6 @@ class AdminSettingsController
         require __DIR__ . '/../Views/settings/audit_log.php';
     }
 
-    /**
-     * GET /settings/php-info
-     * Show current PHP settings relevant to the application.
-     */
-    public function phpInfo(Request $req, Response $res, array $params): void
-    {
-        $user = Auth::requireAuth();
-        Auth::requirePermission($user, 'access_php_info');
-
-        // Collect relevant PHP settings
-        $config = [
-            'php_version'              => PHP_VERSION,
-            'sapi'                     => PHP_SAPI,
-            'architecture'             => PHP_INT_SIZE === 8 ? '64-bit' : '32-bit',
-            'php_ini_path'             => php_ini_loaded_file() ?: 'none',
-            'server_platform'          => PHP_OS_FAMILY . ' (' . php_uname('r') . ')',
-            'server_software'          => $_SERVER['SERVER_SOFTWARE'] ?? 'Built-in PHP Dev Server',
-
-            // Critical
-            'upload_max_filesize'      => ini_get('upload_max_filesize') ?: 'unknown',
-            'post_max_size'            => ini_get('post_max_size') ?: 'unknown',
-            'post_max_size_note'       => null,
-            'memory_limit'             => ini_get('memory_limit') ?: 'unknown',
-            'max_execution_time'       => ini_get('max_execution_time') ?: 'unknown',
-            'max_input_time'           => ini_get('max_input_time') ?: 'unknown',
-            'max_input_vars'           => ini_get('max_input_vars') ?: 'unknown',
-
-            // Session
-            'session_save_path'        => session_save_path() ?: 'unknown',
-            'session_gc_maxlifetime'   => ini_get('session.gc_maxlifetime') ?: 'unknown',
-            'session_cookie_name'      => session_name() ?: 'unknown',
-            'session_cookie_lifetime'  => ini_get('session.cookie_lifetime') ?: '0',
-            'session_cookie_samesite'  => ini_get('session.cookie_samesite') ?: 'Lax',
-            'session_cookie_secure'    => ini_get('session.cookie_secure') ?: '0',
-            'session_cookie_httponly'  => ini_get('session.cookie_httponly') ?: '1',
-
-            // Upload & File
-            'file_uploads'             => ini_get('file_uploads') ?: '0',
-            'allow_url_fopen'          => ini_get('allow_url_fopen') ?: '0',
-            'allow_url_include'        => ini_get('allow_url_include') ?: '0',
-
-            // Error Reporting
-            'display_errors'           => ini_get('display_errors') ?: '0',
-            'display_startup_errors'   => ini_get('display_startup_errors') ?: '0',
-            'error_reporting'          => error_reporting() === 0 ? '0 (none)' : self::errorReportingName(error_reporting()),
-            'log_errors'               => ini_get('log_errors') ?: '0',
-            'error_log'                => ini_get('error_log') ?: 'unknown',
-
-            // Timezone
-            'date_timezone'            => ini_get('date.timezone') ?: 'UTC',
-            'default_charset'          => ini_get('default_charset') ?: 'UTF-8',
-
-            // Extensions
-            'pdo_drivers'              => PDO::getAvailableDrivers(),
-            'loaded_extensions'        => get_loaded_extensions(),
-        ];
-
-        // post_max_size should be >= upload_max_filesize
-        $uploadBytes = self::shorthandToBytes($config['upload_max_filesize']);
-        $postBytes   = self::shorthandToBytes($config['post_max_size']);
-        if ($postBytes > 0 && $uploadBytes > 0 && $postBytes < $uploadBytes) {
-            $config['post_max_size_note'] = 'warning';
-        }
-
-        require __DIR__ . '/../Views/settings/php_info.php';
-    }
-
-    /**
-     * Convert PHP shorthand (e.g. "128M", "1G") to bytes.
-     */
-    private static function shorthandToBytes(string $shorthand): int
-    {
-        $shorthand = trim($shorthand);
-        if ($shorthand === '' || $shorthand === '-1') {
-            return 0;
-        }
-        $value = (int) $shorthand;
-        $last  = strtolower(substr($shorthand, -1));
-        return match ($last) {
-            'g' => $value * 1073741824,
-            'm' => $value * 1048576,
-            'k' => $value * 1024,
-            default => $value,
-        };
-    }
-
-    /**
-     * Return a human-readable name for the error_reporting bitmask.
-     */
-    private static function errorReportingName(int $level): string
-    {
-        $names = [];
-        if ($level === 0) return '0 (none)';
-        if ($level === -1) return '-1 (All)';
-        if ($level & E_ALL)             $names[] = 'E_ALL';
-        if ($level & E_DEPRECATED)      $names[] = 'E_DEPRECATED';
-        if ($level & E_NOTICE)          $names[] = 'E_NOTICE';
-        if ($level & E_WARNING)         $names[] = 'E_WARNING';
-        if ($level & E_STRICT)          $names[] = 'E_STRICT';
-        if ($level & E_PARSE)           $names[] = 'E_PARSE';
-        if ($level & E_ERROR)           $names[] = 'E_ERROR';
-        if ($level & E_CORE_ERROR)      $names[] = 'E_CORE_ERROR';
-        if ($level & E_CORE_WARNING)    $names[] = 'E_CORE_WARNING';
-        if ($level & E_COMPILE_ERROR)   $names[] = 'E_COMPILE_ERROR';
-        if ($level & E_COMPILE_WARNING) $names[] = 'E_COMPILE_WARNING';
-        if ($level & E_USER_ERROR)      $names[] = 'E_USER_ERROR';
-        if ($level & E_USER_WARNING)    $names[] = 'E_USER_WARNING';
-        if ($level & E_USER_NOTICE)     $names[] = 'E_USER_NOTICE';
-        if ($level & E_USER_DEPRECATED) $names[] = 'E_USER_DEPRECATED';
-        return implode(' | ', $names) ?: (string) $level;
-    }
-
-    /**
-     * Get available audit-log filter options for the given admin.
-     */
     public static function getAuditFilters(?int $adminId, ?int $userId): array
     {
         $db = \getDb();

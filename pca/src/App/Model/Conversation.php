@@ -94,6 +94,26 @@ class Conversation extends Model
     }
 
     /**
+     * Recent conversations across the whole admin account, with the chatbot
+     * name (global /conversations page, ported from the JS app).
+     */
+    public static function findRecentByAdmin(int $adminId, int $limit = 200): array
+    {
+        $stmt = self::db()->prepare(
+            'SELECT cv.*, c.name AS chatbot_name, c.id AS chatbot_id
+             FROM conversations cv
+             INNER JOIN chatbots c ON c.id = cv.chatbot_id
+             WHERE cv.admin_id = :aid
+             ORDER BY cv.last_message_at DESC
+             LIMIT :lim'
+        );
+        $stmt->bindValue(':aid', $adminId, PDO::PARAM_INT);
+        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Count conversations for an admin.
      */
     public static function countByAdmin(int $adminId): int

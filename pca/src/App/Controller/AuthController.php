@@ -434,7 +434,10 @@ class AuthController
                 (int) $user['id']
             );
 
-            $res->redirect('/mfa/challenge')->send();
+            // The MFA challenge UI was removed (flat admin design). Complete
+            // sign-in with a magic link instead, or have an admin disable MFA.
+            Session::flash('error', 'Two-factor authentication is enabled on this account but the challenge screen is unavailable. Use a magic sign-in link, or ask your administrator to disable MFA.');
+            $res->redirect('/login')->send();
             return;
         }
 
@@ -684,7 +687,8 @@ class AuthController
             (int) $user['id']
         );
 
-        require __DIR__ . '/../Views/auth/magic_link_sent.php';
+        Session::flash('success', 'If that email is registered, a sign-in link has been sent.');
+        $res->redirect('/login')->send();
     }
 
     /**
@@ -696,21 +700,18 @@ class AuthController
         $token = trim((string) $req->get('token'));
 
         // ── Validate token ──
-        if ($token === '') {
-            require __DIR__ . '/../Views/auth/magic_link_invalid.php';
-            return;
-        }
-
-        $row = MagicLink::findValidToken($token);
+        $row = $token === '' ? null : MagicLink::findValidToken($token);
         if (!$row) {
-            require __DIR__ . '/../Views/auth/magic_link_invalid.php';
+            Session::flash('error', 'This sign-in link is invalid or has expired. Request a new one.');
+            $res->redirect('/login')->send();
             return;
         }
 
         // ── Find user by email ──
         $user = User::findByEmail($row['email']);
         if (!$user) {
-            require __DIR__ . '/../Views/auth/magic_link_invalid.php';
+            Session::flash('error', 'This sign-in link is invalid or has expired. Request a new one.');
+            $res->redirect('/login')->send();
             return;
         }
 
@@ -751,7 +752,10 @@ class AuthController
 
             // Mark token used and redirect to MFA
             MagicLink::markUsed((int) $row['id']);
-            $res->redirect('/mfa/challenge')->send();
+            // The MFA challenge UI was removed (flat admin design). The magic
+            // link is spent; direct the user back to sign in another way.
+            Session::flash('error', 'Two-factor authentication is enabled on this account but the challenge screen is unavailable. Use the password sign-in form instead, or ask your administrator to disable MFA.');
+            $res->redirect('/login')->send();
             return;
         }
 
@@ -929,209 +933,6 @@ class AuthController
 
         Session::flash('success', 'Two-factor authentication has been disabled.');
         $res->redirect('/settings')->send();
-    }
-
-    /**
-     * GET /mfa/challenge
-     * Show MFA challenge page (after password login).
-     */
-    public function mfaChallengeShow(Request $req, Response $res): void
-    {
-        $pendingUser = Session::get('_mfa_pending_user');
-        if (!$pendingUser) {
-            $res->redirect('/login')->send();
-            return;
-        }
-
-        $brandName = \App\Model\Admin::getBrandName();
-        require __DIR__ . '/../Views/auth/mfa_challenge.php';
-    }
-
-    /**
-     * POST /mfa/challenge
-     * Verify TOTP code and complete login.
-     */
-    public function mfaChallenge(Request $req, Response $res): void
-    {
-        $code        = trim((string) $req->get('code'));
-        $pendingUser = Session::get('_mfa_pending_user');
-
-        // ── CSRF ──
-        $csrf = (string) $req->get('_csrf');
-        if (!Session::validateCsrf($csrf)) {
-            Session::flash('error', 'Invalid form token. Please try again.');
-            $res->redirect('/mfa/challenge')->send();
-            return;
-        }
-
-        if (!$pendingUser) {
-            $res->redirect('/login')->send();
-            return;
-        }
-
-        if (!preg_match('/^[0-9]{6}$/', $code)) {
-            Session::flash('error', 'Invalid code format. Please enter a 6-digit code.');
-            $res->redirect('/mfa/challenge')->send();
-            return;
-        }
-
-        $type      = $pendingUser['type'] ?? 'user';
-        $accountId = (int) $pendingUser['user_id'];
-
-        // ── Verify TOTP code against users table ──
-        $user = User::find((int) $pendingUser['user_id']);
-        if (!$user || empty($user['mfa_secret'])) {
-            Session::flash('error', 'MFA configuration not found. Please sign in again.');
-            Session::remove('_mfa_pending_user');
-            $res->redirect('/login')->send();
-            return;
-        }
-
-        $totp = \OTPHP\TOTP::create($user['mfa_secret']);
-        $totp->setLabel($user['email']);
-
-        // Use window of ±1 to account for clock drift
-        if (!$totp->verify($code, null, 1)) {
-            AuditLog::log(
-                (int) $user['admin_id'],
-                (int) $user['id'],
-                'mfa_failed',
-                'user',
-                (int) $user['id']
-            );
-            Session::flash('error', 'Invalid authentication code. Please try again.');
-            $res->redirect('/mfa/challenge')->send();
-            return;
-        }
-
-        // ── MFA success — complete login ──
-        User::resetFailedAttempts($accountId);
-        User::updateLastLogin($accountId);
-        Session::login($user, $pendingUser['remember'] ?? false);
-        Session::remove('_mfa_pending_user');
-
-        AuditLog::log(
-            (int) $user['admin_id'],
-            (int) $user['id'],
-            'mfa_verified',
-            'user',
-            (int) $user['id']
-        );
-
-        $redirectPath = in_array($user['role'] ?? '', ['admin'], true) ? '/admin' : '/dashboard';
-        $res->redirect($redirectPath)->send();
-    }
-
-    /**
-     * GET /mfa/recovery
-     * Show recovery code form.
-     */
-    public function mfaRecoveryShow(Request $req, Response $res): void
-    {
-        if (!Session::get('_mfa_pending_user')) {
-            $res->redirect('/login')->send();
-            return;
-        }
-
-        $brandName = \App\Model\Admin::getBrandName();
-        require __DIR__ . '/../Views/auth/mfa_recovery.php';
-    }
-
-    /**
-     * POST /mfa/recovery
-     * Verify a recovery code and complete login.
-     */
-    public function mfaRecovery(Request $req, Response $res): void
-    {
-        $code        = strtoupper(trim((string) $req->get('code')));
-        $pendingUser = Session::get('_mfa_pending_user');
-
-        // ── CSRF ──
-        $csrf = (string) $req->get('_csrf');
-        if (!Session::validateCsrf($csrf)) {
-            Session::flash('error', 'Invalid form token. Please try again.');
-            $res->redirect('/mfa/recovery')->send();
-            return;
-        }
-
-        if (!$pendingUser) {
-            $res->redirect('/login')->send();
-            return;
-        }
-
-        if ($code === '' || !str_contains($code, '-')) {
-            Session::flash('error', 'Invalid recovery code format.');
-            $res->redirect('/mfa/recovery')->send();
-            return;
-        }
-
-        $type      = $pendingUser['type'] ?? 'user';
-        $accountId = (int) $pendingUser['user_id'];
-
-        // ── Verify recovery code against users table ──
-        $user = User::find((int) $pendingUser['user_id']);
-        if (!$user || empty($user['mfa_recovery_codes'])) {
-            Session::flash('error', 'No recovery codes available. Please sign in again.');
-            Session::remove('_mfa_pending_user');
-            $res->redirect('/login')->send();
-            return;
-        }
-
-        $recoveryCodes = json_decode($user['mfa_recovery_codes'], true);
-        if (!is_array($recoveryCodes)) {
-            Session::flash('error', 'Invalid recovery codes. Please sign in again.');
-            Session::remove('_mfa_pending_user');
-            $res->redirect('/login')->send();
-            return;
-        }
-
-        // Find matching recovery code (hashed comparison)
-        $matchedIndex = null;
-        foreach ($recoveryCodes as $index => $hashedCode) {
-            if (password_verify($code, $hashedCode)) {
-                $matchedIndex = $index;
-                break;
-            }
-        }
-
-        if ($matchedIndex === null) {
-            AuditLog::log(
-                (int) $user['admin_id'],
-                (int) $user['id'],
-                'mfa_recovery_failed',
-                'user',
-                (int) $user['id']
-            );
-            Session::flash('error', 'Invalid recovery code.');
-            $res->redirect('/mfa/recovery')->send();
-            return;
-        }
-
-        // Remove the used recovery code
-        unset($recoveryCodes[$matchedIndex]);
-        $recoveryCodes = array_values($recoveryCodes); // re-index
-
-        User::update((int) $user['id'], [
-            'mfa_recovery_codes' => json_encode($recoveryCodes),
-        ]);
-
-        // ── MFA recovery success — complete login ──
-        User::resetFailedAttempts((int) $user['id']);
-        User::updateLastLogin((int) $user['id']);
-        Session::login($user, $pendingUser['remember'] ?? false);
-        Session::remove('_mfa_pending_user');
-
-        AuditLog::log(
-            (int) $user['admin_id'],
-            (int) $user['id'],
-            'mfa_recovery_used',
-            'user',
-            (int) $user['id']
-        );
-
-        Session::flash('warning', 'Used a recovery code. You have ' . count($recoveryCodes) . ' remaining.');
-        $redirectPath = in_array($user['role'] ?? '', ['admin'], true) ? '/admin' : '/dashboard';
-        $res->redirect($redirectPath)->send();
     }
 
     /**

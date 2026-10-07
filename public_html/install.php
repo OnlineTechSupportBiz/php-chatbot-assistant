@@ -94,6 +94,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dbName  = requirePost('db_name');
         $dbUser  = requirePost('db_user');
         $dbPass  = requirePost('db_pass');
+        $migUser = trim((string) ($_POST['db_migrator_user'] ?? ''));
+        $migPass = (string) ($_POST['db_migrator_pass'] ?? '');
+        $allowSingleRole = trim((string) ($_POST['allow_single_role_db'] ?? '')) === 'true';
         $appUrl  = requirePost('app_url');
         $smtpHost = requirePost('smtp_host');
         $smtpPort = requirePost('smtp_port');
@@ -109,6 +112,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$dbName)  $errors[] = 'DB Name is required.';
         if (!$dbUser)  $errors[] = 'DB User is required.';
         if (!$dbPass)  $errors[] = 'DB Password is required.';
+        // Two-role RLS model: a separate migrator role owns the tables so the
+        // app role (DB_USER) is subject to Row-Level Security. Postgres exempts
+        // table owners from their own policies, so letting the app role run the
+        // migrations makes every RLS policy inert. In production that is a
+        // hard error unless the operator explicitly accepts app-layer-only
+        // isolation (ALLOW_SINGLE_ROLE_DB) — mirroring the JS port.
+        $singleRole = $migUser === '' || $migUser === $dbUser;
+        if ($singleRole) {
+            $migUser = '';
+            $migPass = '';
+            if (!$allowSingleRole) {
+                $errors[] = 'A separate DB Migrator (owner) role is required so Row-Level Security can enforce tenant isolation. The app role must not own the tables. Create one and enter it below (or check ALLOW_SINGLE_ROLE_DB to accept app-layer-only isolation).';
+            }
+        }
         if (!$appUrl)  $errors[] = 'App URL is required.';
         if (!$smtpHost)  $errors[] = 'SMTP Host is required.';
         if (!$smtpPort)  $errors[] = 'SMTP Port is required.';
@@ -124,6 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "DB_NAME={$dbName}\n" .
                 "DB_USER={$dbUser}\n" .
                 "DB_PASS={$dbPass}\n" .
+                ($migUser !== '' ? "DB_MIGRATOR_USER={$migUser}\n" . "DB_MIGRATOR_PASS={$migPass}\n" : "") .
                 "\n# App\n" .
                 "APP_ENV=production\n" .
                 "APP_URL={$appUrl}\n" .
@@ -164,6 +182,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors[] = 'Database connection failed: ' . $e->getMessage();
             }
 
+            // Two-role mode: also verify the migrator role can connect (it runs
+            // the migrations and owns the schema).
+            if (empty($errors) && $migUser !== '') {
+                try {
+                    $migDsn = "pgsql:host={$dbHost};port={$dbPort};dbname={$dbName}";
+                    $migPdo = new PDO($migDsn, $migUser, $migPass, [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    ]);
+                    $migPdo->query('SELECT 1');
+                } catch (\PDOException $e) {
+                    $errors[] = 'Migrator role connection failed: ' . $e->getMessage();
+                }
+            }
+
             if (empty($errors)) {
                 $written = file_put_contents($envPath, $envContent, LOCK_EX);
                 if ($written === false) {
@@ -177,6 +209,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'db_name' => $dbName,
                         'db_user' => $dbUser,
                         'db_pass' => $dbPass,
+                        'db_migrator_user' => $migUser,
+                        'db_migrator_pass' => $migPass,
                     ];
                     $step = 1;
                     $_SESSION['install_step'] = 1;
@@ -194,7 +228,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             try {
                 $dsn = "pgsql:host={$data['db_host']};port={$data['db_port']};dbname={$data['db_name']}";
-                $pdo = new PDO($dsn, $data['db_user'], $data['db_pass'], [
+                // Two-role mode: run migrations as the migrator (owner) role so
+                // the app role does NOT own the tables and Row-Level Security
+                // genuinely applies to it. Single-role is only reachable via the
+                // ALLOW_SINGLE_ROLE_DB opt-in checked at step 1.
+                $migUser = (string) ($data['db_migrator_user'] ?? '');
+                $migPass = (string) ($data['db_migrator_pass'] ?? '');
+                $migUserForConn = $migUser !== '' ? $migUser : $data['db_user'];
+                $migPassForConn = $migUser !== '' ? $migPass : $data['db_pass'];
+                $pdo = new PDO($dsn, $migUserForConn, $migPassForConn, [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 ]);
@@ -316,6 +358,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                     $executed++;
+                }
+
+                if (empty($errors)) {
+                    // Two-role mode: grant the app role its DML privileges on
+                    // everything the migrator just created. Port of the JS
+                    // migrate.ts grantAppPrivileges() — the app role gets USAGE
+                    // + DML, never CREATE, and never ownership.
+                    if ($migUser !== '') {
+                        $schema = env('DB_SCHEMA', 'chatbot_schema');
+                        $schemaQ = '"' . str_replace('"', '""', $schema) . '"';
+                        $roleQ = '"' . str_replace('"', '""', $data['db_user']) . '"';
+                        $grants = [
+                            "GRANT USAGE ON SCHEMA {$schemaQ} TO {$roleQ}",
+                            "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {$schemaQ} TO {$roleQ}",
+                            "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA {$schemaQ} TO {$roleQ}",
+                            "ALTER DEFAULT PRIVILEGES IN SCHEMA {$schemaQ} GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {$roleQ}",
+                            "ALTER DEFAULT PRIVILEGES IN SCHEMA {$schemaQ} GRANT USAGE, SELECT ON SEQUENCES TO {$roleQ}",
+                        ];
+                        try {
+                            foreach ($grants as $grant) {
+                                $pdo->exec($grant);
+                            }
+                        } catch (\PDOException $e) {
+                            $errors[] = 'Failed to grant app-role privileges: ' . $e->getMessage();
+                        }
+                    }
                 }
 
                 if (empty($errors)) {
@@ -992,6 +1060,31 @@ function include_component(string $component): void
         <div class="form-group">
             <label for="db_pass">DB Password</label>
             <input type="password" id="db_pass" name="db_pass" value="" required>
+        </div>
+        <hr>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="db_migrator_user">DB Migrator (Owner) User</label>
+                <input type="text" id="db_migrator_user" name="db_migrator_user"
+                       value="<?= formVal('db_migrator_user', 'chatbot_migrator') ?>">
+            </div>
+            <div class="form-group">
+                <label for="db_migrator_pass">DB Migrator Password</label>
+                <input type="password" id="db_migrator_pass" name="db_migrator_pass" value="">
+            </div>
+        </div>
+        <p class="hint" style="font-size:.85rem;color:#6b7280;margin:.25rem 0 .5rem;">
+            The migrator role owns the database tables so the app role (DB User) stays
+            subject to Row-Level Security — tenant isolation is then enforced by
+            PostgreSQL, not just application queries. Leave both blank only to accept
+            app-layer-only isolation.
+        </p>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:.5rem;font-weight:400;">
+                <input type="checkbox" name="allow_single_role_db" value="true"
+                       <?= isset($_POST['allow_single_role_db']) ? 'checked' : '' ?>>
+                ALLOW_SINGLE_ROLE_DB — accept app-layer-only tenant isolation (no separate migrator role)
+            </label>
         </div>
         <hr>
         <div class="form-row">

@@ -45,6 +45,13 @@ declare(strict_types=1);
  *   DB_USER        (default: postgres)
  *   DB_PASS        (default: empty string)
  *   PG_SCHEMA      (default: chatbot_assistant)      -- schema in which tables are created
+ *
+ * RLS ownership: run this script AS THE MIGRATOR (OWNER) ROLE — the role named
+ * in DB_MIGRATOR_USER/DB_MIGRATOR_PASS (or a superuser that sets it up). If the
+ * app role (DB_USER) runs it, it owns every table it creates and Postgres
+ * exempts owners from Row-Level Security, which silently disables tenant
+ * isolation even with 004_force_rls.sql applied. After migrating, grant the
+ * app role its DML privileges (see install.php's grant block).
  */
 
 // ── CLI auth helper ──────────────────────────────────────────────────────

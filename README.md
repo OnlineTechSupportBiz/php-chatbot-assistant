@@ -52,6 +52,10 @@ Trigger-based canned replies that fire before the model is ever called. Common q
 
 Argon2id passwords, magic links, TOTP with recovery codes, account lockout after five failed attempts, per-IP rate limiting on login, CSRF tokens and rotating sessions.
 
+### Admin console, redesigned
+
+A clean, responsive admin interface with no framework underneath: native fonts, a fixed navy sidebar that becomes a drawer on mobile, tabbed chatbot pages, global leads, conversations and audit views, and a drag-free reorder for quick answers. Every page renders from one self-contained stylesheet with no external fonts or CSS dependencies.
+
 ## Features
 
 | Area | What is in it |
@@ -62,8 +66,8 @@ Argon2id passwords, magic links, TOTP with recovery codes, account lockout after
 | Widget | Shadow DOM isolation · Light and dark themes · Custom colour styling · Typing indicators · Resizable panel · Star ratings · Domain-restricted CORS |
 | Security and auth | Argon2id password hashing · Magic link login · TOTP with recovery codes · Account lockout · Per-IP rate limiting · CSRF protection · Rotating sessions |
 | Abuse protection | Message rate limiting · Daily token budgets · Maximum message length · Maximum messages per conversation · Prompt-injection detection · Audit trail logging |
-| Multi-tenancy | Row-Level Security isolation · Per-tenant API keys · Super admin dashboard · Per-account permissions |
-| Admin and analytics | Dashboard with stats · Response-source chart · Conversation history view · Captured leads table · Chatbot cloning |
+| Multi-tenancy | Enforced Row-Level Security (two-role model) · Per-tenant API keys · Per-account permissions |
+| Admin and analytics | Dashboard with stats · Messages bar chart · Conversation history view · Captured leads table · Chatbot cloning · Global leads, conversations and audit pages |
 | Licensing and cost | MIT license — free software, no subscription and no paid plan · No per-seat, per-bot or per-conversation fee · Self-hosted on your own server · No licence check in the code |
 
 ### Use cases
@@ -124,7 +128,7 @@ Widget (browser) → Public API → LLM chat completion
                        └── PageIndex · outline navigation
 ```
 
-Tenants are isolated at the database level with PostgreSQL Row-Level Security on a session-scoped tenant id. Application code never trusts a user id sent from the client.
+Tenants are isolated at the database level with PostgreSQL Row-Level Security, enforced rather than decorative: the installer runs the migrations as a dedicated migrator (owner) role, then grants the app role data-manipulation privileges only, and every tenant table carries `FORCE ROW LEVEL SECURITY`. Because the app role owns nothing, Postgres applies the policies to every query it runs — including ones that forgot an `admin_id` filter. Set up a single role instead (opt-in during installation) and isolation falls back to the application layer only.
 
 ## One script tag, and it is on your site
 
@@ -173,7 +177,7 @@ Every guardrail runs before any API request goes out, so a blocked message costs
 - A maximum number of messages per conversation, so one session cannot run away
 - Prompt-injection patterns, scanned for and quietly refused
 - An audit trail: every guardrail trigger is logged with its context
-- Tenant isolation through Row-Level Security, never a user id taken from client input
+- Tenant isolation enforced by PostgreSQL Row-Level Security, not just application queries
 
 ## Tech stack
 
@@ -181,12 +185,12 @@ Every guardrail runs before any API request goes out, so a blocked message costs
 |---|---|
 | Backend | PHP 8.2+, PSR-4, no framework |
 | Database | PostgreSQL 16 with pgvector (IVFFlat index) |
-| Tenancy | Row-Level Security on a session-scoped tenant id |
+| Tenancy | Enforced Row-Level Security via a two-role migrator/app split |
 | Embeddings | OpenAI text-embedding-3-small, 1536 dimensions |
 | Chat model | Configurable per chatbot from 20 OpenAI models, GPT-4.1-mini by default |
 | Parsing | LlamaCloud Parse for PDF, DOC, DOCX, TXT and Markdown |
 | Auth | Argon2id, TOTP via otphp, magic links |
-| Widget | Vanilla JavaScript in a Shadow DOM, with Marked for Markdown |
+| Widget | Vanilla JavaScript in a Shadow DOM, with Marked (pinned version + SRI) for Markdown, escaped and sanitised before render |
 | Email | PHPMailer over your own SMTP server |
 
 ## Chat models
@@ -256,11 +260,13 @@ composer serve
 
 **3. Open `install.php` and work through the installer**
 
-Visit `https://your-server.com/install.php`. The three-step wizard configures the database connection, runs the migrations and creates the super-admin account. Before it writes anything it checks the PHP extensions, the PostgreSQL version and the vector extension.
+Visit `https://your-server.com/install.php`. The three-step wizard configures the database connection, runs the migrations and creates the admin account. Before it writes anything it checks the PHP extensions, the PostgreSQL version and the vector extension.
+
+The database step asks for two roles. The **migrator role** runs the migrations and owns every table; the **app role** is the one the application connects with, and it receives only data-manipulation privileges. That split is what makes Row-Level Security actually enforce tenant isolation — an owner is exempt from its own policies, so an app role that owned the tables would quietly disable them. Create both roles before installing (the installer's hint text shows the exact SQL shape), or tick the `ALLOW_SINGLE_ROLE_DB` box to accept application-layer-only isolation.
 
 **4. Register a user account and add its API keys**
 
-Create a user account from the login screen, sign in, then open Settings to save the OpenAI key (embeddings and chat) and the LlamaCloud key (document parsing). Both are your own accounts with those providers — nothing is bought from OnlineTechSupport.biz. Keys belong to the account, not the server, so each tenant brings its own. You can switch registration off in the admin dashboard and create client accounts yourself.
+Create a user account from the login screen, sign in, then open Settings to save the OpenAI key (embeddings and chat) and the LlamaCloud key (document parsing). Both are your own accounts with those providers — nothing is bought from OnlineTechSupport.biz. Keys belong to the account, not the server, so each tenant brings its own. Keys are never echoed back after saving: the form shows a masked hint, and submitting a blank field leaves the stored key untouched.
 
 **5. Create a chatbot, train it, then embed it**
 
@@ -310,8 +316,11 @@ A failure prints the PHPMailer diagnostic: connection refused, authentication fa
 | `DB_PORT` | `5432` | PostgreSQL port |
 | `DB_NAME` | `chatbot_assistant` | Database name |
 | `DB_SCHEMA` | `chatbot_schema` | Schema |
-| `DB_USER` | `chatbot_user` | Database user |
+| `DB_USER` | `chatbot_user` | Database user (the app role, subject to RLS) |
 | `DB_PASS` | (none) | Database password |
+| `DB_MIGRATOR_USER` | (none) | Owner role that runs the migrations; empty = single-role mode |
+| `DB_MIGRATOR_PASS` | (none) | Owner role password |
+| `ALLOW_SINGLE_ROLE_DB` | (unset) | Set to `true` to accept app-layer-only tenant isolation in production |
 | `APP_ENV` | `production` | Controls HSTS and error handling |
 | `APP_URL` | `https://example.com` | Application URL, used in email links |
 | `SESSION_LIFETIME` | `1440` | Session idle timeout in minutes |

@@ -23,43 +23,28 @@
  */
 
 /**
- * Captured leads view for a chatbot (the Leads tab).
+ * Global leads list — contact details captured across every chatbot.
  *
- * Mirrors the js-chatbot-assistant per-chatbot leads tab: Name / Email / Phone /
- * Captured, with no row number and no conversation summary column.
+ * Port of the js-chatbot-assistant `/leads` page. Leads come from
+ * Lead::findByAdmin(); the chatbot name is resolved from the $botNames map.
  *
  * Available variables:
- *   $chatbot — chatbot record (with lead_capture_enabled)
- *   $leads   — array of lead records
- *   $user    — authenticated user
+ *   $leads    — array of lead records (chatbot_id, name, email, phone, captured_at)
+ *   $botNames — map of chatbot_id => chatbot name
+ *   $user     — authenticated user
  */
-$pageTitle = 'Leads — ' . htmlspecialchars($chatbot['name']) . ' — ' . ($user['brand_name'] ?? 'Chatbot Assistant');
+$pageTitle = 'Leads - ' . ($user['brand_name'] ?? 'Chatbot Assistant');
 
 ob_start(); ?>
 <div class="page-head">
     <div>
         <h1>Leads</h1>
-        <p class="subtitle">Contact details this chatbot has captured.</p>
+        <p class="subtitle">Contact details your chatbots have captured.</p>
     </div>
-</div>
-
-<div class="tab-bar">
-    <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>">Overview</a>
-    <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>/documents">Documents</a>
-    <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>/quick-answers">Quick answers</a>
-    <a class="tab tab-active" href="/chatbots/<?= (int) $chatbot['id'] ?>/leads" aria-current="page">Leads</a>
-    <a class="tab" href="/chatbots/<?= (int) $chatbot['id'] ?>/conversations">Conversations</a>
 </div>
 
 <?php if (empty($leads)): ?>
-    <div class="empty">
-        No leads captured yet.
-        <?php if (empty($chatbot['lead_capture_enabled'])): ?>
-            <a href="/chatbots/<?= (int) $chatbot['id'] ?>/edit">Enable lead capture</a> to start collecting visitor information.
-        <?php else: ?>
-            Leads will appear here once the chatbot collects a visitor's name, email, or phone.
-        <?php endif; ?>
-    </div>
+    <div class="empty">No leads captured yet.</div>
 <?php else: ?>
     <div class="card card-flush">
         <table class="table">
@@ -68,21 +53,25 @@ ob_start(); ?>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone</th>
+                    <th>Chatbot</th>
                     <th>Captured</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($leads as $lead): ?>
                     <tr>
-                        <td><?= htmlspecialchars($lead['name'] ?: '—') ?></td>
+                        <td><?= htmlspecialchars($lead['name'] ?: '-') ?></td>
                         <td>
                             <?php if (!empty($lead['email'])): ?>
                                 <a href="mailto:<?= htmlspecialchars($lead['email']) ?>"><?= htmlspecialchars($lead['email']) ?></a>
                             <?php else: ?>
-                                —
+                                -
                             <?php endif; ?>
                         </td>
-                        <td><?= htmlspecialchars($lead['phone'] ?: '—') ?></td>
+                        <td><?= htmlspecialchars($lead['phone'] ?: '-') ?></td>
+                        <td>
+                            <a href="/chatbots/<?= (int) $lead['chatbot_id'] ?>"><?= htmlspecialchars($botNames[(int) $lead['chatbot_id']] ?? '-') ?></a>
+                        </td>
                         <td class="muted"><?= dt($lead['captured_at'] ?? $lead['created_at'] ?? '') ?></td>
                     </tr>
                 <?php endforeach; ?>
@@ -92,4 +81,4 @@ ob_start(); ?>
 <?php endif; ?>
 <?php
 $pageContent = ob_get_clean();
-require __DIR__ . '/../dashboard/layout.php';
+require __DIR__ . '/dashboard/layout.php';

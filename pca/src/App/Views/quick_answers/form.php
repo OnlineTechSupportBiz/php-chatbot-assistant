@@ -44,65 +44,55 @@ $isActive  = $answer['is_active'] ?? 1;
 $pageTitle = $title . ' — ' . htmlspecialchars($chatbot['name']);
 
 ob_start(); ?>
-<div class="container-fluid">
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/chatbots">Chatbots</a></li>
-            <li class="breadcrumb-item"><a href="/chatbots/<?= $chatbot['id'] ?>"><?= htmlspecialchars($chatbot['name']) ?></a></li>
-            <li class="breadcrumb-item"><a href="<?= htmlspecialchars($backUrl) ?>">Quick Answers</a></li>
-            <li class="breadcrumb-item active"><?= $title ?></li>
-        </ol>
-    </nav>
-
-    <h1 class="h3 mb-3"><?= $title ?></h1>
-
-    <?php if ($errors = \App\Auth\Session::getFlash('errors')): ?>
-        <div class="alert alert-danger">
-            <ul class="mb-0"><?php foreach ($errors as $e): ?>
-                <li><?= htmlspecialchars($e) ?></li>
-            <?php endforeach; ?></ul>
-        </div>
-    <?php endif; ?>
-
-    <div class="card">
-        <div class="card-body">
-            <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
-                <?php \App\Auth\Session::csrfField(); ?>
-
-                <div class="mb-3">
-                    <label for="trigger" class="form-label">Trigger Text</label>
-                    <input type="text" class="form-control" id="trigger" name="trigger"
-                           value="<?= htmlspecialchars($trigger) ?>" maxlength="255" required
-                           placeholder="e.g., hours, pricing, refund policy">
-                    <div class="form-text">When a user types exactly this, the quick answer fires.</div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="answer" class="form-label">Answer</label>
-                    <textarea class="form-control" id="answer" name="answer" rows="5" required
-                              placeholder="The canned response to show..."><?= htmlspecialchars($answerText) ?></textarea>
-                    <div class="form-text">Markdown supported.</div>
-                </div>
-
-                <div class="row">
-                    <?php if ($isEdit): ?>
-                    <div class="col-md-4 mb-3">
-                        <label for="is_active" class="form-label">Active</label>
-                        <select class="form-select" id="is_active" name="is_active">
-                            <option value="1" <?= $isActive ? 'selected' : '' ?>>Yes</option>
-                            <option value="0" <?= !$isActive ? 'selected' : '' ?>>No</option>
-                        </select>
-                    </div>
-                    <?php endif; ?>
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary"><?= $submitText ?></button>
-                    <a href="<?= htmlspecialchars($backUrl) ?>" class="btn btn-outline-secondary">Cancel</a>
-                </div>
-            </form>
-        </div>
+<div class="page-head">
+    <div>
+        <h1><?= htmlspecialchars($title) ?></h1>
+        <p class="subtitle">When a visitor sends exactly the trigger phrase, the chatbot replies with this answer.</p>
     </div>
+</div>
+
+<?php if ($errors = \App\Auth\Session::getFlash('errors')): ?>
+    <div class="alert alert-error">
+        <ul style="margin: 0; padding-left: 1.25rem;"><?php foreach ($errors as $e): ?>
+            <li><?= htmlspecialchars($e) ?></li>
+        <?php endforeach; ?></ul>
+    </div>
+<?php endif; ?>
+
+<div class="card">
+    <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
+        <?php \App\Auth\Session::csrfField(); ?>
+
+        <div class="field">
+            <label class="label" for="trigger">Trigger text</label>
+            <input type="text" class="input" id="trigger" name="trigger"
+                   value="<?= htmlspecialchars($trigger) ?>" maxlength="255" required
+                   placeholder="e.g., hours, pricing, refund policy">
+            <p class="muted" style="margin: 0.3rem 0 0; font-size: 0.82rem;">When a visitor types exactly this, the quick answer fires.</p>
+        </div>
+
+        <div class="field">
+            <label class="label" for="answer">Answer</label>
+            <textarea class="textarea" id="answer" name="answer" rows="5" required
+                      placeholder="The canned response to show..."><?= htmlspecialchars($answerText) ?></textarea>
+            <p class="muted" style="margin: 0.3rem 0 0; font-size: 0.82rem;">Markdown supported.</p>
+        </div>
+
+        <?php if ($isEdit): ?>
+            <div class="field">
+                <label class="label" for="is_active">Active</label>
+                <select class="select" id="is_active" name="is_active">
+                    <option value="1" <?= $isActive ? 'selected' : '' ?>>Yes</option>
+                    <option value="0" <?= !$isActive ? 'selected' : '' ?>>No</option>
+                </select>
+            </div>
+        <?php endif; ?>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><?= htmlspecialchars($submitText) ?></button>
+            <a href="<?= htmlspecialchars($backUrl) ?>" class="btn">Cancel</a>
+        </div>
+    </form>
 </div>
 <?php
 $pageContent = ob_get_clean();

@@ -114,30 +114,60 @@ class Admin extends Model
         $slug = self::generateSlug($companyName);
         $db = self::db();
 
-        // Defer the self-referencing FK check so we can insert with a
-        // placeholder admin_id, then set it to the new row's own id.
-        $db->exec("SET CONSTRAINTS fk_users_admin DEFERRED");
+        // Row-Level Security: rls_users_insert requires
+        // admin_id = current_admin_id() when the app.admin_id GUC is set, and
+        // this row is created with a placeholder admin_id=0 that only becomes
+        // self-referencing after the UPDATE below. Temporarily clear the GUC
+        // so the insert takes the policy's IS NULL branch, then restore it.
+        // (The installer's identical seed runs unauthenticated and is unaffected.)
+        $wasInTransaction = $db->inTransaction();
+        if ($wasInTransaction) {
+            $db->commit();
+        }
+        $db->exec("SELECT set_config('app.admin_id', '', false)");
+        try {
+            $db->beginTransaction();
 
-        $stmt = $db->prepare(
-            'INSERT INTO users (company_name, slug, is_active, role, admin_id, email, password_hash, name, created_at)
-             VALUES (:company_name, :slug, 1, \'admin\', 0, :email, :password_hash, :name, NOW())'
-        );
-        $stmt->bindValue(':company_name', $companyName, PDO::PARAM_STR);
-        $stmt->bindValue(':slug', $slug, PDO::PARAM_STR);
-        $stmt->bindValue(':email', 'admin@' . $slug . '.placeholder', PDO::PARAM_STR);
-        $stmt->bindValue(':password_hash', password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT), PDO::PARAM_STR);
-        $stmt->bindValue(':name', $companyName, PDO::PARAM_STR);
-        $stmt->execute();
+            // Defer the self-referencing FK check so we can insert with a
+            // placeholder admin_id, then set it to the new row's own id.
+            $db->exec("SET CONSTRAINTS fk_users_admin DEFERRED");
 
-        $newId = (int) $db->lastInsertId();
+            $stmt = $db->prepare(
+                'INSERT INTO users (company_name, slug, is_active, role, admin_id, email, password_hash, name, created_at)
+                 VALUES (:company_name, :slug, 1, \'admin\', 0, :email, :password_hash, :name, NOW())'
+            );
+            $stmt->bindValue(':company_name', $companyName, PDO::PARAM_STR);
+            $stmt->bindValue(':slug', $slug, PDO::PARAM_STR);
+            $stmt->bindValue(':email', 'admin@' . $slug . '.placeholder', PDO::PARAM_STR);
+            $stmt->bindValue(':password_hash', password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT), PDO::PARAM_STR);
+            $stmt->bindValue(':name', $companyName, PDO::PARAM_STR);
+            $stmt->execute();
 
-        // Set admin_id = self (self-referencing FK)
-        $fixStmt = $db->prepare('UPDATE users SET admin_id = id WHERE id = :id');
-        $fixStmt->bindValue(':id', $newId, PDO::PARAM_INT);
-        $fixStmt->execute();
+            $newId = (int) $db->lastInsertId();
 
-        // Re-enable immediate FK checking — should pass since admin_id = id now
-        $db->exec("SET CONSTRAINTS fk_users_admin IMMEDIATE");
+            // Set admin_id = self (self-referencing FK)
+            $fixStmt = $db->prepare('UPDATE users SET admin_id = id WHERE id = :id');
+            $fixStmt->bindValue(':id', $newId, PDO::PARAM_INT);
+            $fixStmt->execute();
+
+            // Re-enable immediate FK checking — should pass since admin_id = id now
+            $db->exec("SET CONSTRAINTS fk_users_admin IMMEDIATE");
+
+            $db->commit();
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            throw $e;
+        } finally {
+            // Restore the tenant GUC (empty string clears it to NULL semantics
+            // on this session, so always re-apply from the PHP session).
+            if (session_status() !== PHP_SESSION_NONE && isset($_SESSION['admin_id'])) {
+                $stmt = $db->prepare("SELECT set_config('app.admin_id', :id, false)");
+                $stmt->bindValue(':id', (string) $_SESSION['admin_id'], PDO::PARAM_STR);
+                $stmt->execute();
+            }
+        }
 
         return $newId;
     }

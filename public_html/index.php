@@ -56,7 +56,6 @@ $config = require $appDir . '/config/config.php';
 require_once $appDir . '/config/database.php';
 
 use App\Auth\Session;
-use App\Controller\AdminController;
 use App\Controller\ApiController;
 use App\Controller\AuthController;
 use App\Controller\ChatbotController;
@@ -68,6 +67,19 @@ use App\Controller\UserController;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\Router;
+
+// ── Database-outage handling ─────────────────────────────────────────────
+// Registered FIRST: setRlsContext() below opens the PDO connection whenever a
+// session is authenticated, and the DB-backed checks on every route throw the
+// same way. Port of the JS port's dbGuarded/error-boundary behavior: 503 JSON
+// for /api paths, styled outage page for HTML. Anything else rethrows to the
+// normal 500 path.
+set_exception_handler(function (\Throwable $e) {
+    if (isDatabaseUnavailable($e)) {
+        renderDatabaseUnavailable();
+    }
+    throw $e;
+});
 
 // Start session early for all requests
 $sessionLifetime = $config['session']['lifetime'] ?? 120;
@@ -88,7 +100,6 @@ $chat     = new ChatController();
 $docs     = new DocumentController();
 $api      = new ApiController();
 $settings = new AdminSettingsController();
-$admin    = new AdminController();
 $qa       = new QuickAnswerController();
 $userUi   = new UserController();
 
@@ -143,14 +154,12 @@ $router->get('/reset-password', function (Request $req, Response $res) use ($app
 $router->post('/reset-password', [$auth, 'resetPassword']);
 
 // ── MFA routes ──
+// The MFA flow keeps its full backend + enrollment page; only the login-time
+// challenge/recovery screens were removed (flat admin design, JS parity).
 $router->get('/settings/mfa/setup', [$auth, 'mfaSetup']);
 $router->post('/settings/mfa/enroll', [$auth, 'mfaEnroll']);
 $router->post('/settings/mfa/verify', [$auth, 'mfaVerify']);
 $router->post('/settings/mfa/disable', [$auth, 'mfaDisable']);
-$router->get('/mfa/challenge', [$auth, 'mfaChallengeShow']);
-$router->post('/mfa/challenge', [$auth, 'mfaChallenge']);
-$router->get('/mfa/recovery', [$auth, 'mfaRecoveryShow']);
-$router->post('/mfa/recovery', [$auth, 'mfaRecovery']);
 
 // ── Magic Link routes ──────────────────────────────────────────────────
 $router->post('/magic-login/send', [$auth, 'sendMagicLink']);
@@ -171,8 +180,7 @@ $router->post('/chatbots/{id}/clone', [$chatbot, 'clone']);
 
 // ── Admin Settings ────────────────────────────────────────────────────
 $router->get('/settings', [$settings, 'settings']);
-$router->get('/settings/audit-log', [$settings, 'auditLog']);
-$router->get('/settings/php-info', [$settings, 'phpInfo']);
+$router->get('/audit', [$settings, 'auditLog']);
 $router->post('/settings/api-keys', [$settings, 'updateApiKeys']);
 $router->post('/settings/brand-name', [$settings, 'updateBrandName']);
 $router->post('/settings/timezone', [$settings, 'updateTimezone']);
@@ -180,7 +188,6 @@ $router->post('/settings/timezone', [$settings, 'updateTimezone']);
 // ── Documents (scoped to chatbot) ──────────────────────────────────────
 $router->get('/chatbots/{id}/documents', [$docs, 'index']);
 $router->post('/chatbots/{id}/documents/store', [$docs, 'store']);
-$router->get('/chatbots/{id}/documents/{did}', [$docs, 'status']);
 $router->post('/chatbots/{id}/documents/{did}/train', [$docs, 'train']);
 $router->post('/chatbots/{id}/documents/{did}/delete', [$docs, 'delete']);
 
@@ -204,39 +211,14 @@ $router->get('/chatbots/{chatbotId}/quick-answers/{id}/edit', [$qa, 'edit']);
 $router->post('/chatbots/{chatbotId}/quick-answers/{id}', [$qa, 'update']);
 $router->post('/chatbots/{chatbotId}/quick-answers/{id}/delete', [$qa, 'destroy']);
 
-// ── Leads (scoped to chatbot) ───────────────────────────────────────────
+// ── Leads ────────────────────────────────────────────────────────────────
+$router->get('/leads', [$chatbot, 'leadsAll']);
 $router->get('/chatbots/{id}/leads', [$chatbot, 'leads']);
 
-// ── Conversations (scoped to chatbot) ────────────────────────────────────
+// ── Conversations ────────────────────────────────────────────────────────
+$router->get('/conversations', [$chatbot, 'conversationsAll']);
 $router->get('/chatbots/{id}/conversations', [$chatbot, 'conversations']);
 $router->get('/chatbots/{id}/conversations/{cid}', [$chatbot, 'conversationDetail']);
-
-// ── Super Admin ────────────────────────────────────────────────────────
-$router->get('/admin', [$admin, 'dashboard']);
-$router->get('/admin/admins', [$admin, 'admins']);
-$router->get('/admin/users/{id:\d+}/permissions', [$admin, 'userPermissions']);
-$router->post('/admin/users/{id:\d+}/permissions', [$admin, 'updateUserPermissions']);
-$router->post('/admin/registration', [$admin, 'updateRegistration']);
-$router->get('/admin/api/stats', [$admin, 'apiStats']);
-
-// ── Super Admin Settings ───────────────────────────────────────────────
-$router->get('/admin/settings', [$admin, 'settings']);
-$router->get('/admin/settings/audit-log', [$admin, 'auditLog']);
-$router->get('/admin/settings/php-info', [$admin, 'phpInfo']);
-$router->post('/admin/settings/brand-name', [$admin, 'updateBrandName']);
-$router->post('/admin/settings/timezone', [$admin, 'updateTimezone']);
-
-// ── Super Admin Audit Log ──────────────────────────────────────────────
-$router->get('/admin/audit-log', [$admin, 'auditLog']);
-
-// ── Super Admin Account & MFA ───────────────────────────────────────────
-$router->get('/admin/account', function(\App\Http\Request $req, \App\Http\Response $res) {
-    $res->redirect('/admin/settings')->send();
-});
-$router->get('/admin/mfa/setup', [$admin, 'mfaSetup']);
-$router->post('/admin/mfa/enroll', [$admin, 'mfaEnroll']);
-$router->post('/admin/mfa/verify', [$admin, 'mfaVerify']);
-$router->post('/admin/mfa/disable', [$admin, 'mfaDisable']);
 
 // ── Dispatch ─────────────────────────────────────────────────────────────
 $router->dispatch($request, $response);

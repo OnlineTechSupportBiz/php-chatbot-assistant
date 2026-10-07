@@ -445,6 +445,27 @@ class ChatbotController
     }
 
     /**
+     * GET /leads — all leads across the tenant's chatbots.
+     * Ported from the js-chatbot-assistant global /leads page (adds a Chatbot column).
+     */
+    public function leadsAll(Request $req, Response $res): void
+    {
+        $user = Auth::requireAuth();
+        Auth::requirePermission($user, 'manage_leads');
+        $adminId = (int) $user['admin_id'];
+
+        $chatbots = Chatbot::findByAdmin($adminId);
+        $botNames = [];
+        foreach ($chatbots as $bot) {
+            $botNames[(int) $bot['id']] = $bot['name'];
+        }
+
+        $leads = Lead::findByAdmin($adminId);
+
+        require __DIR__ . '/../Views/leads.php';
+    }
+
+    /**
      * GET /chatbots/{id}/leads — display captured leads for a chatbot.
      */
     public function leads(Request $req, Response $res, array $params): void
@@ -462,6 +483,21 @@ class ChatbotController
         $leads = Lead::findByChatbot((int) $user['admin_id'], $id);
 
         require __DIR__ . '/../Views/chatbots/leads.php';
+    }
+
+    /**
+     * GET /conversations — recent conversations across all the tenant's chatbots.
+     * Ported from the js-chatbot-assistant global /conversations page.
+     */
+    public function conversationsAll(Request $req, Response $res): void
+    {
+        $user = Auth::requireAuth();
+        Auth::requirePermission($user, 'view_conversations');
+        $adminId = (int) $user['admin_id'];
+
+        $conversations = Conversation::findRecentByAdmin($adminId, 200);
+
+        require __DIR__ . '/../Views/conversations.php';
     }
 
     /**

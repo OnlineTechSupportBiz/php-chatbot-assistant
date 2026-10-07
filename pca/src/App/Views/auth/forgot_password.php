@@ -25,77 +25,47 @@
 /**
  * Forgot password page view
  */
+$brandName = $brandName ?? 'Chatbot Assistant';
 ?>
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forgot Password - <?= htmlspecialchars($brandName) ?></title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/assets/css/theme.css" rel="stylesheet">
-    <style>
-        .skip-link {
-            position: absolute;
-            top: -100%;
-            left: 0;
-            z-index: 9999;
-            padding: 0.5rem 1rem;
-            background: #0d9488;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 600;
-            border-radius: 0 0 0.25rem 0;
-            transition: top 0.1s;
-        }
-        .skip-link:focus {
-            top: 0;
-            outline: 2px solid #fff;
-            outline-offset: 2px;
-        }
-        :focus-visible {
-            outline: 2px solid #0d9488;
-            outline-offset: 2px;
-            border-radius: 2px;
-        }
-    </style>
 </head>
 <body class="auth-page">
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    <div class="auth-card" id="main-content">
-        <div class="card">
-            <div class="card-body">
-                <div class="auth-logo">
-                    <span class="logo-text"><?= htmlspecialchars($brandName) ?></span>
+    <div class="auth-wrap">
+        <div class="auth-card" id="main-content">
+            <div class="auth-logo">
+                <span class="logo-text"><?= htmlspecialchars($brandName) ?></span>
+            </div>
+            <h1>Forgot Password</h1>
+            <p class="auth-subtitle">Enter your email and we will send you a reset link.</p>
+
+            <?php if ($msg = \App\Auth\Session::getFlash('error')): ?>
+                <div class="alert alert-error" role="alert"><?= htmlspecialchars($msg) ?></div>
+            <?php endif; ?>
+            <?php if ($msg = \App\Auth\Session::getFlash('success')): ?>
+                <div class="alert alert-success" role="alert"><?= htmlspecialchars($msg) ?></div>
+            <?php endif; ?>
+
+            <form method="POST" action="/forgot-password">
+                <input type="hidden" name="_csrf" value="<?= \App\Auth\Session::csrfToken() ?>">
+
+                <div class="field">
+                    <label class="label" for="email">Email</label>
+                    <input type="email" class="input" id="email" name="email"
+                           required autocomplete="email">
                 </div>
-                <h1 class="text-center mb-2 h3">Forgot Password</h1>
-                <p class="text-muted text-center mb-4">Enter your email and we'll send you a reset link.</p>
 
-                <?php if ($msg = \App\Auth\Session::getFlash('error')): ?>
-                    <div class="alert alert-danger" role="alert"><?= htmlspecialchars($msg) ?></div>
-                <?php endif; ?>
-                <?php if ($msg = \App\Auth\Session::getFlash('success')): ?>
-                    <div class="alert alert-success" role="alert"><?= htmlspecialchars($msg) ?></div>
-                <?php endif; ?>
+                <button type="submit" class="btn btn-primary auth-submit">Send Reset Link</button>
+            </form>
 
-                <form method="POST" action="/forgot-password">
-                    <input type="hidden" name="_csrf" value="<?= \App\Auth\Session::csrfToken() ?>">
-
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email"
-                               required autocomplete="email">
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Send Reset Link</button>
-                </form>
-
-                <div class="mt-3 text-center">
-                    <a href="/login">Back to sign in</a>
-                </div>
+            <div class="auth-center muted">
+                <a href="/login">Back to sign in</a>
             </div>
         </div>
     </div>

@@ -298,36 +298,6 @@ class DocumentController
     }
 
     /**
-     * Show document training status.
-     */
-    public function status(Request $req, Response $res, array $params): void
-    {
-        $user = Auth::requireAuth();
-        $chatbotId  = (int) ($params['id'] ?? 0);
-        $documentId = (int) ($params['did'] ?? 0);
-        $adminId   = (int) $user['admin_id'];
-
-        $chatbot = Chatbot::find($chatbotId);
-        if (!$chatbot || !\App\Controller\ChatbotController::canAccessChatbot($chatbot, $user)) {
-            $res->setStatus(404)->html('<h1>Chatbot not found.</h1>', 404)->send();
-            return;
-        }
-
-        $document = Document::find($documentId);
-        if (!$document || (int) $document['admin_id'] !== $adminId || (int) $document['chatbot_id'] !== $chatbotId) {
-            $res->setStatus(404)->html('<h1>Document not found.</h1>', 404)->send();
-            return;
-        }
-
-        $chunkCount = DocumentChunk::countByDocument($documentId);
-
-        require __DIR__ . '/../Views/documents/status.php';
-    }
-
-    /**
-     * Train a document: parse → chunk → embed → index.
-     */
-    /**
      * Trigger parsing, chunking, and embedding for a document.
      * Returns JSON for AJAX requests (used by auto-train after upload),
      * redirects with flash for normal form submissions.

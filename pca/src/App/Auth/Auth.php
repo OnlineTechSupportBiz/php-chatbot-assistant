@@ -110,29 +110,13 @@ class Auth
 
     /**
      * Require authentication. Redirects to login if not authenticated.
-     * Also redirects admin users (admin users) away from user-facing pages to /admin.
+     * Flat admin model (js-chatbot-assistant parity): there are no separate
+     * /admin screens, so admins use the same pages as users.
      */
     public static function requireAuth(): array
     {
         if (!Session::isAuthenticated()) {
             self::redirectToLogin();
-        }
-
-        // Admin users (admin) should only access admin pages;
-        // but allow /settings, /settings/*, and /api/* (data endpoints) as well
-        // as /chatbots/* and /chatbots (their main management interface).
-        if (in_array(Session::userRole(), ['admin'], true)) {
-            $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-            if (
-                !str_starts_with($path, '/admin')
-                && !str_starts_with($path, '/settings')
-                && !str_starts_with($path, '/api/')
-                && !str_starts_with($path, '/chatbots')
-                && !str_starts_with($path, '/dashboard')
-            ) {
-                header('Location: /admin');
-                exit;
-            }
         }
 
         // Reconstruct user array from session
