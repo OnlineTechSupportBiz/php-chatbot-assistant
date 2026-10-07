@@ -846,7 +846,7 @@ ob_start();
 <div id="widget-preview-root" aria-live="polite">
     <!-- Panel (hidden until the bubble is clicked) -->
     <div id="wp-panel" role="dialog" aria-label="Widget preview panel" hidden
-         style="display:none; position:fixed; z-index:9999; bottom:72px; width:340px; max-width:calc(100vw - 40px);
+         style="display:none; position:fixed; z-index:9999; bottom:96px; width:340px; max-width:calc(100vw - 40px);
                 border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.35);
                 background:#ffffff; border:1px solid rgba(0,0,0,0.08);
                 <?= $styling['position'] ?? 'bottom-right' ?>:20px;">
@@ -866,8 +866,8 @@ ob_start();
             <div id="wp-placeholder-title" style="display:none; font-weight:600; font-size:15px; color:#2c3e50;"></div>
             <div id="wp-placeholder-text" style="font-size:13px; color:#4a5568;">Ask me anything!</div>
         </div>
-        <div style="display:flex; padding:10px; gap:8px; border-top:1px solid rgba(0,0,0,0.08); background:#ffffff;">
-            <input type="text" disabled placeholder="Type your message…"
+        <div id="wp-footer" style="display:flex; padding:10px; gap:8px; border-top:1px solid rgba(0,0,0,0.08); background:#ffffff;">
+            <input id="wp-input" type="text" disabled placeholder="Type your message…"
                    style="flex:1; padding:8px 12px; border:1px solid rgba(0,0,0,0.15); border-radius:8px; font-size:13px; background:#fff; color:var(--text);">
             <span id="wp-send" style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:8px; flex-shrink:0;">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="#ffffff" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -940,13 +940,19 @@ ob_start();
         header.style.color = s.headerText;
         header.style.borderBottomColor = accent;
         document.getElementById('wp-send').style.background = accent;
-        // The bubble follows the panel theme like the real widget's light/dark
-        // surfaces: light theme → light bubble with a dark icon, dark theme →
-        // dark bubble with a light icon.
-        var bubbleBg = isDark ? headerBg : surface;
-        var iconFill = isDark ? '#ffffff' : (s.primary || '#0d6efd');
-        bubble.style.background = bubbleBg;
-        document.getElementById('wp-bubble-icon').setAttribute('fill', iconFill);
+        // The bubble matches the real widget in both themes: primary/gradient
+        // background with a white icon.
+        bubble.style.background = headerBg;
+        document.getElementById('wp-bubble-icon').setAttribute('fill', '#ffffff');
+        // Footer + input follow the panel theme (matches the real widget's
+        // PANEL.footerBg / inputBg / inputColor).
+        var footer = document.getElementById('wp-footer');
+        footer.style.background = surface;
+        footer.style.borderTopColor = borderColor;
+        var input = document.getElementById('wp-input');
+        input.style.background = isDark ? 'rgba(255,255,255,0.04)' : '#f0f2f5';
+        input.style.color = isDark ? '#e8edf5' : '#1a1a2e';
+        input.style.borderColor = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)';
 
         var icon = document.getElementById('wp-header-icon');
         icon.textContent = s.headerIcon;
