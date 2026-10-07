@@ -861,7 +861,7 @@ ob_start();
             <button type="button" id="wp-close" aria-label="Close preview"
                     style="background:none; border:none; cursor:pointer; font-size:20px; opacity:0.85;">&times;</button>
         </div>
-        <div id="wp-body" style="padding:18px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:4px; min-height:120px; background:#f5f7fa;">
+        <div id="wp-body" style="padding:18px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:4px; min-height:400px; background:#f5f7fa;">
             <div id="wp-placeholder-icon" style="display:none; font-size:30px; line-height:1;"></div>
             <div id="wp-placeholder-title" style="display:none; font-weight:600; font-size:15px; color:#2c3e50;"></div>
             <div id="wp-placeholder-text" style="font-size:13px; color:#4a5568;">Ask me anything!</div>
@@ -940,7 +940,13 @@ ob_start();
         header.style.color = s.headerText;
         header.style.borderBottomColor = accent;
         document.getElementById('wp-send').style.background = accent;
-        bubble.style.background = headerBg;
+        // The bubble follows the panel theme like the real widget's light/dark
+        // surfaces: light theme → light bubble with a dark icon, dark theme →
+        // dark bubble with a light icon.
+        var bubbleBg = isDark ? headerBg : surface;
+        var iconFill = isDark ? '#ffffff' : (s.primary || '#0d6efd');
+        bubble.style.background = bubbleBg;
+        document.getElementById('wp-bubble-icon').setAttribute('fill', iconFill);
 
         var icon = document.getElementById('wp-header-icon');
         icon.textContent = s.headerIcon;
@@ -1004,10 +1010,11 @@ $previewHtml = ob_get_clean();
 $pageScripts = ($pageScripts ?? '') . $previewHtml;
 
 // Render mode: form.php doubles as the Settings tab of the chatbot detail
-// page. When included by show.php, $renderAsPartial is true and the captured
-// content is echoed; standalone (create page) it still requires the layout.
+// page. When included by show.php, $renderAsPartial is true and only the form
+// body is echoed — the floating preview travels separately in $pageScripts
+// (show.php passes it to the layout), so it is not emitted twice.
 if (!empty($renderAsPartial)) {
-    echo $pageContent . ($pageScripts ?? '');
+    echo $pageContent;
 } else {
     require __DIR__ . '/../dashboard/layout.php';
 }
