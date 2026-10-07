@@ -347,9 +347,6 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
                             <?= htmlspecialchars($cm['name']) ?><?= !empty($cm['model']) ? ' (' . htmlspecialchars($cm['model']) . ')' : '' ?>
                         </option>
                     <?php endforeach; ?>
-                    <?php if ($storedModelRaw !== '' && !in_array($storedModelRaw, $knownNames, true)): ?>
-                        <option value="<?= $model ?>" selected><?= htmlspecialchars($storedModelRaw) ?> (no longer configured)</option>
-                    <?php endif; ?>
                 </select>
                 <div class="muted" style="font-size:0.8rem;">
                     <?php if ($configuredModels === []): ?>
@@ -374,11 +371,6 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
                     <strong>Default:</strong> 1024 &middot;
                     <strong>Long answers/code:</strong> 2048–4096 &middot;
                     <strong>Max output:</strong> 16384. Higher = more tokens billed.
-                </div>
-                <div class="muted" style="font-size:0.8rem;">
-                    <strong>Cost note:</strong> max_tokens affects cost directly — you pay per output token.
-                    For <code>gpt-4.1-mini</code> ($1.60/1M output), 1024 tokens is ~$0.0016/reply.
-                    16384 would be 16&times; that (~$0.0262). Higher-end models cost proportionally more.
                 </div>
             </div>
         </div>

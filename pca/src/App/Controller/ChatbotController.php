@@ -158,7 +158,7 @@ class ChatbotController
         $modelConfig = [
             'temperature' => (float) ($req->get('temperature') ?: 0.0),
             'max_tokens'  => (int) ($req->get('max_tokens') ?: 1024),
-            'model'       => (string) ($req->get('model') ?: 'gpt-4.1-mini'),
+            'model'       => trim((string) $req->get('model')),
         ];
 
         $styling = [
@@ -255,7 +255,7 @@ class ChatbotController
         $modelConfig = [
             'temperature' => (float) ($req->get('temperature') ?: 0.0),
             'max_tokens'  => (int) ($req->get('max_tokens') ?: 1024),
-            'model'       => (string) ($req->get('model') ?: 'gpt-4.1-mini'),
+            'model'       => trim((string) $req->get('model')),
         ];
 
         $styling = [
