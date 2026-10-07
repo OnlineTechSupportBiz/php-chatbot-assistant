@@ -940,10 +940,12 @@ ob_start();
         header.style.color = s.headerText;
         header.style.borderBottomColor = accent;
         document.getElementById('wp-send').style.background = accent;
-        // The bubble matches the real widget in both themes: primary/gradient
-        // background with a white icon.
-        bubble.style.background = headerBg;
-        document.getElementById('wp-bubble-icon').setAttribute('fill', '#ffffff');
+        // The bubble follows the panel theme: light theme → light bubble with a
+        // primary-colored icon; dark theme → primary/gradient bubble with a
+        // white icon. The × inherits the bubble's text color.
+        bubble.style.background = isDark ? headerBg : surface;
+        bubble.style.color = isDark ? '#ffffff' : (s.primary || '#0d6efd');
+        document.getElementById('wp-bubble-icon').setAttribute('fill', isDark ? '#ffffff' : (s.primary || '#0d6efd'));
         // Footer + input follow the panel theme (matches the real widget's
         // PANEL.footerBg / inputBg / inputColor).
         var footer = document.getElementById('wp-footer');
