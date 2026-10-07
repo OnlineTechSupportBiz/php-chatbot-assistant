@@ -141,7 +141,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "DB_NAME={$dbName}\n" .
                 "DB_USER={$dbUser}\n" .
                 "DB_PASS={$dbPass}\n" .
-                ($migUser !== '' ? "DB_MIGRATOR_USER={$migUser}\n" . "DB_MIGRATOR_PASS={$migPass}\n" : "") .
+                "DB_MIGRATOR_USER={$migUser}\n" .
+                "DB_MIGRATOR_PASS={$migPass}\n" .
+                "ALLOW_SINGLE_ROLE_DB=" . ($migUser !== '' ? 'false' : 'true') . "\n" .
                 "\n# App\n" .
                 "APP_ENV=production\n" .
                 "APP_URL={$appUrl}\n" .
