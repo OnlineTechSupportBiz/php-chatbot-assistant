@@ -103,6 +103,20 @@ $temperature = htmlspecialchars((string) ($modelConfig['temperature'] ?? 0.0));
 $maxTokens   = htmlspecialchars((string) ($modelConfig['max_tokens'] ?? 1024));
 $model       = htmlspecialchars($modelConfig['model'] ?? 'gpt-4.1-mini');
 
+// The model dropdown lists the account's configured LLM models (Settings →
+// Model management) when any exist — the chosen entry is prioritised and the
+// rest act as failover. With no configured models the legacy static OpenAI
+// model list applies. Port of the JS settings-form model select.
+$configuredModels = \App\Model\Admin::decodeLlmModels(
+    \App\Model\Admin::getProviderSettings((int) $user['id'])['llm_models'] ?? null
+);
+if ($configuredModels !== []) {
+    // Keep the stored selection even if that model entry was renamed since:
+    // show it as an extra option so the value round-trips.
+    $knownNames = array_map(fn($m) => (string) ($m['name'] ?? ''), $configuredModels);
+    $storedModelRaw = (string) ($modelConfig['model'] ?? '');
+}
+
 // Retrieval strategy
 $retrievalStrategy = $old['retrieval_strategy'] ?? ($isEdit ? ($chatbot['retrieval_strategy'] ?? 'traditional_rag') : 'traditional_rag');
 
@@ -341,28 +355,46 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
         <div class="form-row">
             <div class="field">
                 <label class="label" for="model">Model</label>
-                <select class="select" id="model" name="model">
-                    <option value="gpt-4.1-mini" <?= $model === 'gpt-4.1-mini' ? 'selected' : '' ?>>GPT-4.1-mini</option>
-                    <option value="gpt-4.1" <?= $model === 'gpt-4.1' ? 'selected' : '' ?>>GPT-4.1</option>
-                    <option value="gpt-5-nano" <?= $model === 'gpt-5-nano' ? 'selected' : '' ?>>GPT-5-nano</option>
-                    <option value="gpt-5-mini" <?= $model === 'gpt-5-mini' ? 'selected' : '' ?>>GPT-5-mini</option>
-                    <option value="gpt-5" <?= $model === 'gpt-5' ? 'selected' : '' ?>>GPT-5</option>
-                    <option value="gpt-5-pro" <?= $model === 'gpt-5-pro' ? 'selected' : '' ?>>GPT-5-Pro</option>
-                    <option value="gpt-5.1" <?= $model === 'gpt-5.1' ? 'selected' : '' ?>>GPT-5.1</option>
-                    <option value="gpt-5.2" <?= $model === 'gpt-5.2' ? 'selected' : '' ?>>GPT-5.2</option>
-                    <option value="gpt-5.2-pro" <?= $model === 'gpt-5.2-pro' ? 'selected' : '' ?>>GPT-5.2-Pro</option>
-                    <option value="gpt-5.3-codex" <?= $model === 'gpt-5.3-codex' ? 'selected' : '' ?>>GPT-5.3-Codex</option>
-                    <option value="gpt-5.4-nano" <?= $model === 'gpt-5.4-nano' ? 'selected' : '' ?>>GPT-5.4-nano</option>
-                    <option value="gpt-5.4-mini" <?= $model === 'gpt-5.4-mini' ? 'selected' : '' ?>>GPT-5.4-mini</option>
-                    <option value="gpt-5.4" <?= $model === 'gpt-5.4' ? 'selected' : '' ?>>GPT-5.4</option>
-                    <option value="gpt-5.4-pro" <?= $model === 'gpt-5.4-pro' ? 'selected' : '' ?>>GPT-5.4-Pro</option>
-                    <option value="gpt-5.5" <?= $model === 'gpt-5.5' ? 'selected' : '' ?>>GPT-5.5</option>
-                    <option value="gpt-5.5-pro" <?= $model === 'gpt-5.5-pro' ? 'selected' : '' ?>>GPT-5.5-Pro</option>
-                    <option value="gpt-5.6-luna" <?= $model === 'gpt-5.6-luna' ? 'selected' : '' ?>>GPT-5.6-Luna</option>
-                    <option value="gpt-5.6-terra" <?= $model === 'gpt-5.6-terra' ? 'selected' : '' ?>>GPT-5.6-Terra</option>
-                    <option value="gpt-5.6-sol" <?= $model === 'gpt-5.6-sol' ? 'selected' : '' ?>>GPT-5.6-Sol</option>
-                    <option value="gpt-6-astr" <?= $model === 'gpt-6-astr' ? 'selected' : '' ?>>GPT-6-Astr</option>
-                </select>
+                <?php if ($configuredModels !== []): ?>
+                    <select class="select" id="model" name="model">
+                        <option value="">Select a model…</option>
+                        <?php foreach ($configuredModels as $cm): ?>
+                            <option value="<?= htmlspecialchars($cm['name']) ?>" <?= ($storedModelRaw === (string) $cm['name']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($cm['name']) ?><?= !empty($cm['model']) ? ' (' . htmlspecialchars($cm['model']) . ')' : '' ?>
+                            </option>
+                        <?php endforeach; ?>
+                        <?php if ($storedModelRaw !== '' && !in_array($storedModelRaw, $knownNames, true)): ?>
+                            <option value="<?= $model ?>" selected><?= htmlspecialchars($storedModelRaw) ?> (no longer configured)</option>
+                        <?php endif; ?>
+                    </select>
+                    <div class="muted" style="font-size:0.8rem;">Choose from the models in Settings; the others act as failover.</div>
+                <?php else: ?>
+                    <select class="select" id="model" name="model">
+                        <option value="gpt-4.1-mini" <?= $model === 'gpt-4.1-mini' ? 'selected' : '' ?>>GPT-4.1-mini</option>
+                        <option value="gpt-4.1" <?= $model === 'gpt-4.1' ? 'selected' : '' ?>>GPT-4.1</option>
+                        <option value="gpt-5-nano" <?= $model === 'gpt-5-nano' ? 'selected' : '' ?>>GPT-5-nano</option>
+                        <option value="gpt-5-mini" <?= $model === 'gpt-5-mini' ? 'selected' : '' ?>>GPT-5-mini</option>
+                        <option value="gpt-5" <?= $model === 'gpt-5' ? 'selected' : '' ?>>GPT-5</option>
+                        <option value="gpt-5-pro" <?= $model === 'gpt-5-pro' ? 'selected' : '' ?>>GPT-5-Pro</option>
+                        <option value="gpt-5.1" <?= $model === 'gpt-5.1' ? 'selected' : '' ?>>GPT-5.1</option>
+                        <option value="gpt-5.2" <?= $model === 'gpt-5.2' ? 'selected' : '' ?>>GPT-5.2</option>
+                        <option value="gpt-5.2-pro" <?= $model === 'gpt-5.2-pro' ? 'selected' : '' ?>>GPT-5.2-Pro</option>
+                        <option value="gpt-5.3-codex" <?= $model === 'gpt-5.3-codex' ? 'selected' : '' ?>>GPT-5.3-Codex</option>
+                        <option value="gpt-5.4-nano" <?= $model === 'gpt-5.4-nano' ? 'selected' : '' ?>>GPT-5.4-nano</option>
+                        <option value="gpt-5.4-mini" <?= $model === 'gpt-5.4-mini' ? 'selected' : '' ?>>GPT-5.4-mini</option>
+                        <option value="gpt-5.4" <?= $model === 'gpt-5.4' ? 'selected' : '' ?>>GPT-5.4</option>
+                        <option value="gpt-5.4-pro" <?= $model === 'gpt-5.4-pro' ? 'selected' : '' ?>>GPT-5.4-Pro</option>
+                        <option value="gpt-5.5" <?= $model === 'gpt-5.5' ? 'selected' : '' ?>>GPT-5.5</option>
+                        <option value="gpt-5.5-pro" <?= $model === 'gpt-5.5-pro' ? 'selected' : '' ?>>GPT-5.5-Pro</option>
+                        <option value="gpt-5.6-luna" <?= $model === 'gpt-5.6-luna' ? 'selected' : '' ?>>GPT-5.6-Luna</option>
+                        <option value="gpt-5.6-terra" <?= $model === 'gpt-5.6-terra' ? 'selected' : '' ?>>GPT-5.6-Terra</option>
+                        <option value="gpt-5.6-sol" <?= $model === 'gpt-5.6-sol' ? 'selected' : '' ?>>GPT-5.6-Sol</option>
+                        <option value="gpt-6-astr" <?= $model === 'gpt-6-astr' ? 'selected' : '' ?>>GPT-6-Astr</option>
+                    </select>
+                    <div class="muted" style="font-size:0.8rem;">
+                        Configure models with their own providers in <a href="/settings">Settings → Model management</a> to unlock failover.
+                    </div>
+                <?php endif; ?>
             </div>
             <div class="field">
                 <label class="label" for="temperature">Temperature</label>
@@ -615,20 +647,11 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
 
     <div class="card">
         <h2>Widget preview</h2>
-        <div id="widget-preview-static" style="max-width:360px;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);">
-            <div id="preview-header-static" style="background: <?= $primaryColor ?>; color: <?= $headerTextColor ?>; padding:12px 16px; display:flex; align-items:center; gap:10px;">
-                <span id="preview-header-icon-static" style="font-size:18px;line-height:1;"><?= $headerIcon ?></span>
-                <div style="min-width:0;">
-                    <div id="preview-bot-name-static" style="font-weight:600;font-size:15px;line-height:1.3;"><?= $botName ?></div>
-                    <div id="preview-header-subtitle-static" style="font-size:11px;opacity:0.8;line-height:1.3;"><?= $headerSubtitle ?></div>
-                </div>
-            </div>
-            <div style="padding:32px 20px;text-align:center;background:var(--surface-2);color:var(--text-muted);">
-                <div id="preview-placeholder-icon-static" style="font-size:36px;line-height:1;margin-bottom:10px;opacity:0.6;"><?= $placeholderIcon ?></div>
-                <div id="preview-placeholder-title-static" style="font-weight:600;font-size:15px;color:var(--text);margin-bottom:4px;"><?= $placeholderTitle ?></div>
-                <div id="preview-placeholder-text-static" style="font-size:14px;line-height:1.5;"><?= $placeholderText ?></div>
-            </div>
-        </div>
+        <p class="muted">
+            A live preview of the widget floats at the bottom of this page, exactly where
+            it will sit on your site. Edit the fields above and it updates; click the bubble
+            to open the panel. Position follows the <em>Panel position</em> setting.
+        </p>
     </div>
 
     <div class="card">
@@ -833,35 +856,9 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
         codeEl.textContent = '<script src="' + baseUrl + '/widget.js"\n' + attrs + '<' + '/script>';
     }
 
-    // ── Static widget preview (reflects the fields above; no live widget) ─
+    // The floating preview lives in its own script (rendered before </body>).
+    // This alias just refreshes the embed code on the same input events.
     function updateWidgetPreview() {
-        const primary    = document.getElementById('primary_color')?.value || '#0d6efd';
-        const gradient   = document.getElementById('header_gradient_to')?.value || '';
-        const headerText = document.getElementById('header_text_color')?.value || '#ffffff';
-        const botName    = document.getElementById('bot_name')?.value || 'Assistant';
-        const headerIcon = document.getElementById('header_icon')?.value || '';
-        const headerSub  = document.getElementById('header_subtitle')?.value || '';
-        const plIcon     = document.getElementById('placeholder_icon')?.value || '';
-        const plTitle    = document.getElementById('placeholder_title')?.value || '';
-        const plText     = document.getElementById('placeholder_text')?.value || '';
-
-        var headerBg = gradient && gradient !== primary
-            ? 'linear-gradient(135deg, ' + primary + ', ' + gradient + ')'
-            : primary;
-
-        const headerEl = document.getElementById('preview-header-static');
-        if (headerEl) {
-            headerEl.style.background = headerBg;
-            headerEl.style.color = headerText;
-        }
-        const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        setText('preview-header-icon-static', headerIcon);
-        setText('preview-bot-name-static', botName);
-        setText('preview-header-subtitle-static', headerSub);
-        setText('preview-placeholder-icon-static', plIcon);
-        setText('preview-placeholder-title-static', plTitle);
-        setText('preview-placeholder-text-static', plText);
-
         updateEmbedCode();
     }
 
@@ -953,4 +950,170 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
 </script>
 <?php
 $pageContent = ob_get_clean();
+
+// ── Floating widget preview (port of the JS WidgetPreview component) ────────
+// Rendered AFTER $pageContent so it lives outside the form, fixed to the
+// viewport bottom corner the same way the real widget sits on a site.
+$previewColor = static fn(?string $c): string => htmlspecialchars((string) ($c ?? ''), ENT_QUOTES, 'UTF-8');
+ob_start();
+?>
+<div id="widget-preview-root" aria-live="polite">
+    <!-- Panel (hidden until the bubble is clicked) -->
+    <div id="wp-panel" role="dialog" aria-label="Widget preview panel" hidden
+         style="display:none; position:fixed; z-index:9999; bottom:72px; width:340px; max-width:calc(100vw - 40px);
+                border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.35);
+                background:#ffffff; border:1px solid rgba(0,0,0,0.08);
+                <?= $styling['position'] ?? 'bottom-right' ?>:20px;">
+        <div id="wp-header" style="padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:3px solid transparent;">
+            <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+                <span id="wp-header-icon" style="display:none; width:36px; height:36px; border-radius:50%; background:rgba(0,0,0,0.2); align-items:center; justify-content:center; font-size:18px; flex-shrink:0;"></span>
+                <div style="display:flex; flex-direction:column; min-width:0;">
+                    <span id="wp-bot-name" style="font-weight:600; font-size:15px; line-height:1.3;"></span>
+                    <span id="wp-header-subtitle" style="font-size:11px; opacity:0.8; line-height:1.3; display:none;"></span>
+                </div>
+            </div>
+            <button type="button" id="wp-close" aria-label="Close preview"
+                    style="background:none; border:none; cursor:pointer; font-size:20px; opacity:0.85;">&times;</button>
+        </div>
+        <div id="wp-body" style="padding:18px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:4px; min-height:120px; background:#f5f7fa;">
+            <div id="wp-placeholder-icon" style="display:none; font-size:30px; line-height:1;"></div>
+            <div id="wp-placeholder-title" style="display:none; font-weight:600; font-size:15px; color:#2c3e50;"></div>
+            <div id="wp-placeholder-text" style="font-size:13px; color:#4a5568;">Ask me anything!</div>
+        </div>
+        <div style="display:flex; padding:10px; gap:8px; border-top:1px solid rgba(0,0,0,0.08); background:#ffffff;">
+            <input type="text" disabled placeholder="Type your message…"
+                   style="flex:1; padding:8px 12px; border:1px solid rgba(0,0,0,0.15); border-radius:8px; font-size:13px; background:#fff; color:var(--text);">
+            <span id="wp-send" style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:8px; flex-shrink:0;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="#ffffff" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </span>
+        </div>
+    </div>
+
+    <!-- Launcher bubble -->
+    <button type="button" id="wp-bubble" aria-label="Open widget preview" aria-expanded="false"
+            style="position:fixed; z-index:9999; bottom:20px; width:52px; height:52px; border-radius:50%;
+                   border:none; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.3);
+                   display:flex; align-items:center; justify-content:center;
+                   <?= $styling['position'] ?? 'bottom-right' ?>:20px;">
+        <svg id="wp-bubble-icon" viewBox="0 0 24 24" width="28" height="28" fill="#ffffff" aria-hidden="true">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+        </svg>
+        <span id="wp-bubble-close" aria-hidden="true" style="display:none; font-size:22px; line-height:1;">&times;</span>
+    </button>
+</div>
+<script>
+(function () {
+    var panel  = document.getElementById('wp-panel');
+    var bubble = document.getElementById('wp-bubble');
+    var closeX = document.getElementById('wp-close');
+    var isOpen = false;
+
+    function read(fieldId, fallback) {
+        var el = document.getElementById(fieldId);
+        return el ? (el.value || fallback || '') : (fallback || '');
+    }
+
+    function currentStyle() {
+        return {
+            primary:    read('primary_color', '#0d6efd'),
+            gradientTo: read('header_gradient_to', ''),
+            headerText: read('header_text_color', '#ffffff'),
+            accent:     read('accent_color', ''),
+            botName:    read('bot_name', 'Assistant'),
+            headerIcon: read('header_icon', ''),
+            headerSub:  read('header_subtitle', ''),
+            plIcon:     read('placeholder_icon', ''),
+            plTitle:    read('placeholder_title', ''),
+            plText:     read('placeholder_text', ''),
+            position:   read('position', 'bottom-right'),
+            theme:      (document.querySelector('input[name="panel_theme"]:checked') || {}).value || 'light'
+        };
+    }
+
+    function renderPreview() {
+        var s = currentStyle();
+        var headerBg = s.gradientTo && s.gradientTo !== s.primary
+            ? 'linear-gradient(135deg, ' + s.primary + ', ' + s.gradientTo + ')'
+            : s.primary;
+        var accent = s.accent || s.primary;
+        var isDark = s.theme === 'dark';
+        var surface = isDark ? '#111d35' : '#ffffff';
+        var bodyBg  = isDark ? '#0a1628' : '#f5f7fa';
+        var textSec = isDark ? '#bfc9d8' : '#4a5568';
+        var borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+        var titleColor  = isDark ? '#d0d8e0' : '#2c3e50';
+
+        var side = s.position === 'bottom-left' ? 'left' : 'right';
+        panel.style[side] = '20px';
+        panel.style[side === 'left' ? 'right' : 'left'] = 'auto';
+        bubble.style[side] = '20px';
+        bubble.style[side === 'left' ? 'right' : 'left'] = 'auto';
+
+        var header = document.getElementById('wp-header');
+        header.style.background = headerBg;
+        header.style.color = s.headerText;
+        header.style.borderBottomColor = accent;
+        document.getElementById('wp-send').style.background = accent;
+        bubble.style.background = headerBg;
+
+        var icon = document.getElementById('wp-header-icon');
+        icon.textContent = s.headerIcon;
+        icon.style.display = s.headerIcon ? 'flex' : 'none';
+
+        var name = document.getElementById('wp-bot-name');
+        name.textContent = s.botName;
+
+        var sub = document.getElementById('wp-header-subtitle');
+        sub.textContent = s.headerSub;
+        sub.style.display = s.headerSub ? 'block' : 'none';
+
+        var plIcon = document.getElementById('wp-placeholder-icon');
+        plIcon.textContent = s.plIcon;
+        plIcon.style.display = s.plIcon ? 'block' : 'none';
+
+        var plTitle = document.getElementById('wp-placeholder-title');
+        plTitle.textContent = s.plTitle;
+        plTitle.style.display = s.plTitle ? 'block' : 'none';
+        plTitle.style.color = titleColor;
+
+        var plText = document.getElementById('wp-placeholder-text');
+        plText.textContent = s.plText || 'Ask me anything!';
+        plText.style.color = textSec;
+
+        document.getElementById('wp-body').style.background = bodyBg;
+        panel.style.background = surface;
+        panel.style.borderColor = borderColor;
+    }
+
+    function setOpen(open) {
+        isOpen = open;
+        panel.style.display = open ? 'block' : 'none';
+        panel.hidden = !open;
+        bubble.setAttribute('aria-expanded', open ? 'true' : 'false');
+        bubble.setAttribute('aria-label', open ? 'Close widget preview' : 'Open widget preview');
+        document.getElementById('wp-bubble-icon').style.display = open ? 'none' : 'block';
+        document.getElementById('wp-bubble-close').style.display = open ? 'block' : 'none';
+    }
+
+    bubble.addEventListener('click', function () { setOpen(!isOpen); renderPreview(); });
+    closeX.addEventListener('click', function () { setOpen(false); });
+
+    ['primary_color', 'header_gradient_to', 'header_text_color', 'accent_color',
+     'bot_name', 'header_icon', 'header_subtitle', 'placeholder_icon',
+     'placeholder_title', 'placeholder_text', 'position'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', renderPreview);
+    });
+    document.querySelectorAll('input[name="panel_theme"]').forEach(function (r) {
+        r.addEventListener('change', renderPreview);
+    });
+
+    renderPreview();
+})();
+</script>
+<?php
+$previewHtml = ob_get_clean();
+// Inject the preview markup just before the layout renders </body>: the layout
+// prints $pageScripts before </body>, so piggyback on that variable.
+$pageScripts = ($pageScripts ?? '') . $previewHtml;
 require __DIR__ . '/../dashboard/layout.php';

@@ -160,10 +160,11 @@ class ChatController
             return;
         }
 
-        // Check the user who owns this chatbot has API keys configured
+        // Check the user who owns this chatbot has a chat provider configured
+        // (either a legacy OpenAI key or at least one LLM model entry).
         $keyOwnerId = (int) ($chatbot['created_by'] ?? $chatbot['admin_id']);
-        $keys = Admin::getApiKeys($keyOwnerId);
-        if (empty($keys['openai_api_key'])) {
+        $providerSettings = Admin::getProviderSettings($keyOwnerId);
+        if (empty($providerSettings['openai_api_key']) && $providerSettings['llm_models'] === []) {
             $res->json(['error' => 'Chatbot is not configured (missing API keys)'], 503)->send();
             return;
         }
@@ -348,16 +349,23 @@ class ChatController
         $systemPrompt = $chatbot['system_prompt'] ?? '';
         $modelConfig = !empty($chatbot['model_config']) ? json_decode($chatbot['model_config'], true) : [];
 
-        // Get API keys — prefer the authenticated user's keys, fall back to admin keys
+        // Get API keys — prefer the authenticated user's keys, fall back to admin keys.
+        // Multi-model: build a failover client from the owner's ordered LLM list,
+        // prioritising the model selected on this chatbot (matched by name).
         $keyOwnerId = $userId ?? $adminId;
-        $keys = Admin::getApiKeys($keyOwnerId);
-        $openAiKey = $keys['openai_api_key'] ?? '';
+        $providerSettings = Admin::getProviderSettings($keyOwnerId);
+        $openAiKey = $providerSettings['openai_api_key'] ?? '';
 
-        if (empty($openAiKey)) {
-            throw new \RuntimeException('OpenAI API key not configured for this account');
+        if (empty($openAiKey) && $providerSettings['llm_models'] === []) {
+            throw new \RuntimeException('No LLM provider configured for this account');
         }
 
-        $openai = new OpenAIClient($openAiKey);
+        $openai = OpenAIClient::buildLlmChatClient(
+            $providerSettings['llm_models'],
+            $modelConfig['model'] ?? null,
+            (string) $openAiKey,
+            $providerSettings['llm_base_url'] ?? null
+        );
 
         // 1. Find or create conversation
         $conversation = Conversation::findOrCreate($adminId, $chatbotId, $visitorSessionId, $visitorIp);
@@ -549,13 +557,13 @@ class ChatController
             }
         }
 
-        // 8. Call OpenAI Chat Completions
+        // 8. Call the LLM (FailoverChat picks the chatbot's selected model
+        // first, then falls over; the model string travels with the entry, so
+        // only temperature / max_tokens ride along here).
         $temperature = (float) ($modelConfig['temperature'] ?? 0.0);
         $maxTokens = (int) ($modelConfig['max_tokens'] ?? 1024);
-        $model = $modelConfig['model'] ?? 'gpt-4.1-mini';
 
         $chatResult = $openai->chatCompletion($messages, [
-            'model'       => $model,
             'temperature' => $temperature,
             'max_tokens'  => $maxTokens,
         ]);
@@ -664,7 +672,6 @@ class ChatController
                 ['role' => 'system', 'content' => $systemMessage],
                 ['role' => 'user', 'content' => $allUserText],
             ], [
-                'model'           => $modelConfig['model'] ?? 'gpt-4.1-mini',
                 'temperature'     => (float) ($modelConfig['temperature'] ?? 0.0),
                 'max_tokens'      => (int) ($modelConfig['max_tokens'] ?? 1024),
                 'response_format' => ['type' => 'json_object'],

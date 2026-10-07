@@ -126,7 +126,7 @@ ob_start(); ?>
             <input type="password" class="input" id="openai_api_key" name="openai_api_key"
                    value=""
                    placeholder="<?= htmlspecialchars($keys['openai_api_key_hint'] ?? 'sk-...') ?>">
-            <div class="muted" style="font-size:0.8rem;">Used for embeddings (text-embedding-3-small). Leave blank to keep the current key.</div>
+            <div class="muted" style="font-size:0.8rem;">Used for embeddings and chat when no LLM models are configured below. Leave blank to keep the current key.</div>
         </div>
 
         <div class="field">
@@ -137,11 +137,127 @@ ob_start(); ?>
             <div class="muted" style="font-size:0.8rem;">Used for parsing uploaded documents via LlamaParse. Required for document ingestion. Leave blank to keep the current key.</div>
         </div>
 
+        <h2 style="margin-top:1.25rem;">Model management</h2>
+        <p class="muted" style="margin-top:0;">
+            Add one or more LLM models. The first is the primary; on a failure the app
+            fails over to the next in the list. Every provider is OpenAI-compatible,
+            so self-hosted or local servers (Ollama, LM Studio, vLLM) work the same way.
+        </p>
+        <div class="field">
+            <label class="label" for="llm_base_url">LLM base URL</label>
+            <input type="text" class="input" id="llm_base_url" name="llm_base_url"
+                   value="<?= htmlspecialchars($keys['llm_base_url'] ?? '') ?>"
+                   placeholder="https://api.openai.com/v1">
+            <div class="muted" style="font-size:0.8rem;">Used for chat when no model list entry carries its own base URL. Leave blank for OpenAI.</div>
+        </div>
+
+        <div id="llm-model-rows">
+            <?php if (($keys['llm_models'] ?? []) === []): ?>
+                <p class="muted" id="no-models-note">No models configured yet. Add one to select it in a chatbot's settings.</p>
+            <?php endif; ?>
+            <?php foreach ($keys['llm_models'] as $i => $m): ?>
+                <div class="form-row model-row">
+                    <div class="field">
+                        <label class="label"><?= $i === 0 ? 'Name / label (primary)' : 'Name / label (fallback)' ?></label>
+                        <input class="input" name="llm_model_name[]" value="<?= htmlspecialchars($m['name']) ?>"
+                               placeholder="<?= $i === 0 ? 'Primary' : 'Fallback' ?>">
+                    </div>
+                    <div class="field">
+                        <label class="label">Base URL</label>
+                        <input class="input" name="llm_model_base_url[]" value="<?= htmlspecialchars($m['base_url']) ?>"
+                               placeholder="https://api.openai.com/v1">
+                    </div>
+                    <div class="field">
+                        <label class="label">Model</label>
+                        <input class="input" name="llm_model_id[]" value="<?= htmlspecialchars($m['model']) ?>"
+                               placeholder="gpt-4.1-mini">
+                    </div>
+                    <div class="field">
+                        <label class="label">API key</label>
+                        <input class="input" type="password" autocomplete="off" name="llm_model_key[]" value=""
+                               placeholder="<?= $m['hint'] !== null ? 'Leave blank to keep (' . htmlspecialchars($m['hint']) . ')' : 'Not set' ?>">
+                    </div>
+                    <div class="row" style="align-items:end;">
+                        <button type="button" class="btn btn-sm" onclick="moveModelRow(this, -1)" title="Move up" aria-label="Move model up">↑</button>
+                        <button type="button" class="btn btn-sm" onclick="moveModelRow(this, 1)" title="Move down" aria-label="Move model down">↓</button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeModelRow(this)" title="Remove" aria-label="Remove model">×</button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <div class="form-actions" style="margin-top:0.5rem;">
+            <button type="button" class="btn" onclick="addModelRow()">Add model</button>
+        </div>
+
+        <h2 style="margin-top:1.25rem;">Embeddings</h2>
+        <p class="muted" style="margin-top:0;">Falls back to the LLM provider above, then to OpenAI, when left blank.</p>
+        <div class="form-row">
+            <div class="field">
+                <label class="label" for="embedding_base_url">Base URL</label>
+                <input type="text" class="input" id="embedding_base_url" name="embedding_base_url"
+                       value="<?= htmlspecialchars($keys['embedding_base_url'] ?? '') ?>"
+                       placeholder="https://api.openai.com/v1">
+            </div>
+            <div class="field">
+                <label class="label" for="embedding_api_key">API key</label>
+                <input type="password" class="input" id="embedding_api_key" name="embedding_api_key"
+                       value="" autocomplete="off"
+                       placeholder="<?= htmlspecialchars($keys['embedding_api_key_hint'] ?? 'Not set') ?>">
+            </div>
+            <div class="field">
+                <label class="label" for="embedding_model">Model</label>
+                <input type="text" class="input" id="embedding_model" name="embedding_model"
+                       value="<?= htmlspecialchars($keys['embedding_model'] ?? '') ?>"
+                       placeholder="text-embedding-3-small">
+            </div>
+        </div>
+
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Save API keys</button>
+            <button type="submit" class="btn btn-primary">Save provider settings</button>
         </div>
     </form>
 </div>
+
+<script>
+// Multi-model rows: add / remove / reorder before the form is submitted. The
+// server reads the parallel llm_model_* arrays by index.
+function addModelRow() {
+    var wrap = document.getElementById('llm-model-rows');
+    var note = document.getElementById('no-models-note');
+    if (note) note.remove();
+    var div = document.createElement('div');
+    div.className = 'form-row model-row';
+    div.innerHTML =
+        '<div class="field"><label class="label">Name / label</label>' +
+        '<input class="input" name="llm_model_name[]" placeholder="Fallback"></div>' +
+        '<div class="field"><label class="label">Base URL</label>' +
+        '<input class="input" name="llm_model_base_url[]" placeholder="https://api.openai.com/v1"></div>' +
+        '<div class="field"><label class="label">Model</label>' +
+        '<input class="input" name="llm_model_id[]" placeholder="gpt-4.1-mini"></div>' +
+        '<div class="field"><label class="label">API key</label>' +
+        '<input class="input" type="password" autocomplete="off" name="llm_model_key[]" placeholder="Not set"></div>' +
+        '<div class="row" style="align-items:end;">' +
+        '<button type="button" class="btn btn-sm" onclick="moveModelRow(this, -1)" title="Move up" aria-label="Move model up">↑<\/button>' +
+        '<button type="button" class="btn btn-sm" onclick="moveModelRow(this, 1)" title="Move down" aria-label="Move model down">↓<\/button>' +
+        '<button type="button" class="btn btn-sm btn-danger" onclick="removeModelRow(this)" title="Remove" aria-label="Remove model">×</button>' +
+        '</div>';
+    wrap.appendChild(div);
+}
+function removeModelRow(btn) {
+    var row = btn.closest('.model-row');
+    if (row) row.remove();
+}
+function moveModelRow(btn, dir) {
+    var row = btn.closest('.model-row');
+    if (!row) return;
+    var wrap = row.parentNode;
+    var siblings = Array.prototype.filter.call(wrap.children, function (c) { return c.classList.contains('model-row'); });
+    var i = siblings.indexOf(row);
+    var j = i + dir;
+    if (j < 0 || j >= siblings.length) return;
+    wrap.insertBefore(row, dir < 0 ? siblings[j] : siblings[j].nextSibling);
+}
+</script>
 
 <div class="card">
     <h2>Multi-factor authentication</h2>

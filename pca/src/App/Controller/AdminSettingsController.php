@@ -62,17 +62,27 @@ class AdminSettingsController
             exit;
         }
 
-        // API keys (read from the current user's own record). Raw keys are never sent
-        // to the page: the view shows a masked hint as the input placeholder (port of
-        // the JS port's maskKey behavior), and a blank submit means "unchanged".
-        $keys = Admin::getApiKeys((int) $user['id']);
-        foreach (['openai_api_key', 'llamacloud_api_key'] as $keyField) {
-            $value = (string) ($keys[$keyField] ?? '');
-            $keys[$keyField . '_hint'] = $value === ''
-                ? null
-                : (strlen($value) > 8 ? substr($value, 0, 4) . '…' . substr($value, -4) : '••••');
-            unset($keys[$keyField]); // never hand the raw secret to the template
-        }
+        // API keys + provider settings (read from the current user's own record).
+        // Raw keys are never sent to the page: the view shows a masked hint as
+        // the input placeholder (port of the JS port's maskKey behavior), and a
+        // blank submit means "unchanged".
+        $provider = Admin::getProviderSettings((int) $user['id']);
+        $keys = [
+            'openai_api_key_hint'      => self::maskKey($provider['openai_api_key'] ?? null),
+            'llamacloud_api_key_hint'  => self::maskKey($provider['llamacloud_api_key'] ?? null),
+            'embedding_api_key_hint'   => self::maskKey($provider['embedding_api_key'] ?? null),
+            'llm_base_url'             => $provider['llm_base_url'] ?? null,
+            'embedding_base_url'       => $provider['embedding_base_url'] ?? null,
+            'embedding_model'          => $provider['embedding_model'] ?? null,
+            'llm_models'               => array_map(function ($m) {
+                return [
+                    'name'     => $m['name'] ?? '',
+                    'base_url' => $m['base_url'] ?? '',
+                    'model'    => $m['model'] ?? '',
+                    'hint'     => self::maskKey($m['api_key'] ?? null),
+                ];
+            }, $provider['llm_models'] ?? []),
+        ];
 
         // MFA status for this user
         $db = \getDb();
@@ -98,7 +108,23 @@ class AdminSettingsController
     }
 
     /**
-     * Update admin API keys.
+     * Mask a secret for display: first 4 + last 4 characters, or bullets for
+     * very short values. Null/empty returns null (the view falls back to the
+     * standard placeholder).
+     */
+    private static function maskKey(?string $value): ?string
+    {
+        $value = (string) ($value ?? '');
+        if ($value === '') {
+            return null;
+        }
+        return strlen($value) > 8 ? substr($value, 0, 4) . '…' . substr($value, -4) : '••••';
+    }
+
+    /**
+     * Update admin API keys and provider configuration (multi-model LLM list,
+     * embeddings endpoint). Port of the JS settings PATCH handler
+     * (lib/admin/settings.ts): blank key fields mean "unchanged".
      */
     public function updateApiKeys(Request $req, Response $res, array $params): void
     {
@@ -113,10 +139,12 @@ class AdminSettingsController
             return;
         }
 
-        $openAiKey   = (string) $req->get('openai_api_key');
-        $llamaKey    = (string) $req->get('llamacloud_api_key');
+        $userId     = (int) $user['id'];
+        $previous   = Admin::getProviderSettings($userId);
+        $openAiKey  = (string) $req->get('openai_api_key');
+        $llamaKey   = (string) $req->get('llamacloud_api_key');
 
-        // Build keys array — store as-is (may be empty to clear)
+        // Build keys array — blank submit = keep the stored key
         $keys = [];
         if ($openAiKey !== '') {
             $keys['openai_api_key'] = $openAiKey;
@@ -125,10 +153,101 @@ class AdminSettingsController
             $keys['llamacloud_api_key'] = $llamaKey;
         }
 
-        Admin::setApiKeys((int) $user['id'], $keys);
+        Admin::setApiKeys($userId, $keys);
 
-        $maskOpen = $openAiKey !== '' ? substr($openAiKey, 0, 8) . '…' : 'cleared';
-        $maskLlama = $llamaKey !== '' ? substr($llamaKey, 0, 8) . '…' : 'cleared';
+        // Provider URLs + embedding model (blank = clear to NULL)
+        Admin::setProviderUrls($userId, [
+            'llm_base_url'       => (string) $req->get('llm_base_url'),
+            'embedding_base_url' => (string) $req->get('embedding_base_url'),
+            'embedding_model'    => (string) $req->get('embedding_model'),
+        ]);
+
+        // Embedding key: blank = unchanged
+        $embeddingKey = (string) $req->get('embedding_api_key');
+        if ($embeddingKey !== '') {
+            Admin::setEmbeddingApiKey($userId, $embeddingKey);
+        }
+
+        // ── Ordered LLM model list (multi-model failover) ──
+        // Submitted as parallel arrays: llm_model_name[], llm_model_base_url[],
+        // llm_model_key[], llm_model_id[]. Blank key = keep the previous key for
+        // that entry (matched by name, like the JS merge). Empty model id or
+        // completely blank rows are dropped.
+        $names    = (array) $req->get('llm_model_name');
+        $baseUrls = (array) $req->get('llm_model_base_url');
+        $keysIn   = (array) $req->get('llm_model_key');
+        $modelIds = (array) $req->get('llm_model_id');
+
+        $previousByName = [];
+        foreach ($previous['llm_models'] as $m) {
+            if (!empty($m['name'])) {
+                $previousByName[$m['name']] = $m;
+            }
+        }
+
+        $models = [];
+        $hadValidationError = false;
+        $count = max(count($names), count($baseUrls), count($keysIn), count($modelIds));
+        for ($i = 0; $i < $count; $i++) {
+            $name    = trim((string) ($names[$i] ?? ''));
+            $baseUrl = trim((string) ($baseUrls[$i] ?? ''));
+            $apiKey  = trim((string) ($keysIn[$i] ?? ''));
+            $modelId = trim((string) ($modelIds[$i] ?? ''));
+            if ($name === '' && $baseUrl === '' && $apiKey === '' && $modelId === '') {
+                continue; // fully blank row — ignore
+            }
+            if ($modelId === '' || $name === '') {
+                $hadValidationError = true;
+                continue;
+            }
+            // Blank key on an existing entry keeps the previous key (never echo secrets back)
+            if ($apiKey === '') {
+                $apiKey = (string) ($previousByName[$name]['api_key'] ?? '');
+            }
+            $models[] = [
+                'name'     => $name,
+                'base_url' => $baseUrl,
+                'api_key'  => $apiKey,
+                'model'    => $modelId,
+            ];
+        }
+
+        if ($hadValidationError) {
+            Session::flash('error', 'Some model rows were skipped: every model needs a name and a model id (e.g. gpt-4.1-mini).');
+        }
+
+        // Validate any custom base URLs up front (SSRF guard) so a bad row
+        // aborts the whole save instead of failing later mid-chat.
+        foreach ($models as $m) {
+            try {
+                if ($m['base_url'] !== '') {
+                    \App\Service\OpenAIClient::validateProviderBaseUrl($m['base_url']);
+                }
+            } catch (\RuntimeException $e) {
+                Session::flash('error', 'Model "' . $m['name'] . '": ' . $e->getMessage());
+                $res->redirect('/settings')->send();
+                return;
+            }
+        }
+        try {
+            $llmBase = trim((string) $req->get('llm_base_url'));
+            if ($llmBase !== '') {
+                \App\Service\OpenAIClient::validateProviderBaseUrl($llmBase);
+            }
+            $embBase = trim((string) $req->get('embedding_base_url'));
+            if ($embBase !== '') {
+                \App\Service\OpenAIClient::validateProviderBaseUrl($embBase);
+            }
+        } catch (\RuntimeException $e) {
+            Session::flash('error', $e->getMessage());
+            $res->redirect('/settings')->send();
+            return;
+        }
+
+        Admin::setLlmModels($userId, $models);
+
+        $maskOpen = $openAiKey !== '' ? substr($openAiKey, 0, 8) . '…' : 'unchanged';
+        $maskLlama = $llamaKey !== '' ? substr($llamaKey, 0, 8) . '…' : 'unchanged';
 
         AuditLog::log(
             (int) $user['admin_id'],
@@ -137,10 +256,16 @@ class AdminSettingsController
             $user['role'] ?? 'user',
             (int) $user['id'],
             null,
-            ['openai_key' => $maskOpen, 'llamacloud_key' => $maskLlama]
+            [
+                'openai_key' => $maskOpen,
+                'llamacloud_key' => $maskLlama,
+                'llm_models' => array_map(fn($m) => ['name' => $m['name'], 'model' => $m['model']], $models),
+            ]
         );
 
-        Session::flash('success', 'API keys updated successfully.');
+        Session::flash('success', $models === []
+            ? 'Provider settings updated. No LLM models configured — the legacy OpenAI key is used.'
+            : 'Provider settings updated. ' . count($models) . ' LLM model' . (count($models) === 1 ? '' : 's') . ' configured.');
         $res->redirect('/settings')->send();
     }
 

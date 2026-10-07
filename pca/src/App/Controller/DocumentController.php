@@ -348,17 +348,19 @@ class DocumentController
             return;
         }
 
-        // Check the user's API keys
-        $apiKeys = Admin::getApiKeys((int) $user['id']);
+        // Check the user's provider settings. Embeddings can ride on the
+        // multi-model configuration (embedding_base_url/api_key/model, falling
+        // back to the LLM provider and then to the legacy OpenAI key).
+        $apiKeys = Admin::getProviderSettings((int) $user['id']);
         $llamaKey   = $apiKeys['llamacloud_api_key'] ?? '';
-        $openAiKey  = $apiKeys['openai_api_key'] ?? '';
 
         if (empty($llamaKey)) {
             $errorReturn('LlamaCloud API key not configured for this admin. Please set it in Admin Settings.');
         }
 
-        if (empty($openAiKey)) {
-            $errorReturn('OpenAI API key not configured for this admin. Please set it in Admin Settings.');
+        $embedCfg = OpenAIClient::resolveEmbeddingConfig($apiKeys);
+        if (empty($embedCfg['api_key'])) {
+            $errorReturn('No embedding provider configured for this admin. Please set it in Admin Settings.');
         }
         try {
             // ── Step 1: Parse via LlamaCloud ──
@@ -434,7 +436,8 @@ class DocumentController
 
             // ── Step 3: Embed each chunk ──
             Document::patchStatus($documentId, 'embedding');
-            $openAi      = new OpenAIClient($openAiKey);
+            $openAi      = new OpenAIClient($embedCfg['api_key'], $embedCfg['base_url']);
+            $openAi->setEmbeddingModel($embedCfg['model']);
             $texts       = array_map(fn(array $c): string => $c['chunk_text'], $chunks);
             $jsonArrays  = $openAi->embedBatchAsJsonArray($texts);
 

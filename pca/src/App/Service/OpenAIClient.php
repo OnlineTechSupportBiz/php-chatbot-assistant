@@ -35,10 +35,143 @@ class OpenAIClient
 {
     private string $apiKey;
     private string $baseUrl = 'https://api.openai.com/v1';
+    private string $embeddingModel = 'text-embedding-3-small';
 
-    public function __construct(string $apiKey)
+    public function __construct(string $apiKey, string $baseUrl = '')
     {
         $this->apiKey = $apiKey;
+        if ($baseUrl !== '') {
+            $this->baseUrl = rtrim($baseUrl, '/');
+        }
+    }
+
+    /**
+     * Override the embeddings model id (e.g. text-embedding-3-large on a
+     * self-hosted provider). Affects embedBatch/embed/embedBatchAsJsonArray.
+     */
+    public function setEmbeddingModel(string $model): void
+    {
+        $model = trim($model);
+        if ($model !== '') {
+            $this->embeddingModel = $model;
+        }
+    }
+
+    /**
+     * Resolve the embedding endpoint/key/model, applying the JS port's fallback
+     * chain: an empty embedding_* falls back to the LLM provider, then to the
+     * OpenAI defaults — so one self-hosted endpoint can serve both.
+     */
+    public static function resolveEmbeddingConfig(array $settings): array
+    {
+        $llmBase = self::validateProviderBaseUrl($settings['llm_base_url'] ?? null);
+        return [
+            'base_url' => self::validateProviderBaseUrl($settings['embedding_base_url'] ?? null)
+                ?? $llmBase
+                ?? 'https://api.openai.com/v1',
+            'api_key'  => trim((string) ($settings['embedding_api_key'] ?? ''))
+                ?: (string) ($settings['openai_api_key'] ?? ''),
+            'model'    => trim((string) ($settings['embedding_model'] ?? ''))
+                ?: 'text-embedding-3-small',
+        ];
+    }
+
+    /**
+     * Provider base URLs come from the tenant's own settings and are fetched
+     * server-side, so an unvalidated value turns the app into a request
+     * forwarder to anything the host can reach: cloud metadata
+     * (169.254.169.254), loopback, or any RFC1918 address. Only a public
+     * http(s) host is accepted; private / link-local / loopback targets are
+     * refused. Null means "no custom URL configured".
+     *
+     * Port of the JS port's validateProviderBaseUrl (lib/openai/client.ts).
+     */
+    public static function validateProviderBaseUrl(?string $raw): ?string
+    {
+        $value = trim((string) $raw);
+        if ($value === '') {
+            return null;
+        }
+        $parts = parse_url($value);
+        if ($parts === false || empty($parts['host']) || !isset($parts['scheme'])
+            || !in_array($parts['scheme'], ['http', 'https'], true)) {
+            throw new \RuntimeException('Provider URL must be a valid absolute http(s) URL (e.g. https://api.openai.com/v1).');
+        }
+        $host = strtolower($parts['host']);
+        if (self::isBlockedHost($host)) {
+            throw new \RuntimeException('Provider URL must point at a public host (loopback and private addresses are not allowed).');
+        }
+        return rtrim($value, '/');
+    }
+
+    private static function isBlockedHost(string $host): bool
+    {
+        if ($host === '' || $host === 'localhost' || str_ends_with($host, '.localhost') || str_ends_with($host, '.internal')) {
+            return true;
+        }
+        // IPv4: loopback, link-local, RFC1918, 0.0.0.0/8, this-network.
+        if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            return !filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+        }
+        // IPv6 literal: refuse the private/reserved ranges the same way.
+        if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            return !filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+        }
+        // Bare IP embedded in an IPv6-mapped form or with a weird suffix.
+        if (preg_match('/^(\d{1,3}\.){3}\d{1,3}$/', $host) || str_contains($host, ':')) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Build a chat client from the user's ordered LLM model list, prioritising
+     * the selected model (matched by name) and failing over through the rest in
+     * order. Falls back to a single legacy client when the list is empty (the
+     * pre-model-list behaviour, driven by openai_api_key / llm_base_url).
+     *
+     * Port of the JS port's buildLlmChatClient (lib/openai/client.ts).
+     *
+     * @param array<int, array{name: string, base_url: string, api_key: string, model: string}> $models
+     */
+    public static function buildLlmChatClient(
+        array $models,
+        ?string $selectedName,
+        string $legacyApiKey,
+        ?string $legacyBaseUrl = null
+    ): FailoverChat|OpenAIClient {
+        $models = array_values(array_filter($models, function ($m) {
+            return is_array($m)
+                && trim((string) ($m['model'] ?? '')) !== ''
+                && (trim((string) ($m['api_key'] ?? '')) !== '' || trim((string) ($m['base_url'] ?? '')) !== '');
+        }));
+        if ($models === []) {
+            return new OpenAIClient($legacyApiKey, self::validateProviderBaseUrl($legacyBaseUrl) ?? '');
+        }
+        $selected = null;
+        foreach ($models as $i => $m) {
+            if ($selectedName !== null && $selectedName !== '' && $m['name'] === $selectedName) {
+                $selected = $i;
+                break;
+            }
+        }
+        if ($selected !== null) {
+            $picked = $models[$selected];
+            unset($models[$selected]);
+            array_unshift($models, $picked);
+        }
+        $entries = [];
+        foreach ($models as $m) {
+            $entries[] = [
+                'client' => new OpenAIClient(
+                    trim((string) $m['api_key']),
+                    self::validateProviderBaseUrl($m['base_url'] ?? null) ?? 'https://api.openai.com/v1'
+                ),
+                'model'  => trim((string) $m['model']),
+                'name'   => trim((string) $m['name']),
+            ];
+        }
+        return new FailoverChat($entries);
     }
 
     /**
@@ -58,7 +191,7 @@ class OpenAIClient
         $url = $this->baseUrl . '/embeddings';
 
         $body = json_encode([
-            'model'      => 'text-embedding-3-small',
+            'model'      => $this->embeddingModel,
             'input'      => $texts,
             'dimensions' => $dimensions,
         ]);
@@ -144,7 +277,7 @@ class OpenAIClient
         }
 
         $body = json_encode([
-            'model' => 'text-embedding-3-small',
+            'model' => $this->embeddingModel,
             'input' => $texts,
         ]);
 
@@ -195,7 +328,7 @@ class OpenAIClient
     private function getRawFloatArray(string $text): array
     {
         $body = json_encode([
-            'model' => 'text-embedding-3-small',
+            'model' => $this->embeddingModel,
             'input' => $text,
         ]);
 

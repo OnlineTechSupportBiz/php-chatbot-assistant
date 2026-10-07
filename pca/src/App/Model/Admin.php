@@ -222,6 +222,104 @@ class Admin extends Model
         return $stmt->execute($binds);
     }
 
+    // ── Provider settings (multi-model LLM + embeddings) ────────────────────
+
+    /**
+     * Full provider settings for a user: legacy keys plus the multi-model
+     * columns added in migration 005.
+     */
+    public static function getProviderSettings(int $userId): array
+    {
+        $stmt = self::db()->prepare(
+            'SELECT openai_api_key, llamacloud_api_key, llm_base_url,
+                    embedding_base_url, embedding_api_key, embedding_model, llm_models
+             FROM users WHERE id = :id'
+        );
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch();
+        if (!$row) {
+            return ['openai_api_key' => null, 'llamacloud_api_key' => null,
+                    'llm_base_url' => null, 'embedding_base_url' => null,
+                    'embedding_api_key' => null, 'embedding_model' => null, 'llm_models' => []];
+        }
+        $row['llm_models'] = self::decodeLlmModels($row['llm_models'] ?? null);
+        return $row;
+    }
+
+    /**
+     * Decode the llm_models JSONB column: pg returns an array already for
+     * jsonb, but tolerate a string serialization too (port of the JS
+     * repository's getLlmModels tolerance).
+     *
+     * @return array<int, array{name: string, base_url: string, api_key: string, model: string}>
+     */
+    public static function decodeLlmModels(mixed $raw): array
+    {
+        if (empty($raw)) {
+            return [];
+        }
+        if (is_array($raw)) {
+            return $raw;
+        }
+        try {
+            $parsed = json_decode((string) $raw, true);
+            return is_array($parsed) ? $parsed : [];
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * Replace the user's ordered LLM model list. An empty list stores NULL
+     * (fall back to the legacy single-key behaviour).
+     *
+     * @param array<int, array{name: string, base_url: string, api_key: string, model: string}> $models
+     */
+    public static function setLlmModels(int $userId, array $models): bool
+    {
+        $stmt = self::db()->prepare('UPDATE users SET llm_models = :models WHERE id = :id');
+        $stmt->bindValue(':models', $models === [] ? null : json_encode($models), $models === [] ? PDO::PARAM_NULL : PDO::PARAM_STR);
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    /**
+     * Update the non-key provider columns (base URLs + embedding model).
+     * Empty string values are stored as NULL.
+     */
+    public static function setProviderUrls(int $userId, array $urls): bool
+    {
+        $allowed = ['llm_base_url', 'embedding_base_url', 'embedding_model'];
+        $update = [];
+        $binds  = [':id' => $userId];
+        foreach ($allowed as $col) {
+            if (array_key_exists($col, $urls)) {
+                $value = trim((string) $urls[$col]);
+                $update[] = "{$col} = :{$col}";
+                $binds[":{$col}"] = $value === '' ? null : $value;
+            }
+        }
+        if (empty($update)) {
+            return false;
+        }
+        $sql = 'UPDATE users SET ' . implode(', ', $update) . ' WHERE id = :id';
+        $stmt = self::db()->prepare($sql);
+        return $stmt->execute($binds);
+    }
+
+    /**
+     * Update the embedding API key. Empty string = unchanged (the caller
+     * decides); the value is stored as-is.
+     */
+    public static function setEmbeddingApiKey(int $userId, string $key): bool
+    {
+        $stmt = self::db()->prepare('UPDATE users SET embedding_api_key = :key WHERE id = :id');
+        $stmt->bindValue(':key', $key);
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
     /**
      * Check if an admin account has all required API keys configured.
      */
