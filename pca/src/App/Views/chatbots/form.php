@@ -103,19 +103,19 @@ $temperature = htmlspecialchars((string) ($modelConfig['temperature'] ?? 0.0));
 $maxTokens   = htmlspecialchars((string) ($modelConfig['max_tokens'] ?? 1024));
 $model       = htmlspecialchars($modelConfig['model'] ?? 'gpt-4.1-mini');
 
-// The model dropdown lists the account's configured LLM models (Settings →
-// Model management) when any exist — the chosen entry is prioritised and the
-// rest act as failover. With no configured models the legacy static OpenAI
-// model list applies. Port of the JS settings-form model select.
+// The model dropdown lists ONLY the account's configured LLM models
+// (Settings → Model management), exactly like the JS settings-form: a
+// "Select a model…" placeholder plus one option per configured entry. There
+// is no static OpenAI fallback list — that was deprecated with the
+// multi-model configuration.
 $configuredModels = \App\Model\Admin::decodeLlmModels(
     \App\Model\Admin::getProviderSettings((int) $user['id'])['llm_models'] ?? null
 );
-if ($configuredModels !== []) {
-    // Keep the stored selection even if that model entry was renamed since:
-    // show it as an extra option so the value round-trips.
-    $knownNames = array_map(fn($m) => (string) ($m['name'] ?? ''), $configuredModels);
-    $storedModelRaw = (string) ($modelConfig['model'] ?? '');
-}
+// Keep the stored selection selectable even if that model entry was renamed
+// or removed since it was chosen, so the value round-trips (the JS port
+// handles this the same way — mc.model may not be in the current list).
+$knownNames = array_map(fn($m) => (string) ($m['name'] ?? ''), $configuredModels);
+$storedModelRaw = (string) ($modelConfig['model'] ?? '');
 
 // Retrieval strategy
 $retrievalStrategy = $old['retrieval_strategy'] ?? ($isEdit ? ($chatbot['retrieval_strategy'] ?? 'traditional_rag') : 'traditional_rag');
@@ -355,46 +355,24 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
         <div class="form-row">
             <div class="field">
                 <label class="label" for="model">Model</label>
-                <?php if ($configuredModels !== []): ?>
-                    <select class="select" id="model" name="model">
-                        <option value="">Select a model…</option>
-                        <?php foreach ($configuredModels as $cm): ?>
-                            <option value="<?= htmlspecialchars($cm['name']) ?>" <?= ($storedModelRaw === (string) $cm['name']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($cm['name']) ?><?= !empty($cm['model']) ? ' (' . htmlspecialchars($cm['model']) . ')' : '' ?>
-                            </option>
-                        <?php endforeach; ?>
-                        <?php if ($storedModelRaw !== '' && !in_array($storedModelRaw, $knownNames, true)): ?>
-                            <option value="<?= $model ?>" selected><?= htmlspecialchars($storedModelRaw) ?> (no longer configured)</option>
-                        <?php endif; ?>
-                    </select>
-                    <div class="muted" style="font-size:0.8rem;">Choose from the models in Settings; the others act as failover.</div>
-                <?php else: ?>
-                    <select class="select" id="model" name="model">
-                        <option value="gpt-4.1-mini" <?= $model === 'gpt-4.1-mini' ? 'selected' : '' ?>>GPT-4.1-mini</option>
-                        <option value="gpt-4.1" <?= $model === 'gpt-4.1' ? 'selected' : '' ?>>GPT-4.1</option>
-                        <option value="gpt-5-nano" <?= $model === 'gpt-5-nano' ? 'selected' : '' ?>>GPT-5-nano</option>
-                        <option value="gpt-5-mini" <?= $model === 'gpt-5-mini' ? 'selected' : '' ?>>GPT-5-mini</option>
-                        <option value="gpt-5" <?= $model === 'gpt-5' ? 'selected' : '' ?>>GPT-5</option>
-                        <option value="gpt-5-pro" <?= $model === 'gpt-5-pro' ? 'selected' : '' ?>>GPT-5-Pro</option>
-                        <option value="gpt-5.1" <?= $model === 'gpt-5.1' ? 'selected' : '' ?>>GPT-5.1</option>
-                        <option value="gpt-5.2" <?= $model === 'gpt-5.2' ? 'selected' : '' ?>>GPT-5.2</option>
-                        <option value="gpt-5.2-pro" <?= $model === 'gpt-5.2-pro' ? 'selected' : '' ?>>GPT-5.2-Pro</option>
-                        <option value="gpt-5.3-codex" <?= $model === 'gpt-5.3-codex' ? 'selected' : '' ?>>GPT-5.3-Codex</option>
-                        <option value="gpt-5.4-nano" <?= $model === 'gpt-5.4-nano' ? 'selected' : '' ?>>GPT-5.4-nano</option>
-                        <option value="gpt-5.4-mini" <?= $model === 'gpt-5.4-mini' ? 'selected' : '' ?>>GPT-5.4-mini</option>
-                        <option value="gpt-5.4" <?= $model === 'gpt-5.4' ? 'selected' : '' ?>>GPT-5.4</option>
-                        <option value="gpt-5.4-pro" <?= $model === 'gpt-5.4-pro' ? 'selected' : '' ?>>GPT-5.4-Pro</option>
-                        <option value="gpt-5.5" <?= $model === 'gpt-5.5' ? 'selected' : '' ?>>GPT-5.5</option>
-                        <option value="gpt-5.5-pro" <?= $model === 'gpt-5.5-pro' ? 'selected' : '' ?>>GPT-5.5-Pro</option>
-                        <option value="gpt-5.6-luna" <?= $model === 'gpt-5.6-luna' ? 'selected' : '' ?>>GPT-5.6-Luna</option>
-                        <option value="gpt-5.6-terra" <?= $model === 'gpt-5.6-terra' ? 'selected' : '' ?>>GPT-5.6-Terra</option>
-                        <option value="gpt-5.6-sol" <?= $model === 'gpt-5.6-sol' ? 'selected' : '' ?>>GPT-5.6-Sol</option>
-                        <option value="gpt-6-astr" <?= $model === 'gpt-6-astr' ? 'selected' : '' ?>>GPT-6-Astr</option>
-                    </select>
-                    <div class="muted" style="font-size:0.8rem;">
-                        Configure models with their own providers in <a href="/settings">Settings → Model management</a> to unlock failover.
-                    </div>
-                <?php endif; ?>
+                <select class="select" id="model" name="model">
+                    <option value="">Select a model…</option>
+                    <?php foreach ($configuredModels as $cm): ?>
+                        <option value="<?= htmlspecialchars($cm['name']) ?>" <?= ($storedModelRaw === (string) $cm['name']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($cm['name']) ?><?= !empty($cm['model']) ? ' (' . htmlspecialchars($cm['model']) . ')' : '' ?>
+                        </option>
+                    <?php endforeach; ?>
+                    <?php if ($storedModelRaw !== '' && !in_array($storedModelRaw, $knownNames, true)): ?>
+                        <option value="<?= $model ?>" selected><?= htmlspecialchars($storedModelRaw) ?> (no longer configured)</option>
+                    <?php endif; ?>
+                </select>
+                <div class="muted" style="font-size:0.8rem;">
+                    <?php if ($configuredModels === []): ?>
+                        No models configured yet. Add models with their providers in <a href="/settings">Settings → Model management</a> first.
+                    <?php else: ?>
+                        Choose from the models in Settings; the others act as failover.
+                    <?php endif; ?>
+                </div>
             </div>
             <div class="field">
                 <label class="label" for="temperature">Temperature</label>
@@ -697,9 +675,6 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
                 </div>
             </div>
         </div>
-        <div class="alert alert-info" id="cost-estimate" role="alert">
-            Select a model and set a daily budget above to see estimated max cost.
-        </div>
     </div>
 
     <div class="form-actions">
@@ -878,75 +853,9 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
 
     setTimeout(updateWidgetPreview, 100);
 
-    // ── Cost estimate: recalculate when model or daily budget changes ──────
-    var MODEL_PRICING = {
-        'gpt-4.1-mini':  [0.40, 1.60],
-        'gpt-4.1':       [2.00, 8.00],
-        'gpt-5-nano':    [0.05, 0.40],
-        'gpt-5-mini':    [0.25, 2.00],
-        'gpt-5':         [1.25, 10.00],
-        'gpt-5-pro':     [15.00, 120.00],
-        'gpt-5.1':       [1.25, 10.00],
-        'gpt-5.2':       [1.75, 14.00],
-        'gpt-5.2-pro':   [21.00, 168.00],
-        'gpt-5.3-codex': [1.75, 14.00],
-        'gpt-5.4-nano':  [0.20, 1.25],
-        'gpt-5.4-mini':  [0.75, 4.50],
-        'gpt-5.4':       [2.50, 15.00],
-        'gpt-5.4-pro':   [30.00, 180.00],
-        'gpt-5.5':       [5.00, 30.00],
-        'gpt-5.5-pro':   [30.00, 180.00],
-        'gpt-5.6-luna':  [1.00, 6.00],
-        'gpt-5.6-terra': [2.50, 15.00],
-        'gpt-5.6-sol':   [5.00, 30.00],
-    };
-
-    function sanitizeNumericInput(e) {
-        this.value = this.value.replace(/[^0-9]/g, '');
-    }
-    document.getElementById('daily_token_budget')?.addEventListener('input', sanitizeNumericInput);
-    document.getElementById('rate_limit_per_session')?.addEventListener('input', sanitizeNumericInput);
-
-    function updateCostEstimate() {
-        var modelSelect = document.getElementById('model');
-        var budgetInput = document.getElementById('daily_token_budget');
-        var estimateEl  = document.getElementById('cost-estimate');
-        if (!modelSelect || !budgetInput || !estimateEl) return;
-
-        var model   = modelSelect.value;
-        var raw     = budgetInput.value.trim();
-        var budget  = parseInt(raw, 10);
-
-        if (raw === '' || raw === '0' || isNaN(budget) || budget <= 0) {
-            estimateEl.className = 'alert alert-success';
-            estimateEl.innerHTML = '✅ <strong>Unlimited</strong> — no cap on daily cost.';
-            return;
-        }
-
-        var prices = MODEL_PRICING[model];
-        if (!prices) {
-            estimateEl.className = 'alert alert-warning';
-            estimateEl.innerHTML = '⚠️ Pricing not available for <strong>' + model +
-                '</strong>. Set a budget and monitor usage.';
-            return;
-        }
-
-        var blendedPer1M = prices[0] * 0.3 + prices[1] * 0.7;
-        var cost = budget / 1000000 * blendedPer1M;
-
-        var modelLabel = modelSelect.options[modelSelect.selectedIndex].text;
-        var costStr = cost < 0.01 ? 'less than $0.01' : '$' + cost.toFixed(2);
-        var budgetStr = budget.toLocaleString();
-
-        estimateEl.className = 'alert alert-info';
-        estimateEl.innerHTML = 'At <strong>' + budgetStr + '</strong> tokens/day with <strong>' +
-            modelLabel + '</strong>, you\'d spend about <strong>' + costStr +
-            '</strong> per day at most.';
-    }
-
-    document.getElementById('model')?.addEventListener('change', updateCostEstimate);
-    document.getElementById('daily_token_budget')?.addEventListener('input', updateCostEstimate);
-    updateCostEstimate();
+    // Cost estimation per model was removed: models are arbitrary
+    // OpenAI-compatible providers now, so there is no fixed price map. The
+    // daily token budget above still caps spend absolutely.
 </script>
 <?php
 $pageContent = ob_get_clean();
