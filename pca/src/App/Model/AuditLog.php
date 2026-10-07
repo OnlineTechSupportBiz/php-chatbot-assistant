@@ -62,7 +62,7 @@ class AuditLog extends Model
             'entity_id'   => $entityId,
             'old_value'   => $oldValue !== null ? json_encode($oldValue) : null,
             'new_value'   => $newValue !== null ? json_encode($newValue) : null,
-            'ip_address'  => $_SERVER['REMOTE_ADDR'] ?? null,
+            'ip_address'  => clientIp(),
             'user_agent'  => substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 500),
         ]);
     }

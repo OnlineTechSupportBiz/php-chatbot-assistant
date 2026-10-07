@@ -88,7 +88,7 @@ class ChatController
         $visitorSessionId = 'test_' . $user['id'] . '_' . $chatbotId;
 
         try {
-            $result = $this->processQuery($adminId, $chatbot, $visitorSessionId, $userMessage, $_SERVER['REMOTE_ADDR'] ?? null, userId: (int) $user['id']);
+            $result = $this->processQuery($adminId, $chatbot, $visitorSessionId, $userMessage, clientIp(), userId: (int) $user['id']);
             $res->json($result)->send();
         } catch (\Throwable $e) {
             $res->json(['error' => $e->getMessage()], 500)->send();
@@ -169,8 +169,26 @@ class ChatController
             return;
         }
 
+        // Deployment-level abuse ceilings (port of the JS PUBLIC_CHAT_RATE_*):
+        // per visitor IP and per widget token, evaluated before any model work.
+        // The tenant's own guardrails can only tighten these, never exceed them.
+        $rateMax   = max(1, (int) env('PUBLIC_CHAT_RATE_MAX', 120));
+        $tokenMax  = max(1, (int) env('PUBLIC_CHAT_TOKEN_RATE_MAX', 300));
+        $rateWin   = max(1, (int) env('PUBLIC_CHAT_RATE_WINDOW', 60));
+        $visitorIp = clientIp();
+        if (!RateLimiter::check($visitorIp, $rateMax, $rateWin, 'chat:')) {
+            $res->json(['error' => 'Too many requests. Please try again shortly.'], 429)->send();
+            return;
+        }
+        if (!RateLimiter::check('tok:' . $widgetToken, $tokenMax, $rateWin, 'chat:')) {
+            $res->json(['error' => 'Too many requests. Please try again shortly.'], 429)->send();
+            return;
+        }
+
         try {
-            $result = $this->processQuery($adminId, $chatbot, $visitorSessionId, $userMessage, $_SERVER['REMOTE_ADDR'] ?? null, userId: $keyOwnerId);
+            $result = $this->processQuery($adminId, $chatbot, $visitorSessionId, $userMessage, clientIp(), userId: $keyOwnerId);
+            RateLimiter::record($visitorIp, 'chat:');
+            RateLimiter::record('tok:' . $widgetToken, 'chat:');
             $res->json($result)->send();
         } catch (\Throwable $e) {
             $res->json(['error' => 'An error occurred processing your request'], 500)->send();

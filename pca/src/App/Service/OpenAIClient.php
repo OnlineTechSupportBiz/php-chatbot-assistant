@@ -98,10 +98,19 @@ class OpenAIClient
             throw new \RuntimeException('Provider URL must be a valid absolute http(s) URL (e.g. https://api.openai.com/v1).');
         }
         $host = strtolower($parts['host']);
-        if (self::isBlockedHost($host)) {
-            throw new \RuntimeException('Provider URL must point at a public host (loopback and private addresses are not allowed).');
+        if (self::isBlockedHost($host) && !self::allowPrivateProviderUrls()) {
+            throw new \RuntimeException(
+                'Provider URL must point at a public host (loopback and private addresses are not allowed). ' .
+                'Set ALLOW_PRIVATE_PROVIDER_URLS=true to use a self-hosted provider.'
+            );
         }
         return rtrim($value, '/');
+    }
+
+    /** Deployment-level escape hatch: tenant URLs may target self-hosted LLM servers. */
+    private static function allowPrivateProviderUrls(): bool
+    {
+        return in_array(strtolower(trim((string) env('ALLOW_PRIVATE_PROVIDER_URLS', 'false'))), ['1', 'true', 'yes'], true);
     }
 
     private static function isBlockedHost(string $host): bool

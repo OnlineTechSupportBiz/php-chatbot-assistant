@@ -157,3 +157,37 @@ function dt(string $dbTimestamp, string $format = 'M j, Y g:i A'): string
     $tz = $_SESSION['timezone'] ?? 'UTC';
     return \App\Util\DateTimeHelper::format($dbTimestamp, $tz, $format);
 }
+
+/**
+ * Best-effort client IP for rate limiting and audit rows.
+ *
+ * Port of the JS clientIp (lib/auth/http.ts): REMOTE_ADDR is trusted unless
+ * TRUSTED_PROXY_HOPS says otherwise. With hops > 0 the X-Forwarded-For chain
+ * is walked BACKWARDS from the right — the entry our own trusted proxy
+ * appended — so a client that prepends extra entries cannot shift the answer.
+ * X-Real-IP is accepted only when proxies are trusted too. With no
+ * trustworthy address the caller gets the REMOTE_ADDR bucket, which behind an
+ * untrusted proxy is a shared deployment-wide bucket, not an identity.
+ */
+function clientIp(): string
+{
+    $hops = (int) env('TRUSTED_PROXY_HOPS', 0);
+    if ($hops > 0) {
+        $chain = array_values(array_filter(
+            array_map('trim', explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '')),
+            fn(string $p): bool => $p !== ''
+        ));
+        if ($chain !== []) {
+            $index = count($chain) - $hops;
+            $candidate = $index >= 0 ? $chain[$index] : $chain[0];
+            if ($candidate !== null && filter_var($candidate, FILTER_VALIDATE_IP)) {
+                return $candidate;
+            }
+        }
+        $realIp = trim((string) ($_SERVER['HTTP_X_REAL_IP'] ?? ''));
+        if ($realIp !== '' && filter_var($realIp, FILTER_VALIDATE_IP)) {
+            return $realIp;
+        }
+    }
+    return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+}

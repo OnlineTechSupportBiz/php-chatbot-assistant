@@ -110,6 +110,17 @@ if (env('APP_ENV') === 'production') {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 }
 
+// Production refuses to run without an MFA encryption key: a TOTP seed is a
+// bearer credential, and storing it in the clear defeats the second factor.
+// Port of the JS assertSecretEncryptionConfiguration.
+if (env('APP_ENV') === 'production' && trim((string) env('APP_ENCRYPTION_KEY', '')) === '') {
+    http_response_code(500);
+    exit(
+        'Refusing to start: APP_ENCRYPTION_KEY is unset, so multi-factor authentication ' .
+        "seeds would be stored unencrypted. Generate one with `openssl rand -hex 32`.\n"
+    );
+}
+
 // ── Routes ───────────────────────────────────────────────────────────────
 
 // Root — redirect to login
@@ -125,9 +136,19 @@ $router->get('/login', function (Request $req, Response $res) use ($appDir) {
 });
 $router->post('/login', [$auth, 'login']);
 
+// Registration gate. ALLOW_REGISTRATION is deployment-level (JS parity): when
+// set, it overrides the platform_settings row; when unset, the DB toggle rules.
+function registrationEnabled(): bool
+{
+    $env = trim((string) env('ALLOW_REGISTRATION', ''));
+    if ($env !== '') {
+        return in_array(strtolower($env), ['1', 'true', 'yes'], true);
+    }
+    return \App\Model\Setting::get('registration_enabled', '1') === '1';
+}
+
 $router->get('/register', function (Request $req, Response $res) use ($appDir) {
-    // Check if registration is enabled (platform setting)
-    if (\App\Model\Setting::get('registration_enabled', '1') !== '1') {
+    if (!registrationEnabled()) {
         Session::flash('error', 'New user registration is currently disabled.');
         $res->redirect('/login')->send();
         return;

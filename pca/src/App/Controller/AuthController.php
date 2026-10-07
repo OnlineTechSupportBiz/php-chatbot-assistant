@@ -73,7 +73,14 @@ class AuthController
         }
 
         // ── Registration enabled? ──
-        if (\App\Model\Setting::get('registration_enabled', '1') !== '1') {
+        // ALLOW_REGISTRATION (deployment-level) overrides the platform setting
+        // when set; otherwise the DB toggle rules. Matches the JS gate that is
+        // enforced on both the page and the POST.
+        $envReg = trim((string) env('ALLOW_REGISTRATION', ''));
+        $registrationEnabled = $envReg !== ''
+            ? in_array(strtolower($envReg), ['1', 'true', 'yes'], true)
+            : \App\Model\Setting::get('registration_enabled', '1') === '1';
+        if (!$registrationEnabled) {
             if ($req->wantsJson()) {
                 $res->json(['error' => 'New user registration is currently disabled.'], 403)->send();
             } else {
@@ -879,7 +886,7 @@ class AuthController
 
         // Enable MFA
         User::update((int) $user['id'], [
-            'mfa_secret'          => $secret,
+            'mfa_secret'          => \App\Util\SecretBox::encryptSecret($secret),
             'mfa_enabled'         => 1,
             'mfa_recovery_codes'  => json_encode($hashedRecoveryCodes),
         ]);

@@ -225,8 +225,12 @@ class DocumentController
             return;
         }
 
-        // Move uploaded file to storage
-        $uploadDir    = __DIR__ . '/../../../storage/uploads';
+        // Move uploaded file to storage (STORAGE_DIR, relative to pca/)
+        $uploadRoot   = dirname(__DIR__, 3);
+        $storageRel   = trim((string) env('STORAGE_DIR', 'storage/uploads'), '/');
+        $uploadDir    = $storageRel !== '' && !str_contains($storageRel, '..')
+            ? $uploadRoot . '/' . $storageRel
+            : $uploadRoot . '/storage/uploads';
         $originalName = basename($file['name']);
 
         if (!is_dir($uploadDir)) {
