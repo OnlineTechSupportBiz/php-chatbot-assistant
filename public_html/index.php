@@ -193,6 +193,10 @@ $router->get('/dashboard', [$userUi, 'dashboard']);
 $router->get('/chatbots', [$chatbot, 'index']);
 $router->get('/chatbots/create', [$chatbot, 'create']);
 $router->get('/chatbots/{id}', [$chatbot, 'show']);
+// Legacy bookmark support: the edit page merged into the Settings tab.
+$router->get('/chatbots/{id}/edit', function (Request $req, Response $res, array $params) {
+    $res->redirect('/chatbots/' . (int) ($params['id'] ?? 0))->send();
+});
 $router->post('/chatbots', [$chatbot, 'store']);
 $router->post('/chatbots/{id}', [$chatbot, 'update']);   // POST (no PUT natively in browser forms)
 $router->post('/chatbots/{id}/delete', [$chatbot, 'destroy']);
