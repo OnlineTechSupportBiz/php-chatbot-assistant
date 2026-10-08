@@ -187,7 +187,7 @@ php vendor/bin/phpunit tests/Unit/
 
 ## Settings file
 
-The app reads its settings from `pca/.env`. Copy `pca/.env.example` to `pca/.env` and fill in your values (the installer can do this for you):
+The app reads its settings from `pca/.env`. Copy `pca/.env.example` to `pca/.env` and fill in your values:
 
 | Setting | Default | What it is |
 |---|---|---|
