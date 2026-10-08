@@ -31,7 +31,16 @@ declare(strict_types=1);
 
 $rootDir = dirname(__DIR__);
 
-// Load .env file
+// Load .env file. Shell-provided environment variables WIN over .env values
+// (an operator passing DB_NAME on the command line or to php -S intends it),
+// so only keys not already present in the real environment are applied.
+$shellEnv = [];
+foreach (explode("\n", shell_exec('env') ?? '') as $line) {
+    $k = explode('=', $line, 2)[0] ?? '';
+    if ($k !== '') {
+        $shellEnv[$k] = true;
+    }
+}
 $envFile = $rootDir . '/.env';
 if (file_exists($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -44,7 +53,9 @@ if (file_exists($envFile)) {
             [$key, $value] = explode('=', $line, 2);
             $key = trim($key);
             $value = trim($value);
-            putenv("$key=$value");
+            if (!isset($shellEnv[$key])) {
+                putenv("$key=$value");
+            }
             $_ENV[$key] = $value;
         }
     }
@@ -52,7 +63,12 @@ if (file_exists($envFile)) {
 
 function env(string $key, mixed $default = null): mixed
 {
-    return $_ENV[$key] ?? getenv($key) ?: $default;
+    // Real environment (shell/proc) wins over .env values.
+    $real = getenv($key);
+    if ($real !== false && $real !== '') {
+        return $real;
+    }
+    return $_ENV[$key] ?? $default;
 }
 
 return [

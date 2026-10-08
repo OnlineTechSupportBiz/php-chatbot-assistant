@@ -128,41 +128,53 @@ class AuthController
             return;
         }
 
-        // ── Find the single admin account (created by installer) ──
-        $adminStmt = \getDb()->prepare("SELECT id, company_name, slug FROM users WHERE role = 'admin' LIMIT 1");
+        // ── Tenancy: the FIRST registered account becomes the admin of its
+        // own tenant (flat solo-admin model, matching the JS port). Later
+        // registrations join the existing admin's tenant as regular users.
+        $adminStmt = \getDb()->prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1");
         $adminStmt->execute();
         $adminRow = $adminStmt->fetch();
-        if (!$adminRow) {
-            if ($req->wantsJson()) {
-                $res->json(['error' => 'Registration is not available yet. Please contact support.'], 503)->send();
-            } else {
-                Session::flash('error', 'Registration is not available yet. Please contact support.');
-                $res->redirect('/register')->send();
-            }
-            return;
-        }
-        $adminId = (int) $adminRow['id'];
+        $role = $adminRow ? 'user' : 'admin';
+        $adminId = $adminRow ? (int) $adminRow['id'] : 0; // placeholder; self-assigned below
 
         // ── Create the user (role='user') belonging to this admin ──
         $passwordHash = password_hash($password, PASSWORD_ARGON2ID);
         $verifyToken = bin2hex(random_bytes(32));
         $slug = \App\Model\User::generateSlug($company);
 
-        $userId = \App\Model\User::createUser([
-            'name'               => $name,
-            'email'              => $email,
-            'password_hash'      => $passwordHash,
-            'company_name'       => $company,
-            'slug'               => $slug,
-            'is_active'          => 1,
-            'role'               => 'user',
-            'email_verify_token' => $verifyToken,
-            'admin_id'           => $adminId,
-        ]);
+        // First-admin insert: admin_id must reference the row being created
+        // (self-referencing FK, DEFERRABLE). Defer it inside one transaction.
+        $pdo = \getDb();
+        $pdo->beginTransaction();
+        $pdo->exec('SET CONSTRAINTS ALL DEFERRED');
+        try {
+            $userId = \App\Model\User::createUser([
+                'name'               => $name,
+                'email'              => $email,
+                'password_hash'      => $passwordHash,
+                'company_name'       => $company,
+                'slug'               => $slug,
+                'is_active'          => 1,
+                'role'               => $role,
+                'email_verify_token' => $verifyToken,
+                'admin_id'           => $role === 'admin' ? 0 : $adminId,
+            ]);
+            if ($role === 'admin') {
+                // The first account administers its own tenant.
+                \App\Model\User::update($userId, ['admin_id' => $userId]);
+                $adminId = $userId;
+            }
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
 
         AuditLog::log($adminId, $userId, 'register', 'user', $userId, null, [
             'email' => $email,
-            'role'  => 'user',
+            'role'  => $role,
         ]);
 
         // ── Grant default widget permissions ──

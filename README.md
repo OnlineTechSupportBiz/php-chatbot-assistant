@@ -82,10 +82,12 @@ Only a superuser can install it — the migrator cannot:
 
 ```bash
 sudo -u postgres psql -d chatbot_assistant << 'SQL'
-CREATE SCHEMA IF NOT EXISTS chatbot_schema;
+CREATE SCHEMA IF NOT EXISTS chatbot_schema AUTHORIZATION chatbot_migrator;
 CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA chatbot_schema;
 SQL
 ```
+
+The schema must belong to the migrator — it creates the tables and manages access rights later.
 
 **4. Create the tables**
 
