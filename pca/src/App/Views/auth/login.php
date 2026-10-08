@@ -26,7 +26,8 @@
  * Login page view
  */
 $brandName = $brandName ?? 'Chatbot Assistant';
-$activeTab = $_GET['tab'] ?? 'password';
+// Whitelist the tab: never use the raw query value for anything but a flag.
+$activeTab = in_array($_GET['tab'] ?? '', ['magic'], true) ? 'magic' : 'password';
 ?><!DOCTYPE html>
 <html lang="en">
 <head>

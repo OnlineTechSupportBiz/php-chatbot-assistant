@@ -106,6 +106,14 @@ $userUi   = new UserController();
 // ── Security Headers ─────────────────────────────────────────────────────
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
+header('Cross-Origin-Resource-Policy: same-origin');
+header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+// Hide the PHP signature (expose_php is INI_SYSTEM — not changeable at runtime).
+header_remove('X-Powered-By');
+// Views use inline styles and small inline scripts (CSRF token, model rows),
+// so 'unsafe-inline' is required for both. Nonces would be the next hardening
+// step if the inline JS grows.
+header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
 if (env('APP_ENV') === 'production') {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 }
