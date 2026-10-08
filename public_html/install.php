@@ -54,12 +54,22 @@ function resetWizard(): void
     $_SESSION['install_step'] = 0;
     $_SESSION['install_errors'] = [];
     $_SESSION['install_success'] = '';
+    unset($_SESSION['install_form_old']);
 }
 
 // Helper: read a form value with default
 function formVal(string $key, string $default = ''): string
 {
-    return htmlspecialchars($_POST[$key] ?? $_SESSION['install_data'][$key] ?? $default, ENT_QUOTES, 'UTF-8');
+    $value = $_POST[$key]
+        ?? $_SESSION['install_form_old'][$key]
+        ?? $_SESSION['install_data'][$key]
+        ?? $default;
+    // Never repopulate password fields (browser password managers plus a
+    // shared screen is how credentials leak); they stay blank on re-render.
+    if (in_array($key, ['db_pass', 'db_migrator_pass', 'smtp_pass'], true)) {
+        return '';
+    }
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
 // Helper: require a non-empty string from POST
@@ -522,6 +532,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['install_errors'] = $errors;
     $_SESSION['install_success'] = $success;
     $_SESSION['install_step'] = $step;
+
+    // On a failed step-1 validation, keep the submitted form values so the
+    // re-rendered form repopulates (the PRG redirect below wipes $_POST).
+    // Passwords are kept only long enough to survive the redirect; they are
+    // cleared on the next successful advance or reset.
+    if (!empty($errors)) {
+        $_SESSION['install_form_old'] = array_intersect_key($_POST, array_flip([
+            'db_host', 'db_port', 'db_name', 'db_user', 'db_pass',
+            'db_migrator_user', 'db_migrator_pass',
+            'app_url', 'smtp_host', 'smtp_port', 'smtp_auth',
+            'smtp_user', 'smtp_pass', 'smtp_encryption',
+            'mail_from_address', 'mail_from_name',
+        ]));
+    } else {
+        unset($_SESSION['install_form_old']);
+    }
 
     // Redirect to prevent form re-submission on refresh
     $scriptUrl = $_SERVER['SCRIPT_NAME'];
