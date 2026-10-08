@@ -925,8 +925,8 @@ ob_start();
         // primary-colored icon; dark theme → primary/gradient bubble with a
         // white icon. The × inherits the bubble's text color.
         bubble.style.background = isDark ? headerBg : surface;
-        bubble.style.color = isDark ? '#ffffff' : (s.primary || '#0d6efd');
-        document.getElementById('wp-bubble-icon').setAttribute('fill', isDark ? '#ffffff' : (s.primary || '#0d6efd'));
+        bubble.style.color = isDark ? '#ffffff' : '#1a1a2e';
+        document.getElementById('wp-bubble-icon').setAttribute('fill', isDark ? '#ffffff' : '#1a1a2e');
         // Footer + input follow the panel theme (matches the real widget's
         // PANEL.footerBg / inputBg / inputColor).
         var footer = document.getElementById('wp-footer');
