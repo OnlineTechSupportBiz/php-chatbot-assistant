@@ -1102,16 +1102,14 @@ function include_component(string $component): void
             </div>
         </div>
         <p class="hint" style="font-size:.85rem;color:#6b7280;margin:.25rem 0 .5rem;">
-            This second user owns the database tables. The website itself uses
-            the regular DB User above, which has less power — so if a bug ever
-            slipped through, one customer's data still couldn't reach another
-            customer. The database itself enforces this, not just the code.
+            Recommended. Keeps each customer's data locked away from the others —
+            even if the code has a bug.
         </p>
         <div class="form-group">
             <label style="display:flex;align-items:center;gap:.5rem;font-weight:400;">
                 <input type="checkbox" name="allow_single_role_db" value="true"
                        <?= isset($_POST['allow_single_role_db']) ? 'checked' : '' ?>>
-                Skip the second user (less safe — the code alone keeps customers' data separate)
+                Skip this (not recommended)
             </label>
         </div>
         <hr>
