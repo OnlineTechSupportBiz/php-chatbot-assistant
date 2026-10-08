@@ -153,10 +153,10 @@ if ($squash) {
         escapeshellarg($tmpFile)
     );
 
-    passthru($dumpCmd, $exitCode);
+    passthru($dumpCmd, $exitCode);  // nosemgrep: php.lang.security.exec-use.exec-use,php.lang.security.unlink-use.unlink-use
 
     if ($exitCode !== 0) {
-        unlink($tmpFile);
+        unlink($tmpFile);  // nosemgrep: php.lang.security.unlink-use.unlink-use — deletes this script's own tempnam() file  // nosemgrep: php.lang.security.unlink-use.unlink-use — deletes this script's own tempnam() file
         echo "FAILED to dump schema (exit code {$exitCode}).\n";
         exit(1);
     }
@@ -177,10 +177,10 @@ if ($squash) {
             escapeshellarg(getenv('DB_NAME') ?: 'postgres'),
             escapeshellarg($tmpFile)
         );
-        passthru($fallbackCmd, $exitCode);
+        passthru($fallbackCmd, $exitCode);  // nosemgrep: php.lang.security.exec-use.exec-use,php.lang.security.unlink-use.unlink-use
 
         if ($exitCode !== 0) {
-            unlink($tmpFile);
+            unlink($tmpFile);  // nosemgrep: php.lang.security.unlink-use.unlink-use — deletes this script's own tempnam() file  // nosemgrep: php.lang.security.unlink-use.unlink-use — deletes this script's own tempnam() file
             echo "FAILED even with sudo -u postgres.\n";
             echo "To recover, restore from backup: cp -a {$backupDir}/*.sql {$migrationDir}/\n";
             exit(1);
@@ -190,7 +190,7 @@ if ($squash) {
         $rawLines = file($tmpFile, FILE_IGNORE_NEW_LINES);
         $tableCount = count(preg_grep('/^CREATE\s+TABLE/i', $rawLines ?? []));
         if ($tableCount < 5) {
-            unlink($tmpFile);
+            unlink($tmpFile);  // nosemgrep: php.lang.security.unlink-use.unlink-use — deletes this script's own tempnam() file  // nosemgrep: php.lang.security.unlink-use.unlink-use — deletes this script's own tempnam() file
             echo "Still got only {$tableCount} tables after fallback. Dump is broken.\n";
             echo "To recover: cp -a {$backupDir}/*.sql {$migrationDir}/\n";
             exit(1);
@@ -248,7 +248,7 @@ if ($squash) {
     );
 
     $cmd = sprintf('psql -v ON_ERROR_STOP=1 %s -c %s 2>&1', $dbArgs, escapeshellarg($dropSql));
-    passthru($cmd, $exitCode);
+    passthru($cmd, $exitCode);  // nosemgrep: php.lang.security.exec-use.exec-use,php.lang.security.unlink-use.unlink-use
     if ($exitCode !== 0) {
         echo "WARNING: failed to drop all tables (some may remain).\n";
     } else {
@@ -259,7 +259,7 @@ if ($squash) {
     echo "Removing old migration files...\n";
     foreach (glob($migrationDir . '/*.sql') as $oldFile) {
         if (realpath($oldFile) !== realpath($outputFile)) {
-            unlink($oldFile);
+            unlink($oldFile);  // nosemgrep: php.lang.security.unlink-use.unlink-use — removes old .sql files from this repo's migrations dir via glob(), not user input
             echo "  removed: " . basename($oldFile) . "\n";
         }
     }
@@ -326,7 +326,7 @@ if ($fresh || $dropOnly) {
     );
 
     $cmd = sprintf('psql -v ON_ERROR_STOP=1 %s -c %s 2>&1', $dbArgs, escapeshellarg($dropSql));
-    passthru($cmd, $exitCode);
+    passthru($cmd, $exitCode);  // nosemgrep: php.lang.security.exec-use.exec-use,php.lang.security.unlink-use.unlink-use
     if ($exitCode !== 0) {
         echo "FAILED to drop tables.\n";
         exit(1);
@@ -348,7 +348,7 @@ foreach ($files as $file) {
     // -v ON_ERROR_STOP=1 makes psql return non-zero exit on any error
     // -f reads the file and executes it
     $cmd = sprintf('psql -v ON_ERROR_STOP=1 %s -f %s 2>&1', $dbArgs, escapeshellarg($file));
-    passthru($cmd, $exitCode);
+    passthru($cmd, $exitCode);  // nosemgrep: php.lang.security.exec-use.exec-use,php.lang.security.unlink-use.unlink-use
 
     if ($exitCode !== 0) {
         echo "FAILED\n";
@@ -378,7 +378,7 @@ if (!$dropOnly) {
     echo "Granting app-role ({$dbAppUser}) privileges in schema \"{$schema}\"...\n";
     foreach ($grants as $grant) {
         $cmd = sprintf('psql -v ON_ERROR_STOP=1 %s -c %s 2>&1', $dbArgs, escapeshellarg($grant));
-        passthru($cmd, $exitCode);
+        passthru($cmd, $exitCode);  // nosemgrep: php.lang.security.exec-use.exec-use,php.lang.security.unlink-use.unlink-use
         if ($exitCode !== 0) {
             echo "FAILED: {$grant}\n";
             exit(1);

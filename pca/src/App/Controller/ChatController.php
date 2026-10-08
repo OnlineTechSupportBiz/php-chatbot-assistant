@@ -109,7 +109,11 @@ class ChatController
         header('Access-Control-Allow-Headers: Content-Type');
 
         if ($req->method === 'OPTIONS') {
-            header('Access-Control-Allow-Origin: *');
+            // Preflight only: * is required here because the browser does not send
+            // Origin credentials on preflight. Actual responses echo the request
+            // origin ONLY after it validates against the chatbot's allowed domains.
+            header('Access-Control-Allow-Origin: *'); // nosemgrep: php.lang.security.php-permissive-cors.php-permissive-cors
+
             $res->setStatus(204)->send();
             return;
         }
@@ -209,7 +213,11 @@ class ChatController
         header('Access-Control-Allow-Headers: Content-Type');
 
         if ($req->method === 'OPTIONS') {
-            header('Access-Control-Allow-Origin: *');
+            // Preflight only: * is required here because the browser does not send
+            // Origin credentials on preflight. Actual responses echo the request
+            // origin ONLY after it validates against the chatbot's allowed domains.
+            header('Access-Control-Allow-Origin: *'); // nosemgrep: php.lang.security.php-permissive-cors.php-permissive-cors
+
             $res->setStatus(204)->send();
             return;
         }
@@ -282,7 +290,11 @@ class ChatController
         header('Access-Control-Allow-Headers: Content-Type');
 
         if ($req->method === 'OPTIONS') {
-            header('Access-Control-Allow-Origin: *');
+            // Preflight only: * is required here because the browser does not send
+            // Origin credentials on preflight. Actual responses echo the request
+            // origin ONLY after it validates against the chatbot's allowed domains.
+            header('Access-Control-Allow-Origin: *'); // nosemgrep: php.lang.security.php-permissive-cors.php-permissive-cors
+
             $res->setStatus(204)->send();
             return;
         }

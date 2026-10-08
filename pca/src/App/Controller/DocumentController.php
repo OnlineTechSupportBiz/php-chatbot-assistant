@@ -265,7 +265,10 @@ class DocumentController
         ]);
 
         if ($documentId === null || $documentId === false) {
-            @unlink($destPath);
+            // $destPath is server-built (uploadDir + generated name), not user input.
+            if (str_starts_with(realpath($destPath) ?: '', realpath($uploadDir))) {
+                @unlink($destPath); // nosemgrep: php.lang.security.unlink-use.unlink-use
+            }
             $error = 'Failed to create document record.';
             if ($req->isAjax()) {
                 $res->json(['ok' => false, 'error' => $error])->send();
@@ -536,10 +539,19 @@ class DocumentController
             return;
         }
 
-        // Remove file from disk
-        $filePath = $document['file_path'];
-        if ($filePath && file_exists($filePath)) {
-            @unlink($filePath);
+        // Remove file from disk. Defense-in-depth: the stored path must stay
+        // inside STORAGE_DIR (guards against a tampered DB row pointing at an
+        // arbitrary filesystem path).
+        $filePath = (string) $document['file_path'];
+        $uploadRoot   = dirname(__DIR__, 3);
+        $storageRel   = trim((string) env('STORAGE_DIR', 'storage/uploads'), '/');
+        $storageDir   = $storageRel !== '' && !str_contains($storageRel, '..')
+            ? $uploadRoot . '/' . $storageRel
+            : $uploadRoot . '/storage/uploads';
+        if ($filePath !== ''
+            && str_starts_with(realpath($filePath) ?: '', realpath($storageDir))
+            && is_file($filePath)) {
+            @unlink($filePath); // nosemgrep: php.lang.security.unlink-use.unlink-use
         }
 
         // Delete document record (also deletes chunks via model)
