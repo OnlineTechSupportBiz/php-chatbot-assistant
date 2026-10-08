@@ -35,8 +35,10 @@
  *   $user    — authenticated user
  */
 \App\Auth\Session::start();
-$errors  = \App\Auth\Session::getFlash('errors');
-$success = \App\Auth\Session::getFlash('success');
+// Consume the flashes BEFORE form.php's prelude runs (its own getFlash
+// calls would otherwise return null and clobber these variables).
+$savedSuccess = \App\Auth\Session::getFlash('success');
+$savedErrors  = \App\Auth\Session::getFlash('errors');
 
 $chatbotId = (int) $chatbot['id'];
 
@@ -56,12 +58,12 @@ ob_start(); ?><div class="page-head">
     </div>
 </div>
 
-<?php if (!empty($success)): ?>
-    <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
+<?php if (!empty($savedSuccess)): ?>
+    <div class="alert alert-success"><?= htmlspecialchars($savedSuccess) ?></div>
 <?php endif; ?>
-<?php if (is_array($errors)): ?>
+<?php if (is_array($savedErrors)): ?>
     <div class="alert alert-error">
-        <ul style="margin:0;padding-left:1.25rem;"><?php foreach ($errors as $e): ?><li><?= htmlspecialchars($e) ?></li><?php endforeach; ?></ul>
+        <ul style="margin:0;padding-left:1.25rem;"><?php foreach ($savedErrors as $e): ?><li><?= htmlspecialchars($e) ?></li><?php endforeach; ?></ul>
     </div>
 <?php endif; ?>
 
