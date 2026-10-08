@@ -20,7 +20,6 @@ The only things you may ever pay for:
 | An OpenAI API key (powers the bot's answers) | OpenAI, at their normal prices |
 | A LlamaCloud key (reads your PDF and Word files) | LlamaCloud, at their normal prices |
 | A server to run it on | Your hosting company |
-| Optional: we install it for you | Us — $150 one time |
 | Optional: we clean up your documents for you | Us — quoted up front |
 
 The OpenAI and LlamaCloud keys are accounts **you** open with **them**. We never resell their services and never see your keys' bills.
@@ -125,9 +124,7 @@ nano .env            # fill in the DB_*, APP_URL and SMTP values
 chmod 600 .env
 ```
 
-(There's also `public_html/install.php`, a browser wizard that does steps 2–5. If you use it, **delete it afterwards** — it must never stay on a live server.)
-
-**6. Start the app**
+**5. Start the app**
 
 Point your web server at `public_html/`. For a quick local test:
 
@@ -135,11 +132,11 @@ Point your web server at `public_html/`. For a quick local test:
 php -S localhost:8000 -t public_html
 ```
 
-**7. Register and add your keys**
+**6. Register and add your keys**
 
 Register on the site, log in, open Settings, and paste in your OpenAI and LlamaCloud keys.
 
-**8. Create a chatbot**
+**7. Create a chatbot**
 
 Pick an industry preset (or write your own instructions), upload a document, wait for training to finish, then copy the snippet onto your website.
 
@@ -222,9 +219,6 @@ In your own database, on your own server. The only outside calls are to OpenAI, 
 
 **Which mode should I pick for my documents?**
 Start with the regular vector search — it's fast and works well for most sites. Use PageIndex for long documents with clear headings, like manuals and reports. You can try both and compare.
-
-**Can I get help installing it?**
-Yes — $150 one time and we set everything up, train one chatbot, and hand you the snippet. Email [contact@onlinetechsupport.biz](mailto:contact@onlinetechsupport.biz).
 
 ## Links
 
