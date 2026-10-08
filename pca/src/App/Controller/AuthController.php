@@ -474,7 +474,7 @@ class AuthController
             (int) $user['id']
         );
 
-        $redirectPath = in_array($user['role'] ?? '', ['admin'], true) ? '/admin' : '/dashboard';
+        $redirectPath = '/dashboard';
 
         if ($req->wantsJson()) {
             $res->json(['success' => true, 'redirect' => $redirectPath])->send();
@@ -792,7 +792,7 @@ class AuthController
             (int) $user['id']
         );
 
-        $redirectPath = in_array($user['role'] ?? '', ['admin'], true) ? '/admin' : '/dashboard';
+        $redirectPath = '/dashboard';
         $res->redirect($redirectPath)->send();
     }
 
