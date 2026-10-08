@@ -17,12 +17,12 @@ The only things you may ever pay for:
 | Thing | Who you pay |
 |---|---|
 | The software | Nobody — it's free |
-| An OpenAI API key (powers the bot's answers) | OpenAI, at their normal prices |
-| A LlamaCloud key (reads your PDF and Word files) | LlamaCloud, at their normal prices |
+| An AI provider account (powers the bot's answers) | Your provider, at their normal prices |
+| A document-parsing service (reads PDF and Word files) | Your provider, at their normal prices |
 | A server to run it on | Your hosting company |
 | Optional: we clean up your documents for you | Us — quoted up front |
 
-The OpenAI and LlamaCloud keys are accounts **you** open with **them**. We never resell their services and never see your keys' bills.
+Provider accounts are **yours**, opened directly with **them**. We never resell their services and never see your bills.
 
 ## What it does
 
@@ -134,7 +134,7 @@ php -S localhost:8000 -t public_html
 
 **6. Register and add your keys**
 
-Register on the site, log in, open Settings, and paste in your OpenAI and LlamaCloud keys.
+Register on the site, log in, open Settings, and add your AI provider accounts.
 
 **7. Create a chatbot**
 
@@ -151,7 +151,7 @@ sudo -u postgres psql -d chatbot_assistant -c \
 
 ## Configuring your own AI models
 
-You don't have to use OpenAI's website models. In Settings, add any AI model you want by giving it a name, an API key, and a URL (this is how you use OpenAI, OpenRouter, or a self-hosted model). Then each chatbot picks one of those models, with an automatic backup model if the first one fails.
+In Settings, add any AI model you want by giving it a name, an API key, and a URL — OpenAI, OpenRouter, or your own self-hosted model. Then each chatbot picks one of those models, with an automatic backup model if the first one fails.
 
 ## Keeping the bot under control
 
@@ -215,7 +215,7 @@ The app reads its settings from `pca/.env`. Copy `pca/.env.example` to `pca/.env
 No. It's software you download and run yourself. Nothing is hosted by us and nothing bills through us.
 
 **Where does my data live?**
-In your own database, on your own server. The only outside calls are to OpenAI, LlamaCloud and your own mail server.
+In your own database, on your own server. The only outside calls are to the AI providers you configure and your own mail server.
 
 **Which mode should I pick for my documents?**
 Start with the regular vector search — it's fast and works well for most sites. Use PageIndex for long documents with clear headings, like manuals and reports. You can try both and compare.
