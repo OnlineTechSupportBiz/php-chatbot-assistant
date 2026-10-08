@@ -55,6 +55,7 @@ ob_start(); ?>
                     <th>Phone</th>
                     <th>Chatbot</th>
                     <th>Captured</th>
+                    <th>Conversation</th>
                 </tr>
             </thead>
             <tbody>
@@ -73,6 +74,13 @@ ob_start(); ?>
                             <a href="/chatbots/<?= (int) $lead['chatbot_id'] ?>"><?= htmlspecialchars($botNames[(int) $lead['chatbot_id']] ?? '-') ?></a>
                         </td>
                         <td class="muted"><?= dt($lead['captured_at'] ?? $lead['created_at'] ?? '') ?></td>
+                        <td>
+                            <?php if (!empty($lead['conversation_id'])): ?>
+                                <a href="/chatbots/<?= (int) $lead['chatbot_id'] ?>/conversations/<?= (int) $lead['conversation_id'] ?>">View conversation</a>
+                            <?php else: ?>
+                                -
+                            <?php endif; ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
