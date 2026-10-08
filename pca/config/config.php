@@ -53,6 +53,12 @@ if (file_exists($envFile)) {
             [$key, $value] = explode('=', $line, 2);
             $key = trim($key);
             $value = trim($value);
+            // Strip matching surrounding quotes so SMTP_PASS="secret" means
+            // "secret", not '"secret"' (a literal-quote password fails SMTP
+            // AUTH with 535 while the operator thinks the value is right).
+            if (strlen($value) >= 2 && (($value[0] === '"' && substr($value, -1) === '"') || ($value[0] === "'" && substr($value, -1) === "'"))) {
+                $value = substr($value, 1, -1);
+            }
             if (!isset($shellEnv[$key])) {
                 putenv("$key=$value");
             }
