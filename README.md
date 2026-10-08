@@ -40,9 +40,9 @@ Provider accounts are **yours**, opened directly with **them**. We never resell 
 One script tag. The chatbot page builds it for you with your colors already set:
 
 ```html
-<script src="https://your-server.com/widget.js"
+<script src="https://example.com/widget.js"
         data-widget-token="YOUR_WIDGET_TOKEN"
-        data-api-base="https://your-server.com"
+        data-api-base="https://example.com"
         data-bot-name="Support"
         data-primary-color="#2563eb"
         data-position="bottom-right"
@@ -129,7 +129,7 @@ chmod 600 .env
 Point your web server at `public_html/`. For a quick local test:
 
 ```bash
-php -S localhost:8000 -t public_html
+php -S example.com:8000 -t public_html
 ```
 
 **6. Register and add your keys**
@@ -244,7 +244,7 @@ semgrep scan --metrics=off --config p/default --config p/php --config p/security
 
 # Live dynamic scan against a running instance (full scan, report to zap-report.html)
 docker run --rm --network host -v "$(pwd)":/zap/wrk:rw -t ghcr.io/zaproxy/zaproxy:stable \
-  zap-full-scan.py -t http://localhost:8000 -r zap-report.html
+  zap-full-scan.py -t http://example.com:8000 -r zap-report.html
 
 # Dependency, secret and misconfiguration scan
 trivy fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL .
