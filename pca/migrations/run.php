@@ -46,12 +46,12 @@ declare(strict_types=1);
  *   DB_PASS        (default: empty string)
  *   PG_SCHEMA      (default: chatbot_assistant)      -- schema in which tables are created
  *
- * RLS ownership: run this script AS THE MIGRATOR (OWNER) ROLE — the role named
- * in DB_MIGRATOR_USER/DB_MIGRATOR_PASS (or a superuser that sets it up). If the
- * app role (DB_USER) runs it, it owns every table it creates and Postgres
- * exempts owners from Row-Level Security, which silently disables tenant
- * isolation even with 004_force_rls.sql applied. After migrating, grant the
- * app role its DML privileges (see install.php's grant block).
+ * RLS ownership: REQUIRED. The script connects AS THE MIGRATOR (OWNER) ROLE —
+ * DB_MIGRATOR_USER/DB_MIGRATOR_PASS — which must be a separate role from the
+ * app role (DB_USER). If the app role owned the tables, Postgres would exempt
+ * it from Row-Level Security and silently disable tenant isolation even with
+ * 004_force_rls.sql applied. The script refuses to run in that configuration
+ * and grants the app role its DML privileges after migrating.
  */
 
 // ── CLI auth helper ──────────────────────────────────────────────────────
@@ -103,6 +103,20 @@ require_once __DIR__ . '/../config/config.php';
 foreach ($cliEnv as $k => $v) {
     putenv("{$k}={$v}");
     $_ENV[$k] = $v;
+}
+
+// ── Enforce the two-role model BEFORE touching the database ─────────────
+// RLS is REQUIRED, not optional. Postgres exempts table owners from their
+// own policies, so the app role (DB_USER) must not own the tables — the
+// migrator must be a separate role. Refuse to run otherwise.
+$dbMigratorUser = getenv('DB_MIGRATOR_USER') ?: '';
+$dbAppUser      = getenv('DB_USER') ?: 'postgres';
+if ($dbMigratorUser === '' || $dbMigratorUser === $dbAppUser) {
+    echo "ERROR: DB_MIGRATOR_USER must be a separate role from DB_USER.\n";
+    echo "       Row-Level Security only applies to the app role if the\n";
+    echo "       migrator (table owner) is a different role. There is no\n";
+    echo "       single-role mode.\n";
+    exit(1);
 }
 
 $dbArgs  = dbConnect();
@@ -343,20 +357,16 @@ foreach ($files as $file) {
     echo "OK\n";
 }
 
-// ── Grant app-role privileges (two-role mode) ────────────────────────────
-// When the migrations ran as the migrator (owner) role, the app role
-// (DB_USER) has no access yet. Mirror install.php's grant block: USAGE + DML,
-// never CREATE, never ownership — so the app role stays subject to
-// Row-Level Security. Skipped in single-role mode (migrator == app role).
-$migrator = getenv('DB_MIGRATOR_USER') ?: '';
-$appUser  = getenv('DB_USER') ?: 'postgres';
-
-if ($migrator !== '' && $migrator !== $appUser && !$dropOnly) {
+// ── Grant app-role privileges ────────────────────────────────────────────
+// The migrations ran as the migrator (owner) role, so the app role has no
+// access yet. USAGE + DML, never CREATE, never ownership — so the app role
+// stays subject to Row-Level Security.
+if (!$dropOnly) {
     // Grants must run as the owner (the role we connected as) — but ALTER
     // DEFAULT PRIVILEGES only affects objects created by the current role,
     // which is exactly the migrator. Connect as migrator to run them.
     $schemaQ = '"' . str_replace('"', '""', $schema) . '"';
-    $roleQ   = '"' . str_replace('"', '""', $appUser) . '"';
+    $roleQ   = '"' . str_replace('"', '""', $dbAppUser) . '"';
     $grants = [
         "GRANT USAGE ON SCHEMA {$schemaQ} TO {$roleQ}",
         "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {$schemaQ} TO {$roleQ}",
@@ -365,7 +375,7 @@ if ($migrator !== '' && $migrator !== $appUser && !$dropOnly) {
         "ALTER DEFAULT PRIVILEGES IN SCHEMA {$schemaQ} GRANT USAGE, SELECT ON SEQUENCES TO {$roleQ}",
     ];
 
-    echo "Granting app-role ({$appUser}) privileges in schema \"{$schema}\"...\n";
+    echo "Granting app-role ({$dbAppUser}) privileges in schema \"{$schema}\"...\n";
     foreach ($grants as $grant) {
         $cmd = sprintf('psql -v ON_ERROR_STOP=1 %s -c %s 2>&1', $dbArgs, escapeshellarg($grant));
         passthru($cmd, $exitCode);

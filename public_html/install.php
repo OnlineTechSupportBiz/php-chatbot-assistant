@@ -106,7 +106,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dbPass  = requirePost('db_pass');
         $migUser = trim((string) ($_POST['db_migrator_user'] ?? ''));
         $migPass = (string) ($_POST['db_migrator_pass'] ?? '');
-        $allowSingleRole = trim((string) ($_POST['allow_single_role_db'] ?? '')) === 'true';
         $appUrl  = requirePost('app_url');
         $smtpHost = requirePost('smtp_host');
         $smtpPort = requirePost('smtp_port');
@@ -122,19 +121,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$dbName)  $errors[] = 'DB Name is required.';
         if (!$dbUser)  $errors[] = 'DB User is required.';
         if (!$dbPass)  $errors[] = 'DB Password is required.';
-        // Two-role RLS model: a separate migrator role owns the tables so the
-        // app role (DB_USER) is subject to Row-Level Security. Postgres exempts
-        // table owners from their own policies, so letting the app role run the
-        // migrations makes every RLS policy inert. In production that is a
-        // hard error unless the operator explicitly accepts app-layer-only
-        // isolation (ALLOW_SINGLE_ROLE_DB) — mirroring the JS port.
+        // Two-role RLS model — REQUIRED, not optional. A separate migrator
+        // role owns the tables so the app role (DB_USER) is subject to
+        // Row-Level Security. Postgres exempts table owners from their own
+        // policies, so letting the app role run the migrations makes every
+        // RLS policy inert. There is no opt-out.
         $singleRole = $migUser === '' || $migUser === $dbUser;
         if ($singleRole) {
-            $migUser = '';
-            $migPass = '';
-            if (!$allowSingleRole) {
-                $errors[] = 'A separate DB Migrator (owner) role is required so Row-Level Security can enforce tenant isolation. The app role must not own the tables. Create one and enter it below (or check ALLOW_SINGLE_ROLE_DB to accept app-layer-only isolation).';
-            }
+            $errors[] = 'A separate DB Migrator (owner) role is required so Row-Level Security can enforce tenant isolation. The app role must not own the tables. Create one and enter it below.';
         }
         if (!$appUrl)  $errors[] = 'App URL is required.';
         if (!$smtpHost)  $errors[] = 'SMTP Host is required.';
@@ -153,8 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "DB_PASS={$dbPass}\n" .
                 "DB_MIGRATOR_USER={$migUser}\n" .
                 "DB_MIGRATOR_PASS={$migPass}\n" .
-                "ALLOW_SINGLE_ROLE_DB=" . ($migUser !== '' ? 'false' : 'true') . "\n" .
-                "\n# App\n" .
+                                "\n# App\n" .
                 "APP_ENV=production\n" .
                 "APP_URL={$appUrl}\n" .
                 "\n# Session\n" .
@@ -243,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Two-role mode: run migrations as the migrator (owner) role so
                 // the app role does NOT own the tables and Row-Level Security
                 // genuinely applies to it. Single-role is only reachable via the
-                // ALLOW_SINGLE_ROLE_DB opt-in checked at step 1.
+                // The migrator role is required (no single-role mode).
                 $migUser = (string) ($data['db_migrator_user'] ?? '');
                 $migPass = (string) ($data['db_migrator_pass'] ?? '');
                 $migUserForConn = $migUser !== '' ? $migUser : $data['db_user'];
@@ -1102,16 +1095,9 @@ function include_component(string $component): void
             </div>
         </div>
         <p class="hint" style="font-size:.85rem;color:#6b7280;margin:.25rem 0 .5rem;">
-            Recommended. Keeps each customer's data locked away from the others —
-            even if the code has a bug.
+            Required. Keeps each customer's data locked away from the others —
+            even if the code has a bug. Required for install.
         </p>
-        <div class="form-group">
-            <label style="display:flex;align-items:center;gap:.5rem;font-weight:400;">
-                <input type="checkbox" name="allow_single_role_db" value="true"
-                       <?= isset($_POST['allow_single_role_db']) ? 'checked' : '' ?>>
-                Skip this (not recommended)
-            </label>
-        </div>
         <hr>
         <div class="form-row">
             <div class="form-group">

@@ -56,7 +56,7 @@ Paste it into your site before `</body>`. You also list which domains are allowe
 
 You need a server with PHP 8.2 or newer and a PostgreSQL 16 database with the pgvector extension. Allow about fifteen minutes.
 
-The database uses two users. One (the **migrator**) owns the tables. The other (the **app user**) is the one the website actually uses, and it only gets permission to read and write data. Keeping them separate is what keeps each customer's data locked away from the others — even if the code has a bug.
+The database uses two users. One (the **migrator**) owns the tables. The other (the **app user**) is the one the website actually uses, and it only gets permission to read and write data. This two-user split is **required** — the installer refuses to run without it. It keeps each customer's data locked away from the others, even if the code has a bug.
 
 **1. Download the code**
 
@@ -207,7 +207,6 @@ The app reads its settings from `pca/.env`. Copy `pca/.env.example` to `pca/.env
 | `DB_PASS` | (none) | Database password |
 | `DB_MIGRATOR_USER` | (none) | Owner user that sets up the tables |
 | `DB_MIGRATOR_PASS` | (none) | Its password |
-| `ALLOW_SINGLE_ROLE_DB` | (unset) | Set `true` to skip the two-user safety split |
 | `APP_ENV` | `production` | `production` or `development` |
 | `APP_URL` | `https://example.com` | Your site's address (used in emails) |
 | `SESSION_LIFETIME` | `1440` | Minutes before idle users are logged out |
