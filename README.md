@@ -76,7 +76,18 @@ SQL
 
 The migrator owns the tables; the app user is what the website logs in as. This split is **required** — it keeps each customer's data locked away from the others.
 
-**3. Create the tables**
+**3. Enable the pgvector extension**
+
+Only a superuser can install it — the migrator cannot:
+
+```bash
+sudo -u postgres psql -d chatbot_assistant << 'SQL'
+CREATE SCHEMA IF NOT EXISTS chatbot_schema;
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA chatbot_schema;
+SQL
+```
+
+**4. Create the tables**
 
 ```bash
 cd migrations
@@ -90,7 +101,7 @@ php run.php
 
 `php run.php --fresh` drops all tables and rebuilds. The command refuses to run without the migrator role.
 
-**4. Write the settings file**
+**5. Write the settings file**
 
 ```bash
 cd ..
@@ -99,9 +110,9 @@ nano .env            # fill in the DB_*, APP_URL and SMTP values
 chmod 600 .env
 ```
 
-(There's also `public_html/install.php`, a browser wizard that does steps 2–4. If you use it, **delete it afterwards** — it must never stay on a live server.)
+(There's also `public_html/install.php`, a browser wizard that does steps 2–5. If you use it, **delete it afterwards** — it must never stay on a live server.)
 
-**5. Start the app**
+**6. Start the app**
 
 Point your web server at `public_html/`. For a quick local test:
 
@@ -109,11 +120,11 @@ Point your web server at `public_html/`. For a quick local test:
 php -S localhost:8000 -t public_html
 ```
 
-**6. Register and add your keys**
+**7. Register and add your keys**
 
 Register on the site, log in, open Settings, and paste in your OpenAI and LlamaCloud keys.
 
-**7. Create a chatbot**
+**8. Create a chatbot**
 
 Pick an industry preset (or write your own instructions), upload a document, wait for training to finish, then copy the snippet onto your website.
 

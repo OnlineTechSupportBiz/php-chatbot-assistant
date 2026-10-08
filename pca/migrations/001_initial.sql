@@ -12,6 +12,12 @@ SELECT pg_catalog.set_config('search_path', '', false);
 
 CREATE SCHEMA IF NOT EXISTS chatbot_schema;
 
+-- pgvector must live in this schema (document_chunks.embedding uses
+-- chatbot_schema.vector). CREATE EXTENSION needs superuser (or a role with
+-- CREATE on the database); if the migrator lacks it, run the extension step
+-- as a superuser first — it is safe to re-run.
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA chatbot_schema;
+
 --
 -- Name: current_admin_id(); Type: FUNCTION; Schema: chatbot_schema; Owner: -
 --
