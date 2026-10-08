@@ -44,6 +44,7 @@ ob_start(); ?>
 <?php if ($msg = \App\Auth\Session::getFlash('success')): ?>
     <div class="alert alert-success"><?= htmlspecialchars($msg) ?></div>
 <?php endif; ?>
+<?php $settingsOld = \App\Auth\Session::getFlash('old') ?? []; ?>
 <?php if ($msg = \App\Auth\Session::getFlash('error')): ?>
     <div class="alert alert-error"><?= htmlspecialchars($msg) ?></div>
 <?php endif; ?>
@@ -128,10 +129,43 @@ ob_start(); ?>
 
         <h3 style="margin:1rem 0 0.5rem;">LLM models</h3>
         <div id="llm-model-rows">
-            <?php if (($keys['llm_models'] ?? []) === []): ?>
+            <?php
+            // After a failed save, re-render exactly what the user submitted
+            // (kept input survives validation/SSRF errors). Otherwise show the
+            // stored list. Secrets are only echoed back when they came from
+            // this user's own just-submitted form.
+            $modelRows = [];
+            if (!empty($settingsOld['llm_model_name']) || !empty($settingsOld['llm_model_id'])) {
+                $n = max(
+                    count($settingsOld['llm_model_name'] ?? []),
+                    count($settingsOld['llm_model_base_url'] ?? []),
+                    count($settingsOld['llm_model_key'] ?? []),
+                    count($settingsOld['llm_model_id'] ?? [])
+                );
+                for ($i = 0; $i < $n; $i++) {
+                    $row = [
+                        'name'     => (string) ($settingsOld['llm_model_name'][$i] ?? ''),
+                        'base_url' => (string) ($settingsOld['llm_model_base_url'][$i] ?? ''),
+                        'model'    => (string) ($settingsOld['llm_model_id'][$i] ?? ''),
+                        'key'      => (string) ($settingsOld['llm_model_key'][$i] ?? ''),
+                        'hint'     => null,
+                    ];
+                    if ($row['name'] === '' && $row['base_url'] === '' && $row['model'] === '' && $row['key'] === '') {
+                        continue;
+                    }
+                    $modelRows[] = $row;
+                }
+            }
+            if ($modelRows === []) {
+                foreach ($keys['llm_models'] as $m) {
+                    $modelRows[] = ['name' => $m['name'], 'base_url' => $m['base_url'], 'model' => $m['model'], 'key' => '', 'hint' => $m['hint'] ?? null];
+                }
+            }
+            ?>
+            <?php if ($modelRows === []): ?>
                 <p class="muted" id="no-models-note">No models configured yet. Add one to select it in a chatbot's settings.</p>
             <?php endif; ?>
-            <?php foreach ($keys['llm_models'] as $i => $m): ?>
+            <?php foreach ($modelRows as $i => $m): ?>
                 <div class="form-row model-row">
                     <div class="field">
                         <label class="label"><?= $i === 0 ? 'Name / label (primary)' : 'Name / label (fallback)' ?></label>
@@ -150,8 +184,9 @@ ob_start(); ?>
                     </div>
                     <div class="field">
                         <label class="label">API key</label>
-                        <input class="input" type="password" autocomplete="off" name="llm_model_key[]" value=""
-                               placeholder="<?= $m['hint'] !== null ? 'Leave blank to keep (' . htmlspecialchars($m['hint']) . ')' : 'Not set' ?>">
+                        <input class="input" type="password" autocomplete="off" name="llm_model_key[]"
+                               value="<?= $m['key'] !== '' ? htmlspecialchars($m['key']) : '' ?>"
+                               placeholder="<?= $m['key'] !== '' ? '' : ($m['hint'] !== null ? 'Leave blank to keep (' . htmlspecialchars($m['hint']) . ')' : 'Not set') ?>">
                     </div>
                     <div class="row" style="align-items:end;">
                         <button type="button" class="btn btn-sm" onclick="moveModelRow(this, -1)" title="Move up" aria-label="Move model up">↑</button>
@@ -171,19 +206,19 @@ ob_start(); ?>
             <div class="field">
                 <label class="label" for="embedding_base_url">Base URL</label>
                 <input type="text" class="input" id="embedding_base_url" name="embedding_base_url"
-                       value="<?= htmlspecialchars($keys['embedding_base_url'] ?? '') ?>"
+                       value="<?= htmlspecialchars($settingsOld['embedding_base_url'] ?? ($keys['embedding_base_url'] ?? '')) ?>"
                        placeholder="https://api.openai.com/v1">
             </div>
             <div class="field">
                 <label class="label" for="embedding_api_key">API key</label>
                 <input type="password" class="input" id="embedding_api_key" name="embedding_api_key"
-                       value="" autocomplete="off"
-                       placeholder="<?= htmlspecialchars($keys['embedding_api_key_hint'] ?? 'Not set') ?>">
+                       value="<?= htmlspecialchars($settingsOld['embedding_api_key'] ?? '') ?>" autocomplete="off"
+                       placeholder="<?= ($settingsOld['embedding_api_key'] ?? '') !== '' ? '' : htmlspecialchars($keys['embedding_api_key_hint'] ?? 'Not set') ?>">
             </div>
             <div class="field">
                 <label class="label" for="embedding_model">Model</label>
                 <input type="text" class="input" id="embedding_model" name="embedding_model"
-                       value="<?= htmlspecialchars($keys['embedding_model'] ?? '') ?>"
+                       value="<?= htmlspecialchars($settingsOld['embedding_model'] ?? ($keys['embedding_model'] ?? '')) ?>"
                        list="embedding-models"
                        placeholder="text-embedding-3-small">
                 <datalist id="embedding-models">
@@ -206,8 +241,8 @@ ob_start(); ?>
         <div class="field">
             <label class="label" for="llamacloud_api_key">LlamaCloud API key</label>
             <input type="password" class="input" id="llamacloud_api_key" name="llamacloud_api_key"
-                   value="" autocomplete="off"
-                   placeholder="<?= htmlspecialchars($keys['llamacloud_api_key_hint'] ?? 'Not set') ?>">
+                   value="<?= htmlspecialchars($settingsOld['llamacloud_api_key'] ?? '') ?>" autocomplete="off"
+                   placeholder="<?= ($settingsOld['llamacloud_api_key'] ?? '') !== '' ? '' : htmlspecialchars($keys['llamacloud_api_key_hint'] ?? 'Not set') ?>">
             <div class="muted" style="font-size:0.8rem;">
                 Used to parse uploaded documents before indexing. Leave blank to keep the current key.
             </div>

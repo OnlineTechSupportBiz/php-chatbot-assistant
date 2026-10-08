@@ -144,6 +144,24 @@ class AdminSettingsController
         $openAiKey  = (string) $req->get('openai_api_key');
         $llamaKey   = (string) $req->get('llamacloud_api_key');
 
+        // Capture everything submitted so error redirects can re-render the
+        // form with the user's input intact (secrets included — they were
+        // just typed by this user over HTTPS; dropping them loses work).
+        $flashSubmitted = function () use ($req): void {
+            Session::flash('old', [
+                'llm_model_name'     => (array) $req->get('llm_model_name'),
+                'llm_model_base_url' => (array) $req->get('llm_model_base_url'),
+                'llm_model_key'      => (array) $req->get('llm_model_key'),
+                'llm_model_id'       => (array) $req->get('llm_model_id'),
+                'embedding_base_url' => (string) $req->get('embedding_base_url'),
+                'embedding_api_key'  => (string) $req->get('embedding_api_key'),
+                'embedding_model'    => (string) $req->get('embedding_model'),
+                'openai_api_key'     => (string) $req->get('openai_api_key'),
+                'llamacloud_api_key' => (string) $req->get('llamacloud_api_key'),
+                'llm_base_url'       => (string) $req->get('llm_base_url'),
+            ]);
+        };
+
         // Build keys array — blank submit = keep the stored key
         $keys = [];
         if ($openAiKey !== '') {
@@ -229,6 +247,7 @@ class AdminSettingsController
                 }
             } catch (\RuntimeException $e) {
                 Session::flash('error', 'Model "' . $m['name'] . '": ' . $e->getMessage());
+                $flashSubmitted();
                 $res->redirect('/settings')->send();
                 return;
             }
@@ -244,6 +263,7 @@ class AdminSettingsController
             }
         } catch (\RuntimeException $e) {
             Session::flash('error', $e->getMessage());
+            $flashSubmitted();
             $res->redirect('/settings')->send();
             return;
         }
