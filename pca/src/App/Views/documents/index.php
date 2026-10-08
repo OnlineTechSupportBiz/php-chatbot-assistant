@@ -73,8 +73,16 @@ ob_start(); ?>
 </div>
 
 <div class="card card-flush">
-    <div class="card-head">
+    <div class="card-head" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
         <h2>Documents</h2>
+        <div style="display:flex; gap:6px;">
+            <button type="button" class="btn btn-sm" id="reprocessAllBtn"
+                    data-csrf="<?= \App\Auth\Session::csrfToken() ?>"
+                    data-url="/chatbots/<?= (int) $chatbot['id'] ?>/documents/reprocess">Reprocess all</button>
+            <button type="button" class="btn btn-sm btn-danger" id="clearStoreBtn"
+                    data-csrf="<?= \App\Auth\Session::csrfToken() ?>"
+                    data-url="/chatbots/<?= (int) $chatbot['id'] ?>/documents/clear-store">Delete store</button>
+        </div>
     </div>
     <?php if (empty($documents)): ?>
         <p class="card-note muted">No documents uploaded yet for this chatbot.</p>
@@ -320,6 +328,32 @@ $pageScripts = <<<HEREDOC
         this.value = '';
     });
 })();
+
+// ── Reprocess all / Delete store ────────────────────────────────────────
+document.getElementById('reprocessAllBtn')?.addEventListener('click', async function () {
+    var btn = this, url = btn.dataset.url, csrf = btn.dataset.csrf;
+    btn.disabled = true;
+    try {
+        var res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({_csrf: csrf}) });
+        var body = await res.json();
+        if (body.ok === false) { alert(body.error || 'Reprocess failed.'); }
+        else { alert(body.message || ('Reprocessed ' + body.count + ' document(s).')); }
+        location.reload();
+    } catch (e) { alert('Reprocess failed.'); btn.disabled = false; }
+});
+document.getElementById('clearStoreBtn')?.addEventListener('click', async function () {
+    if (!window.confirm('Delete the entire document store? Every stored file, index, and embedding for this chatbot will be permanently removed.')) return;
+    var btn = this, url = btn.dataset.url, csrf = btn.dataset.csrf;
+    btn.disabled = true;
+    try {
+        var res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({_csrf: csrf}) });
+        var body = await res.json();
+        if (body.ok === false) { alert(body.error || 'Delete failed.'); location.reload(); }
+        else { location.reload(); }
+    } catch (e) { alert('Delete failed.'); btn.disabled = false; }
+});
 </script>
 HEREDOC;
 

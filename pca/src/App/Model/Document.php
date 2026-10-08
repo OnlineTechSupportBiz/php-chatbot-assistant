@@ -323,6 +323,34 @@ class Document extends Model
     /**
      * Delete a document by ID, along with its chunks and file.
      */
+    /**
+     * Remove the trained index (chunks + page-index nodes) for a document while
+     * keeping the document record, parsed text and stored file — used before a
+     * retrain (e.g. strategy switch) so stale index data never stacks up.
+     */
+    public static function clearIndex(int $documentId): bool
+    {
+        DocumentChunk::deleteByDocument($documentId);
+        DocumentPageIndexNode::deleteByDocument($documentId);
+        return true;
+    }
+
+    /**
+     * All documents of a chatbot (paths included) — used by the store-clear flow.
+     */
+    public static function deleteAllForChatbot(int $adminId, int $chatbotId): array
+    {
+        $docs = self::findByChatbot($adminId, $chatbotId);
+        $paths = [];
+        foreach ($docs as $doc) {
+            if (!empty($doc['file_path'])) {
+                $paths[] = (string) $doc['file_path'];
+            }
+            self::delete((int) $doc['id']);
+        }
+        return $paths;
+    }
+
     public static function delete(int $documentId): bool
     {
         // Fetch file path first (caller typically handles the file)

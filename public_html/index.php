@@ -222,6 +222,8 @@ $router->get('/chatbots/{id}/documents', [$docs, 'index']);
 $router->post('/chatbots/{id}/documents/store', [$docs, 'store']);
 $router->post('/chatbots/{id}/documents/{did}/train', [$docs, 'train']);
 $router->post('/chatbots/{id}/documents/{did}/delete', [$docs, 'delete']);
+$router->post('/chatbots/{id}/documents/reprocess', [$docs, 'reprocess']);
+$router->post('/chatbots/{id}/documents/clear-store', [$docs, 'clearStore']);
 
 // ── API ──────────────────────────────────────────────────────────────────
 $router->get('/api/stats/summary', [$api, 'statsSummary']);

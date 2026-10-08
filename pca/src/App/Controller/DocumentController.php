@@ -370,24 +370,34 @@ class DocumentController
             $errorReturn('No embedding provider configured for this admin. Please set it in Admin Settings.');
         }
         try {
-            // ── Step 1: Parse via LlamaCloud ──
-            Document::patchStatus($documentId, 'parsing');
+            // ── Step 1: Parse — reuse the stored parsed text on retrain so a
+            // strategy switch or re-train never pays for LlamaCloud twice.
+            $parsedText = (string) ($document['parsed_text'] ?? '');
+            if ($parsedText !== '') {
+                $llamaKey = ''; // not needed this run
+            } else {
+                Document::patchStatus($documentId, 'parsing');
 
-            $llamaClient = new LlamaParseClient($llamaKey);
-            $parseResult = $llamaClient->parseFile(
-                $document['file_path'],
-                $document['mime_type'] ?: 'application/octet-stream',
-                'cost_effective'
-            );
+                $llamaClient = new LlamaParseClient($llamaKey);
+                $parseResult = $llamaClient->parseFile(
+                    $document['file_path'],
+                    $document['mime_type'] ?: 'application/octet-stream',
+                    'cost_effective'
+                );
 
-            if ($parseResult['status'] !== 'COMPLETED' || $parseResult['markdown'] === null) {
-                $errorMsg = $parseResult['error'] ?? 'Unknown parsing error';
-                Document::patchStatus($documentId, 'failed');
-                $errorReturn('Document parsing failed: ' . $errorMsg);
+                if ($parseResult['status'] !== 'COMPLETED' || $parseResult['markdown'] === null) {
+                    $errorMsg = $parseResult['error'] ?? 'Unknown parsing error';
+                    Document::patchStatus($documentId, 'failed');
+                    $errorReturn('Document parsing failed: ' . $errorMsg);
+                }
+
+                $parsedText = $parseResult['markdown'];
+                Document::saveParsedText($documentId, $parsedText);
             }
 
-            $parsedText = $parseResult['markdown'];
-            Document::saveParsedText($documentId, $parsedText);
+            // ── Step 1.5: clear any prior index so a retrain never stacks
+            // stale chunks or page-index nodes (idempotent, like the JS port).
+            Document::clearIndex($documentId);
 
             // ── Step 2: Branch on retrieval strategy ──
             $retrievalStrategy = $chatbot['retrieval_strategy'] ?? 'traditional_rag';
@@ -568,6 +578,178 @@ class DocumentController
         );
 
         Session::flash('success', 'Document deleted successfully.');
+        $res->redirect('/chatbots/' . $chatbotId . '/documents')->send();
+    }
+
+    /**
+     * POST /chatbots/{id}/documents/reprocess — retrain every document of the
+     * chatbot from its stored parsed text against the current strategy and
+     * embedding config (no LlamaCloud re-parse, no re-upload).
+     */
+    public function reprocess(Request $req, Response $res, array $params): void
+    {
+        $user = Auth::requireAuth();
+        Auth::requirePermission($user, 'manage_documents');
+        $chatbotId = (int) ($params['id'] ?? 0);
+        $adminId   = (int) $user['admin_id'];
+        $isAjax    = $req->isAjax();
+
+        $csrf = (string) $req->get('_csrf');
+        if (!Session::validateCsrf($csrf)) {
+            $msg = 'Invalid form token. Please try again.';
+            if ($isAjax) { $res->json(['ok' => false, 'error' => $msg])->send(); } else { Session::flash('error', $msg); $res->redirect('/chatbots/' . $chatbotId . '/documents')->send(); }
+            return;
+        }
+
+        $chatbot = Chatbot::find($chatbotId);
+        if (!$chatbot || !\App\Controller\ChatbotController::canAccessChatbot($chatbot, $user)) {
+            $msg = 'Chatbot not found.';
+            if ($isAjax) { $res->json(['ok' => false, 'error' => $msg])->send(); } else { Session::flash('error', $msg); $res->redirect('/chatbots')->send(); }
+            return;
+        }
+
+        $done = 0; $failed = 0; $errors = [];
+        foreach (Document::findByChatbot($adminId, $chatbotId) as $doc) {
+            try {
+                $count = $this->retrainDocument($adminId, $chatbotId, (int) $user['id'], $chatbot, $doc);
+                $done++;
+            } catch (\Throwable $e) {
+                $failed++;
+                $errors[] = ($doc['original_name'] ?? 'doc') . ': ' . $e->getMessage();
+            }
+        }
+
+        $msg = "Reprocessed {$done} document(s)" . ($failed ? ", {$failed} failed: " . implode('; ', array_slice($errors, 0, 3)) : '.');
+        if ($isAjax) {
+            $res->json(['ok' => $failed === 0, 'error' => $failed ? $msg : null, 'count' => $done, 'message' => $msg])->send();
+        } else {
+            if ($failed) { Session::flash('error', $msg); } else { Session::flash('success', $msg); }
+            $res->redirect('/chatbots/' . $chatbotId . '/documents')->send();
+        }
+    }
+
+    /**
+     * Retrain one document from its stored parsed text against the chatbot's
+     * current strategy/embedding config. Throws on failure; never re-parses
+     * with LlamaCloud.
+     */
+    private function retrainDocument(int $adminId, int $chatbotId, int $userId, array $chatbot, array $document): int
+    {
+        $documentId = (int) $document['id'];
+        $parsedText = (string) ($document['parsed_text'] ?? '');
+        if ($parsedText === '') {
+            throw new \RuntimeException('no stored parsed text — train it once with parsing configured');
+        }
+
+        $apiKeys = Admin::getProviderSettings($userId);
+        $embedCfg = OpenAIClient::resolveEmbeddingConfig($apiKeys);
+        if (empty($embedCfg['api_key'])) {
+            throw new \RuntimeException('no embedding provider configured');
+        }
+
+        // Idempotent: clear the old index before rebuilding.
+        Document::clearIndex($documentId);
+
+        $retrievalStrategy = $chatbot['retrieval_strategy'] ?? 'traditional_rag';
+        if ($retrievalStrategy === 'page_index') {
+            Document::patchStatus($documentId, 'chunking');
+            $builder = new PageIndexBuilder();
+            $nodeCount = $builder->buildAndStore($adminId, $chatbotId, $documentId, $parsedText);
+            if ($nodeCount === 0) {
+                Document::patchStatus($documentId, 'failed');
+                throw new \RuntimeException('no sections could be extracted');
+            }
+            Document::markPageIndexed($documentId);
+            Document::recordStrategy($adminId, $chatbotId, $documentId, (string) $document['original_name'], 'page_index');
+            AuditLog::log($adminId, $userId, 'train_document', 'document', $documentId, null,
+                ['name' => $document['original_name'], 'strategy' => 'page_index', 'nodes' => $nodeCount, 'reprocess' => true]);
+            return $nodeCount;
+        }
+
+        Document::patchStatus($documentId, 'chunking');
+        $chunks = (new ChunkingService())->chunk($parsedText, 500, 50);
+        if (empty($chunks)) {
+            Document::patchStatus($documentId, 'failed');
+            throw new \RuntimeException('no text chunks could be extracted');
+        }
+        Document::patchStatus($documentId, 'embedding');
+        $openAi = new OpenAIClient($embedCfg['api_key'], $embedCfg['base_url']);
+        $openAi->setEmbeddingModel($embedCfg['model']);
+        $jsonArrays = $openAi->embedBatchAsJsonArray(array_map(fn(array $c): string => $c['chunk_text'], $chunks));
+        if (count($jsonArrays) !== count($chunks)) {
+            Document::patchStatus($documentId, 'failed');
+            throw new \RuntimeException('embedding generation failed (count mismatch)');
+        }
+        $rows = [];
+        foreach ($chunks as $i => $chunk) {
+            $rows[] = ['chunk_index' => $chunk['chunk_index'], 'chunk_text' => $chunk['chunk_text'], 'embedding' => $jsonArrays[$i]];
+        }
+        DocumentChunk::insertBatch($adminId, $chatbotId, $documentId, $rows);
+        Document::markIndexed($documentId);
+        Document::recordStrategy($adminId, $chatbotId, $documentId, (string) $document['original_name'], 'traditional_rag');
+        AuditLog::log($adminId, $userId, 'train_document', 'document', $documentId, null,
+            ['name' => $document['original_name'], 'chunks' => count($rows), 'reprocess' => true]);
+        return count($rows);
+    }
+
+    /**
+     * POST /chatbots/{id}/documents/clear-store — delete every stored file and
+     * document record of the chatbot (the JS port's "Delete store").
+     */
+    public function clearStore(Request $req, Response $res, array $params): void
+    {
+        $user = Auth::requireAuth();
+        Auth::requirePermission($user, 'manage_documents');
+        $chatbotId = (int) ($params['id'] ?? 0);
+        $adminId   = (int) $user['admin_id'];
+
+        $csrf = (string) $req->get('_csrf');
+        if (!Session::validateCsrf($csrf)) {
+            Session::flash('error', 'Invalid form token. Please try again.');
+            $res->redirect('/chatbots/' . $chatbotId . '/documents')->send();
+            return;
+        }
+
+        $chatbot = Chatbot::find($chatbotId);
+        if (!$chatbot || !\App\Controller\ChatbotController::canAccessChatbot($chatbot, $user)) {
+            $res->setStatus(404)->html('<h1>Chatbot not found.</h1>', 404)->send();
+            return;
+        }
+
+        $paths = Document::deleteAllForChatbot($adminId, $chatbotId);
+        $count = count($paths);
+
+        // Remove stored files; only delete paths inside STORAGE_DIR (same
+        // containment rule as the single-document delete).
+        $uploadRoot = dirname(__DIR__, 3);
+        $storageRel = trim((string) env('STORAGE_DIR', 'storage/uploads'), '/');
+        $storageDir = $storageRel !== '' && !str_contains($storageRel, '..')
+            ? $uploadRoot . '/' . $storageRel
+            : $uploadRoot . '/storage/uploads';
+        $removed = 0;
+        foreach ($paths as $path) {
+            $real = realpath($path);
+            if ($real !== false && str_starts_with($real, realpath($storageDir)) && is_file($real)) {
+                @unlink($real); // nosemgrep: php.lang.security.unlink-use.unlink-use — contained within STORAGE_DIR
+                $removed++;
+            }
+        }
+
+        AuditLog::log(
+            $adminId,
+            (int) $user['id'],
+            'delete_all_documents',
+            'chatbot',
+            $chatbotId,
+            null,
+            ['count' => count($paths), 'files_removed' => $removed]
+        );
+
+        if ($req->isAjax()) {
+            $res->json(['ok' => true, 'count' => $count, 'message' => 'Deleted ' . $count . ' document(s) and ' . $removed . ' stored file(s).'])->send();
+            return;
+        }
+        Session::flash('success', 'Deleted ' . $count . ' document(s) and ' . $removed . ' stored file(s).');
         $res->redirect('/chatbots/' . $chatbotId . '/documents')->send();
     }
 }
