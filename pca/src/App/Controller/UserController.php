@@ -50,13 +50,34 @@ class UserController
 
         $userId = (int) $user['id'];
 
+        // Message chart date range: 7 / 30 / 90 days, default 30.
+        $range = (int) $req->get('range', 30);
+        if (!in_array($range, [7, 30, 90], true)) {
+            $range = 30;
+        }
+
         // Compute dashboard stats (used as server-side fallback)
         $totalMessages     = Message::countByUser($userId);
         $totalConversations = Conversation::countByUser($userId);
         $uniqueVisitors    = Conversation::uniqueVisitorsByUser($userId);
         $totalTokens       = Message::totalTokensByUser($userId);
         $chatbots          = Chatbot::findByUser($userId);
-        $messageChart      = Message::last7DaysByUser($userId);
+        $messageChart      = Message::chartByUser(
+            $userId,
+            date('Y-m-d', strtotime('-' . ($range - 1) . ' days')),
+            date('Y-m-d')
+        );
+        // Fill zero-count days so the chart shows a continuous timeline.
+        $byDate = [];
+        foreach ($messageChart as $row) {
+            $byDate[$row['date']] = (int) $row['count'];
+        }
+        $messageChart = [];
+        for ($i = $range - 1; $i >= 0; $i--) {
+            $d = date('Y-m-d', strtotime("-{$i} days"));
+            $messageChart[] = ['date' => $d, 'count' => $byDate[$d] ?? 0];
+        }
+        $chartRange       = $range;
         $sourceBreakdown   = Message::sourceBreakdownByUser($userId);
         $chatbotStats      = Conversation::perChatbotByUser($userId);
 

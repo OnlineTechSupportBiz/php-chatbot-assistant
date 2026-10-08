@@ -36,6 +36,16 @@ foreach ($messageChart as $point) {
     $chartMax = max($chartMax, (int) $point['count']);
 }
 
+// Data attributes for the Chart.js canvas (kept out of inline JS strings).
+$chartLabels = [];
+$chartCounts = [];
+foreach ($messageChart as $point) {
+    $chartLabels[] = date('M j', strtotime($point['date']));
+    $chartCounts[] = (int) $point['count'];
+}
+$chartLabelsJson = json_encode($chartLabels);
+$chartCountsJson = json_encode($chartCounts);
+
 ob_start(); ?>
 <div class="page-head">
     <div>
@@ -72,25 +82,52 @@ ob_start(); ?>
 </div>
 
 <div class="card">
-    <h2>Messages (last 7 days)</h2>
-    <?php if (empty($messageChart)): ?>
-        <p class="muted">No messages in the last 7 days.</p>
-    <?php else: ?>
-        <div class="bar-chart">
-            <?php foreach ($messageChart as $point): ?>
-                <?php
-                    $count = (int) $point['count'];
-                    $height = $chartMax > 0 ? (int) round($count / $chartMax * 120) : 0;
-                ?>
-                <div class="bar-col">
-                    <span class="muted bar-count"><?= $count ?></span>
-                    <div class="bar" style="height: <?= $height ?>px; min-height: <?= $count > 0 ? 4 : 0 ?>px;"></div>
-                    <span class="muted bar-label"><?= htmlspecialchars(date('M j', strtotime($point['date']))) ?></span>
-                </div>
+    <div class="card-head" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <h2>Messages (last <?= (int) $chartRange ?> days)</h2>
+        <div style="display:flex; gap:6px;">
+            <?php foreach ([7, 30, 90] as $r): ?>
+                <a class="btn btn-sm<?= $r === (int) $chartRange ? ' btn-active' : '' ?>"
+                   href="/dashboard?range=<?= $r ?>"><?= $r ?>d</a>
             <?php endforeach; ?>
         </div>
-    <?php endif; ?>
+    </div>
+    <canvas id="messages-chart" height="110" data-labels="<?= htmlspecialchars($chartLabelsJson) ?>" data-counts="<?= htmlspecialchars($chartCountsJson) ?>" aria-label="Messages per day bar chart" role="img"></canvas>
 </div>
+<?php $pageScripts = ($pageScripts ?? '') . <<<'HTML'
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
+<script>
+(function () {
+    var el = document.getElementById('messages-chart');
+    if (!el || typeof Chart === 'undefined') return;
+    var labels = JSON.parse(el.dataset.labels || '[]');
+    var counts = JSON.parse(el.dataset.counts || '[]');
+    new Chart(el.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Messages',
+                data: counts,
+                backgroundColor: 'rgba(13, 110, 253, 0.65)',
+                hoverBackgroundColor: 'rgba(13, 110, 253, 0.9)',
+                borderRadius: 4,
+                maxBarThickness: 28
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } },
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+        }
+    });
+})();
+</script>
+HTML;
+?>
 
 <div class="card card-flush">
     <div class="card-head"><h2>Answers by source</h2></div>
