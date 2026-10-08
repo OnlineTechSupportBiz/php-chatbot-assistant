@@ -591,8 +591,16 @@ class ChatController
         $endTime = (int) (microtime(true) * 1000);
         $responseTimeMs = $endTime - $startTime;
 
-        // 10. Store the assistant's response with real token count from the API
-        $source = $chunksUsed > 0 ? 'rag' : 'llm_only';
+        // 10. Store the assistant's response with real token count from the API.
+        // The retrieval strategies report their own source (traditional_rag /
+        // page_index); when the strategy found no context the answer came from
+        // the model alone.
+        $strategySource = $retrievalResult->getSource();
+        if ($chunksUsed > 0 && in_array($strategySource, ['traditional_rag', 'page_index'], true)) {
+            $source = $strategySource;
+        } else {
+            $source = 'llm_only';
+        }
         $tokensUsed = $chatResult['total_tokens'];
         Message::create(
             $adminId, $chatbotId, $conversationId, $visitorSessionId,

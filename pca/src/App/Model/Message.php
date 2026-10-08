@@ -49,7 +49,7 @@ class Message extends Model
      * @param  int         $conversationId
      * @param  string      $role       'user' or 'assistant'
      * @param  string      $content    Message text
-     * @param  string|null $source     'rag', 'quick_answer', 'llm_only', 'blocked'
+     * @param  string|null $source     'traditional_rag', 'page_index', 'quick_answer', 'llm_only', 'blocked' ('rag' kept for legacy rows)
      * @param  int|null    $tokensUsed
      * @param  int|null    $responseTimeMs
      * @param  string|null $model      Model name used (e.g. 'gpt-4.1-mini')
