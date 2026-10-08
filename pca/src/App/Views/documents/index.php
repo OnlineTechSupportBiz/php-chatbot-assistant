@@ -115,7 +115,6 @@ ob_start(); ?>
                         <td class="muted"><?= dt($doc['created_at'] ?? '') ?></td>
                         <td style="text-align: right;">
                             <div class="row" style="justify-content: flex-end;">
-                                <a class="btn btn-sm" href="/chatbots/<?= (int) $chatbot['id'] ?>/documents/<?= (int) $doc['id'] ?>">Status</a>
                                 <form method="POST" action="/chatbots/<?= (int) $chatbot['id'] ?>/documents/<?= (int) $doc['id'] ?>/delete"
                                       onsubmit="return confirm('Delete this document?');">
                                     <input type="hidden" name="_csrf" value="<?= \App\Auth\Session::csrfToken() ?>">
