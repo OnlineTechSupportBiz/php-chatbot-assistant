@@ -56,6 +56,8 @@ Paste it into your site before `</body>`. You also list which domains are allowe
 
 You need a server with PHP 8.2 or newer and a PostgreSQL 16 database with the pgvector extension. Allow about fifteen minutes.
 
+The database uses two users. One (the **migrator**) owns the tables. The other (the **app user**) is the one the website actually uses, and it only gets permission to read and write data. Keeping them separate is what keeps each customer's data locked away from the others — even if the code has a bug.
+
 **1. Download the code**
 
 ```bash
@@ -64,7 +66,69 @@ cd php-chatbot-assistant/pca
 composer install
 ```
 
-**2. Start a server**
+**2. Create the two database users and the database**
+
+Connect to PostgreSQL as a superuser:
+
+```bash
+sudo -u postgres psql << 'SQL'
+CREATE ROLE chatbot_migrator LOGIN PASSWORD 'your-migrator-password';
+CREATE ROLE chatbot_user LOGIN PASSWORD 'your-app-password';
+CREATE DATABASE chatbot_assistant OWNER chatbot_migrator;
+SQL
+```
+
+*(No sudo access? Use `psql -h 127.0.0.1 -U postgres` instead — it will ask for the postgres password.)*
+
+**3. Set up the tables**
+
+One command connects as the migrator, creates every table, and gives the app user its read/write permissions:
+
+```bash
+cd migrations
+
+DB_HOST=127.0.0.1 \
+DB_PORT=5432 \
+DB_NAME=chatbot_assistant \
+DB_USER=chatbot_user \
+DB_PASS='your-app-password' \
+DB_MIGRATOR_USER=chatbot_migrator \
+DB_MIGRATOR_PASS='your-migrator-password' \
+PG_SCHEMA=chatbot_schema \
+php run.php
+```
+
+Useful extras:
+
+```bash
+... php run.php --fresh              # drop all tables, then rebuild
+... php run.php --drop               # drop all tables only
+... php run.php 004_force_rls.sql    # run one specific file
+```
+
+*(The `...` means: put the same `DB_HOST=... DB_MIGRATOR_USER=... php run.php` prefix from step 3 in front.)*
+
+To wipe everything later:
+
+```bash
+sudo -u postgres psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='chatbot_assistant' AND pid <> pg_backend_pid();"
+sudo -u postgres psql -c "DROP DATABASE IF EXISTS chatbot_assistant;"
+sudo -u postgres psql -c "DROP ROLE IF EXISTS chatbot_user;"
+sudo -u postgres psql -c "DROP ROLE IF EXISTS chatbot_migrator;"
+```
+
+**4. Write the settings file**
+
+```bash
+cd ..
+cp .env.example .env
+nano .env            # fill in the DB_*, APP_URL and SMTP values
+chmod 600 .env       # keep it private
+```
+
+The settings table at the bottom of this page explains every value. (There's also `public_html/install.php`, a browser wizard that does steps 2–4 for you — but the terminal is the recommended path. If you use it, **delete `install.php` afterwards**; it must never stay on a live server.)
+
+**5. Start a server**
 
 Point your web server at the `public_html/` folder. For a quick local test:
 
@@ -73,21 +137,25 @@ Point your web server at the `public_html/` folder. For a quick local test:
 php -S localhost:8000 -t public_html
 ```
 
-**3. Run the installer**
-
-Open `https://your-server.com/install.php` in your browser. It walks you through three steps: connecting to your database, setting up the tables, and creating your admin account.
-
-For the database you need two database users. One (the **migrator**) owns the tables. The other (the **app user**) is the one the website actually uses, and it only gets permission to read and write data. Keeping them separate is what makes it impossible for one customer's data to leak to another — even if the code made a mistake. In a hurry? There's a checkbox to use just one user, but it's safer to use two.
-
-**4. Make an account and add your keys**
+**6. Make an account and add your keys**
 
 Register on the site, log in, and go to Settings. Paste in your OpenAI key and your LlamaCloud key. They're saved safely and never shown in full again.
 
-**5. Create a chatbot and train it**
+**7. Create a chatbot and train it**
 
 Pick an industry preset (or write your own instructions), upload a document, wait for training to finish, then copy the snippet onto your website.
 
-When you're done, **delete `install.php`** from the server. It should not stay on a live site.
+Optional — check that the safety setup worked:
+
+```bash
+# every table should show rowsecurity = yes and force_rls = yes
+PGPASSWORD='your-app-password' psql -h 127.0.0.1 -U chatbot_user -d chatbot_assistant -c \
+  "SELECT tablename, rowsecurity, force_rls FROM pg_tables WHERE schemaname='chatbot_schema';"
+
+# tables should be owned by chatbot_migrator, NOT chatbot_user
+sudo -u postgres psql -d chatbot_assistant -c \
+  "SELECT DISTINCT tableowner FROM pg_tables WHERE schemaname='chatbot_schema';"
+```
 
 ## Configuring your own AI models
 
