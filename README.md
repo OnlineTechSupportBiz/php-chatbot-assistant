@@ -18,7 +18,7 @@ The only things you may ever pay for:
 |---|---|
 | The software | Nobody — it's free |
 | An AI provider account (powers the bot's answers) | Your provider, at their normal prices |
-| A document-parsing service (reads PDF and Word files) | Your provider, at their normal prices |
+| A LlamaCloud key (reads your PDF and Word files) | LlamaCloud, at their normal prices |
 | A server to run it on | Your hosting company |
 | Optional: we clean up your documents for you | Us — quoted up front |
 
