@@ -36,6 +36,8 @@ use App\Model\Conversation;
 use App\Model\IndustryTemplate;
 use App\Model\Lead;
 use App\Model\Message;
+use App\Model\Document;
+use App\Controller\DocumentController;
 
 /**
  * Chatbot CRUD controller.
@@ -321,6 +323,24 @@ class ChatbotController
         );
 
         Session::flash('success', "Chatbot \"{$name}\" updated successfully!");
+
+        // Strategy switched? Retrain every document from its stored parsed text
+        // against the new strategy — no LlamaCloud re-parse, no re-upload
+        // (port of the JS updateChatbot auto-reprocess).
+        $newStrategy = (string) ($req->get('retrieval_strategy') ?: 'traditional_rag');
+        $oldStrategy = (string) ($chatbot['retrieval_strategy'] ?? 'traditional_rag');
+        if ($newStrategy !== $oldStrategy) {
+            $docsController = new DocumentController();
+            foreach (Document::findByChatbot((int) $user['admin_id'], $id) as $doc) {
+                try {
+                    $docsController->retrainDocument((int) $user['admin_id'], $id, (int) $user['id'], array_merge($chatbot, ['retrieval_strategy' => $newStrategy]), $doc);
+                } catch (\Throwable $e) {
+                    Session::flash('error', 'Strategy switched, but "' . ($doc['original_name'] ?? 'a document') . '" could not be retrained: ' . $e->getMessage());
+                    break;
+                }
+            }
+        }
+
         // Stay on the chatbot's Settings tab (the JS PATCH keeps you on the page).
         $res->redirect('/chatbots/' . $id)->send();
     }
