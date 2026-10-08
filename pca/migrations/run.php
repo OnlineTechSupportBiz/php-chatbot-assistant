@@ -63,6 +63,15 @@ function dbConnect(): string
     $user   = getenv('DB_USER') ?: 'postgres';
     $pass   = getenv('DB_PASS') ?: '';
 
+    // Two-role mode: connect AS the migrator (owner) role so the tables it
+    // creates belong to it, keeping the app role (DB_USER) subject to RLS.
+    // DB_MIGRATOR_PASS supplies its password; fall back to DB_PASS.
+    $migUser = getenv('DB_MIGRATOR_USER') ?: '';
+    if ($migUser !== '' && $migUser !== $user) {
+        $user = $migUser;
+        $pass = getenv('DB_MIGRATOR_PASS') ?: $pass;
+    }
+
     // Export password so psql/pg_dump can pick it up (avoid -W prompt)
     putenv("PGPASSWORD={$pass}");
 
@@ -77,8 +86,24 @@ function dbConnect(): string
     return $args;
 }
 
+// Preserve explicitly-set shell environment: config.php force-overwrites
+// DB_* from pca/.env, but a CLI operator passing DB_HOST=... intends those
+// to win (e.g. migrating a different database than .env points at).
+$cliEnv = [];
+foreach (['DB_HOST','DB_PORT','DB_NAME','DB_USER','DB_PASS','DB_MIGRATOR_USER','DB_MIGRATOR_PASS','PG_SCHEMA'] as $k) {
+    if (($v = getenv($k)) !== false) {
+        $cliEnv[$k] = $v;
+    }
+}
+
 // Load config for env vars
 require_once __DIR__ . '/../config/config.php';
+
+// Restore shell-provided DB settings over the .env defaults
+foreach ($cliEnv as $k => $v) {
+    putenv("{$k}={$v}");
+    $_ENV[$k] = $v;
+}
 
 $dbArgs  = dbConnect();
 $schema  = getenv('PG_SCHEMA') ?: 'chatbot_assistant';
@@ -197,11 +222,11 @@ if ($squash) {
             r RECORD;
         BEGIN
             FOR r IN (
-                SELECT tablename
+                SELECT schemaname, tablename
                 FROM pg_tables
                 WHERE schemaname = %s
             ) LOOP
-                EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+                EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.schemaname) || '.' || quote_ident(r.tablename) || ' CASCADE';
             END LOOP;
         END
         \$\$;",
@@ -275,11 +300,11 @@ if ($fresh || $dropOnly) {
             r RECORD;
         BEGIN
             FOR r IN (
-                SELECT tablename
+                SELECT schemaname, tablename
                 FROM pg_tables
                 WHERE schemaname = %s
             ) LOOP
-                EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+                EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.schemaname) || '.' || quote_ident(r.tablename) || ' CASCADE';
             END LOOP;
         END
         \$\$;",
@@ -314,6 +339,40 @@ foreach ($files as $file) {
     if ($exitCode !== 0) {
         echo "FAILED\n";
         exit(1);
+    }
+    echo "OK\n";
+}
+
+// ── Grant app-role privileges (two-role mode) ────────────────────────────
+// When the migrations ran as the migrator (owner) role, the app role
+// (DB_USER) has no access yet. Mirror install.php's grant block: USAGE + DML,
+// never CREATE, never ownership — so the app role stays subject to
+// Row-Level Security. Skipped in single-role mode (migrator == app role).
+$migrator = getenv('DB_MIGRATOR_USER') ?: '';
+$appUser  = getenv('DB_USER') ?: 'postgres';
+
+if ($migrator !== '' && $migrator !== $appUser && !$dropOnly) {
+    // Grants must run as the owner (the role we connected as) — but ALTER
+    // DEFAULT PRIVILEGES only affects objects created by the current role,
+    // which is exactly the migrator. Connect as migrator to run them.
+    $schemaQ = '"' . str_replace('"', '""', $schema) . '"';
+    $roleQ   = '"' . str_replace('"', '""', $appUser) . '"';
+    $grants = [
+        "GRANT USAGE ON SCHEMA {$schemaQ} TO {$roleQ}",
+        "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {$schemaQ} TO {$roleQ}",
+        "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA {$schemaQ} TO {$roleQ}",
+        "ALTER DEFAULT PRIVILEGES IN SCHEMA {$schemaQ} GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {$roleQ}",
+        "ALTER DEFAULT PRIVILEGES IN SCHEMA {$schemaQ} GRANT USAGE, SELECT ON SEQUENCES TO {$roleQ}",
+    ];
+
+    echo "Granting app-role ({$appUser}) privileges in schema \"{$schema}\"...\n";
+    foreach ($grants as $grant) {
+        $cmd = sprintf('psql -v ON_ERROR_STOP=1 %s -c %s 2>&1', $dbArgs, escapeshellarg($grant));
+        passthru($cmd, $exitCode);
+        if ($exitCode !== 0) {
+            echo "FAILED: {$grant}\n";
+            exit(1);
+        }
     }
     echo "OK\n";
 }
