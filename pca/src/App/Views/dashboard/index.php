@@ -91,7 +91,9 @@ ob_start(); ?>
             <?php endforeach; ?>
         </div>
     </div>
-    <canvas id="messages-chart" height="110" data-labels="<?= htmlspecialchars($chartLabelsJson) ?>" data-counts="<?= htmlspecialchars($chartCountsJson) ?>" aria-label="Messages per day bar chart" role="img"></canvas>
+    <div style="position:relative; height:280px;">
+        <canvas id="messages-chart" data-labels="<?= htmlspecialchars($chartLabelsJson) ?>" data-counts="<?= htmlspecialchars($chartCountsJson) ?>" aria-label="Messages per day bar chart" role="img"></canvas>
+    </div>
 </div>
 <?php $pageScripts = ($pageScripts ?? '') . <<<'HTML'
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
