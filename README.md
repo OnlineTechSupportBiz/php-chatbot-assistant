@@ -130,11 +130,13 @@ Register on the site, log in, open Settings, and paste in your OpenAI and LlamaC
 
 Pick an industry preset (or write your own instructions), upload a document, wait for training to finish, then copy the snippet onto your website.
 
-**Check the security setup** (optional): every table should show `rowsecurity = yes` and be owned by `chatbot_migrator`, not `chatbot_user`:
+**Check the security setup** (optional): every table should show `t | t` (RLS enabled and forced) and be owned by `chatbot_migrator`, not `chatbot_user`:
 
 ```bash
-PGPASSWORD='your-app-password' psql -h 127.0.0.1 -U chatbot_user -d chatbot_assistant -c \
-  "SELECT tablename, rowsecurity, force_rls FROM pg_tables WHERE schemaname='chatbot_schema';"
+sudo -u postgres psql -d chatbot_assistant -c \
+  "SELECT c.relname, c.relrowsecurity, c.relforcerowsecurity, pg_get_userbyid(c.relowner) AS owner
+   FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+   WHERE n.nspname = 'chatbot_schema' AND c.relkind = 'r';"
 ```
 
 ## Configuring your own AI models

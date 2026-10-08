@@ -610,141 +610,219 @@ END $$;
 -- Name: audit_logs audit_logs_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.audit_logs
-    ADD CONSTRAINT audit_logs_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'audit_logs_pkey' AND conrelid = 'chatbot_schema.audit_logs'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.audit_logs ADD CONSTRAINT audit_logs_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: chat_stats chat_stats_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.chat_stats
-    ADD CONSTRAINT chat_stats_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chat_stats_pkey' AND conrelid = 'chatbot_schema.chat_stats'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.chat_stats ADD CONSTRAINT chat_stats_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: chatbots chatbots_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.chatbots
-    ADD CONSTRAINT chatbots_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chatbots_pkey' AND conrelid = 'chatbot_schema.chatbots'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.chatbots ADD CONSTRAINT chatbots_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: conversations conversations_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.conversations
-    ADD CONSTRAINT conversations_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'conversations_pkey' AND conrelid = 'chatbot_schema.conversations'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.conversations ADD CONSTRAINT conversations_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: document_chunks document_chunks_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_chunks
-    ADD CONSTRAINT document_chunks_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_chunks_pkey' AND conrelid = 'chatbot_schema.document_chunks'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_chunks ADD CONSTRAINT document_chunks_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: document_page_index document_page_index_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_page_index
-    ADD CONSTRAINT document_page_index_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_page_index_pkey' AND conrelid = 'chatbot_schema.document_page_index'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_page_index ADD CONSTRAINT document_page_index_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: document_strategies document_strategies_document_id_key; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_strategies
-    ADD CONSTRAINT document_strategies_document_id_key UNIQUE (document_id);
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_strategies_document_id_key' AND conrelid = 'chatbot_schema.document_strategies'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_strategies ADD CONSTRAINT document_strategies_document_id_key UNIQUE (document_id);
+    END IF;
+END $$;
 
 --
 -- Name: document_strategies document_strategies_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_strategies
-    ADD CONSTRAINT document_strategies_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_strategies_pkey' AND conrelid = 'chatbot_schema.document_strategies'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_strategies ADD CONSTRAINT document_strategies_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: documents documents_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.documents
-    ADD CONSTRAINT documents_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'documents_pkey' AND conrelid = 'chatbot_schema.documents'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.documents ADD CONSTRAINT documents_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: leads leads_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.leads
-    ADD CONSTRAINT leads_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'leads_pkey' AND conrelid = 'chatbot_schema.leads'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.leads ADD CONSTRAINT leads_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: magic_links magic_links_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.magic_links
-    ADD CONSTRAINT magic_links_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'magic_links_pkey' AND conrelid = 'chatbot_schema.magic_links'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.magic_links ADD CONSTRAINT magic_links_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: messages messages_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.messages
-    ADD CONSTRAINT messages_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'messages_pkey' AND conrelid = 'chatbot_schema.messages'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.messages ADD CONSTRAINT messages_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: password_resets password_resets_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.password_resets
-    ADD CONSTRAINT password_resets_pkey PRIMARY KEY (email);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'password_resets_pkey' AND conrelid = 'chatbot_schema.password_resets'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.password_resets ADD CONSTRAINT password_resets_pkey PRIMARY KEY (email);
+    END IF;
+END $$;
 
 --
 -- Name: platform_settings platform_settings_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.platform_settings
-    ADD CONSTRAINT platform_settings_pkey PRIMARY KEY (key);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'platform_settings_pkey' AND conrelid = 'chatbot_schema.platform_settings'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.platform_settings ADD CONSTRAINT platform_settings_pkey PRIMARY KEY (key);
+    END IF;
+END $$;
 
 --
 -- Name: quick_answers quick_answers_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.quick_answers
-    ADD CONSTRAINT quick_answers_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'quick_answers_pkey' AND conrelid = 'chatbot_schema.quick_answers'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.quick_answers ADD CONSTRAINT quick_answers_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: rate_limits rate_limits_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.rate_limits
-    ADD CONSTRAINT rate_limits_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'rate_limits_pkey' AND conrelid = 'chatbot_schema.rate_limits'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.rate_limits ADD CONSTRAINT rate_limits_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.sessions
-    ADD CONSTRAINT sessions_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sessions_pkey' AND conrelid = 'chatbot_schema.sessions'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.sessions ADD CONSTRAINT sessions_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: user_permissions user_permissions_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.user_permissions
-    ADD CONSTRAINT user_permissions_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_permissions_pkey' AND conrelid = 'chatbot_schema.user_permissions'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.user_permissions ADD CONSTRAINT user_permissions_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: user_permissions user_permissions_user_id_permission_key; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.user_permissions
-    ADD CONSTRAINT user_permissions_user_id_permission_key UNIQUE (user_id, permission);
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_permissions_user_id_permission_key' AND conrelid = 'chatbot_schema.user_permissions'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.user_permissions ADD CONSTRAINT user_permissions_user_id_permission_key UNIQUE (user_id, permission);
+    END IF;
+END $$;
 
 --
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.users
-    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+-- Idempotent: skip if the constraint already exists (partial prior run)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'users_pkey' AND conrelid = 'chatbot_schema.users'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.users ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 --
 -- Name: idx_audit_logs_action; Type: INDEX; Schema: chatbot_schema; Owner: -
@@ -804,7 +882,7 @@ CREATE INDEX IF NOT EXISTS idx_chat_stats_chatbot_created ON chatbot_schema.chat
 -- Name: idx_chat_stats_date; Type: INDEX; Schema: chatbot_schema; Owner: -
 --
 
-CREATE UNIQUE INDEX idx_chat_stats_date ON chatbot_schema.chat_stats USING btree (chatbot_id, date);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_chat_stats_date ON chatbot_schema.chat_stats USING btree (chatbot_id, date);
 
 --
 -- Name: idx_chatbots_admin_created; Type: INDEX; Schema: chatbot_schema; Owner: -
@@ -834,7 +912,7 @@ CREATE INDEX IF NOT EXISTS idx_chatbots_created_by ON chatbot_schema.chatbots US
 -- Name: idx_chatbots_widget_token; Type: INDEX; Schema: chatbot_schema; Owner: -
 --
 
-CREATE UNIQUE INDEX idx_chatbots_widget_token ON chatbot_schema.chatbots USING btree (widget_token);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_chatbots_widget_token ON chatbot_schema.chatbots USING btree (widget_token);
 
 --
 -- Name: idx_chatbots_widget_token_idx; Type: INDEX; Schema: chatbot_schema; Owner: -
@@ -1158,7 +1236,7 @@ CREATE INDEX IF NOT EXISTS idx_users_company_name ON chatbot_schema.users USING 
 -- Name: idx_users_email; Type: INDEX; Schema: chatbot_schema; Owner: -
 --
 
-CREATE UNIQUE INDEX idx_users_email ON chatbot_schema.users USING btree (email);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON chatbot_schema.users USING btree (email);
 
 --
 -- Name: idx_users_is_active; Type: INDEX; Schema: chatbot_schema; Owner: -
@@ -1176,231 +1254,327 @@ CREATE INDEX IF NOT EXISTS idx_users_role ON chatbot_schema.users USING btree (r
 -- Name: idx_users_slug; Type: INDEX; Schema: chatbot_schema; Owner: -
 --
 
-CREATE UNIQUE INDEX idx_users_slug ON chatbot_schema.users USING btree (slug);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_slug ON chatbot_schema.users USING btree (slug);
 
 --
 -- Name: audit_logs audit_logs_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.audit_logs
-    ADD CONSTRAINT audit_logs_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'audit_logs_admin_id_fkey' AND conrelid = 'chatbot_schema.audit_logs'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.audit_logs ADD CONSTRAINT audit_logs_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: audit_logs audit_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.audit_logs
-    ADD CONSTRAINT audit_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES chatbot_schema.users(id) ON DELETE SET NULL;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'audit_logs_user_id_fkey' AND conrelid = 'chatbot_schema.audit_logs'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.audit_logs ADD CONSTRAINT audit_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES chatbot_schema.users(id) ON DELETE SET NULL;
+    END IF;
+END $$;
 
 --
 -- Name: chat_stats chat_stats_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.chat_stats
-    ADD CONSTRAINT chat_stats_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chat_stats_admin_id_fkey' AND conrelid = 'chatbot_schema.chat_stats'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.chat_stats ADD CONSTRAINT chat_stats_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: chat_stats chat_stats_chatbot_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.chat_stats
-    ADD CONSTRAINT chat_stats_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chat_stats_chatbot_id_fkey' AND conrelid = 'chatbot_schema.chat_stats'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.chat_stats ADD CONSTRAINT chat_stats_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: chatbots chatbots_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.chatbots
-    ADD CONSTRAINT chatbots_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chatbots_admin_id_fkey' AND conrelid = 'chatbot_schema.chatbots'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.chatbots ADD CONSTRAINT chatbots_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: chatbots chatbots_created_by_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.chatbots
-    ADD CONSTRAINT chatbots_created_by_fkey FOREIGN KEY (created_by) REFERENCES chatbot_schema.users(id);
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chatbots_created_by_fkey' AND conrelid = 'chatbot_schema.chatbots'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.chatbots ADD CONSTRAINT chatbots_created_by_fkey FOREIGN KEY (created_by) REFERENCES chatbot_schema.users(id);
+    END IF;
+END $$;
 
 --
 -- Name: conversations conversations_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.conversations
-    ADD CONSTRAINT conversations_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'conversations_admin_id_fkey' AND conrelid = 'chatbot_schema.conversations'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.conversations ADD CONSTRAINT conversations_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: conversations conversations_chatbot_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.conversations
-    ADD CONSTRAINT conversations_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'conversations_chatbot_id_fkey' AND conrelid = 'chatbot_schema.conversations'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.conversations ADD CONSTRAINT conversations_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: document_chunks document_chunks_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_chunks
-    ADD CONSTRAINT document_chunks_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_chunks_admin_id_fkey' AND conrelid = 'chatbot_schema.document_chunks'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_chunks ADD CONSTRAINT document_chunks_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: document_chunks document_chunks_chatbot_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_chunks
-    ADD CONSTRAINT document_chunks_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_chunks_chatbot_id_fkey' AND conrelid = 'chatbot_schema.document_chunks'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_chunks ADD CONSTRAINT document_chunks_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: document_chunks document_chunks_document_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_chunks
-    ADD CONSTRAINT document_chunks_document_id_fkey FOREIGN KEY (document_id) REFERENCES chatbot_schema.documents(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_chunks_document_id_fkey' AND conrelid = 'chatbot_schema.document_chunks'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_chunks ADD CONSTRAINT document_chunks_document_id_fkey FOREIGN KEY (document_id) REFERENCES chatbot_schema.documents(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: document_page_index document_page_index_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_page_index
-    ADD CONSTRAINT document_page_index_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_page_index_admin_id_fkey' AND conrelid = 'chatbot_schema.document_page_index'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_page_index ADD CONSTRAINT document_page_index_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: document_page_index document_page_index_chatbot_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_page_index
-    ADD CONSTRAINT document_page_index_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_page_index_chatbot_id_fkey' AND conrelid = 'chatbot_schema.document_page_index'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_page_index ADD CONSTRAINT document_page_index_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: document_page_index document_page_index_document_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_page_index
-    ADD CONSTRAINT document_page_index_document_id_fkey FOREIGN KEY (document_id) REFERENCES chatbot_schema.documents(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_page_index_document_id_fkey' AND conrelid = 'chatbot_schema.document_page_index'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_page_index ADD CONSTRAINT document_page_index_document_id_fkey FOREIGN KEY (document_id) REFERENCES chatbot_schema.documents(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: document_page_index document_page_index_parent_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_page_index
-    ADD CONSTRAINT document_page_index_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES chatbot_schema.document_page_index(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_page_index_parent_id_fkey' AND conrelid = 'chatbot_schema.document_page_index'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_page_index ADD CONSTRAINT document_page_index_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES chatbot_schema.document_page_index(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: document_strategies document_strategies_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_strategies
-    ADD CONSTRAINT document_strategies_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_strategies_admin_id_fkey' AND conrelid = 'chatbot_schema.document_strategies'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_strategies ADD CONSTRAINT document_strategies_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: document_strategies document_strategies_chatbot_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_strategies
-    ADD CONSTRAINT document_strategies_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_strategies_chatbot_id_fkey' AND conrelid = 'chatbot_schema.document_strategies'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_strategies ADD CONSTRAINT document_strategies_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: document_strategies document_strategies_document_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.document_strategies
-    ADD CONSTRAINT document_strategies_document_id_fkey FOREIGN KEY (document_id) REFERENCES chatbot_schema.documents(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_strategies_document_id_fkey' AND conrelid = 'chatbot_schema.document_strategies'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.document_strategies ADD CONSTRAINT document_strategies_document_id_fkey FOREIGN KEY (document_id) REFERENCES chatbot_schema.documents(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: documents documents_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.documents
-    ADD CONSTRAINT documents_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'documents_admin_id_fkey' AND conrelid = 'chatbot_schema.documents'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.documents ADD CONSTRAINT documents_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: documents documents_chatbot_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.documents
-    ADD CONSTRAINT documents_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'documents_chatbot_id_fkey' AND conrelid = 'chatbot_schema.documents'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.documents ADD CONSTRAINT documents_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: documents documents_uploaded_by_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.documents
-    ADD CONSTRAINT documents_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES chatbot_schema.users(id);
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'documents_uploaded_by_fkey' AND conrelid = 'chatbot_schema.documents'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.documents ADD CONSTRAINT documents_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES chatbot_schema.users(id);
+    END IF;
+END $$;
 
 --
 -- Name: users fk_users_admin; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.users
-    ADD CONSTRAINT fk_users_admin FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE DEFERRABLE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_users_admin' AND conrelid = 'chatbot_schema.users'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.users ADD CONSTRAINT fk_users_admin FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE DEFERRABLE;
+    END IF;
+END $$;
 
 --
 -- Name: leads leads_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.leads
-    ADD CONSTRAINT leads_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'leads_admin_id_fkey' AND conrelid = 'chatbot_schema.leads'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.leads ADD CONSTRAINT leads_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: leads leads_chatbot_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.leads
-    ADD CONSTRAINT leads_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'leads_chatbot_id_fkey' AND conrelid = 'chatbot_schema.leads'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.leads ADD CONSTRAINT leads_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: magic_links magic_links_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.magic_links
-    ADD CONSTRAINT magic_links_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'magic_links_admin_id_fkey' AND conrelid = 'chatbot_schema.magic_links'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.magic_links ADD CONSTRAINT magic_links_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: messages messages_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.messages
-    ADD CONSTRAINT messages_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'messages_admin_id_fkey' AND conrelid = 'chatbot_schema.messages'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.messages ADD CONSTRAINT messages_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: messages messages_chatbot_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.messages
-    ADD CONSTRAINT messages_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'messages_chatbot_id_fkey' AND conrelid = 'chatbot_schema.messages'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.messages ADD CONSTRAINT messages_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: messages messages_conversation_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.messages
-    ADD CONSTRAINT messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES chatbot_schema.conversations(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'messages_conversation_id_fkey' AND conrelid = 'chatbot_schema.messages'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.messages ADD CONSTRAINT messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES chatbot_schema.conversations(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: quick_answers quick_answers_admin_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.quick_answers
-    ADD CONSTRAINT quick_answers_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'quick_answers_admin_id_fkey' AND conrelid = 'chatbot_schema.quick_answers'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.quick_answers ADD CONSTRAINT quick_answers_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: quick_answers quick_answers_chatbot_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.quick_answers
-    ADD CONSTRAINT quick_answers_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'quick_answers_chatbot_id_fkey' AND conrelid = 'chatbot_schema.quick_answers'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.quick_answers ADD CONSTRAINT quick_answers_chatbot_id_fkey FOREIGN KEY (chatbot_id) REFERENCES chatbot_schema.chatbots(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: sessions sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.sessions
-    ADD CONSTRAINT sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sessions_user_id_fkey' AND conrelid = 'chatbot_schema.sessions'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.sessions ADD CONSTRAINT sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: user_permissions user_permissions_user_id_fkey; Type: FK CONSTRAINT; Schema: chatbot_schema; Owner: -
 --
 
-ALTER TABLE ONLY chatbot_schema.user_permissions
-    ADD CONSTRAINT user_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_permissions_user_id_fkey' AND conrelid = 'chatbot_schema.user_permissions'::regclass) THEN
+        ALTER TABLE ONLY chatbot_schema.user_permissions ADD CONSTRAINT user_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES chatbot_schema.users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 --
 -- Name: audit_logs; Type: ROW SECURITY; Schema: chatbot_schema; Owner: -
@@ -1478,347 +1652,567 @@ ALTER TABLE chatbot_schema.quick_answers ENABLE ROW LEVEL SECURITY;
 -- Name: audit_logs rls_audit_logs_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_audit_logs_insert ON chatbot_schema.audit_logs FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_audit_logs_insert' AND tablename = 'audit_logs' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_audit_logs_insert ON chatbot_schema.audit_logs FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: audit_logs rls_audit_logs_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_audit_logs_select ON chatbot_schema.audit_logs FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_audit_logs_select' AND tablename = 'audit_logs' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_audit_logs_select ON chatbot_schema.audit_logs FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: chat_stats rls_chat_stats_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_chat_stats_insert ON chatbot_schema.chat_stats FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_chat_stats_insert' AND tablename = 'chat_stats' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_chat_stats_insert ON chatbot_schema.chat_stats FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: chat_stats rls_chat_stats_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_chat_stats_select ON chatbot_schema.chat_stats FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_chat_stats_select' AND tablename = 'chat_stats' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_chat_stats_select ON chatbot_schema.chat_stats FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: chat_stats rls_chat_stats_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_chat_stats_update ON chatbot_schema.chat_stats FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_chat_stats_update' AND tablename = 'chat_stats' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_chat_stats_update ON chatbot_schema.chat_stats FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: chatbots rls_chatbots_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_chatbots_delete ON chatbot_schema.chatbots FOR DELETE USING (((admin_id = chatbot_schema.current_admin_id()) OR (created_by = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_chatbots_delete' AND tablename = 'chatbots' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_chatbots_delete ON chatbot_schema.chatbots FOR DELETE USING (((admin_id = chatbot_schema.current_admin_id()) OR (created_by = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: chatbots rls_chatbots_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_chatbots_insert ON chatbot_schema.chatbots FOR INSERT WITH CHECK ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_chatbots_insert' AND tablename = 'chatbots' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_chatbots_insert ON chatbot_schema.chatbots FOR INSERT WITH CHECK ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: chatbots rls_chatbots_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_chatbots_select ON chatbot_schema.chatbots FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id()) OR (created_by = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_chatbots_select' AND tablename = 'chatbots' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_chatbots_select ON chatbot_schema.chatbots FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id()) OR (created_by = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: chatbots rls_chatbots_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_chatbots_update ON chatbot_schema.chatbots FOR UPDATE USING (((admin_id = chatbot_schema.current_admin_id()) OR (created_by = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_chatbots_update' AND tablename = 'chatbots' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_chatbots_update ON chatbot_schema.chatbots FOR UPDATE USING (((admin_id = chatbot_schema.current_admin_id()) OR (created_by = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: conversations rls_conversations_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_conversations_delete ON chatbot_schema.conversations FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_conversations_delete' AND tablename = 'conversations' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_conversations_delete ON chatbot_schema.conversations FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: conversations rls_conversations_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_conversations_insert ON chatbot_schema.conversations FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_conversations_insert' AND tablename = 'conversations' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_conversations_insert ON chatbot_schema.conversations FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: conversations rls_conversations_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_conversations_select ON chatbot_schema.conversations FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_conversations_select' AND tablename = 'conversations' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_conversations_select ON chatbot_schema.conversations FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: conversations rls_conversations_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_conversations_update ON chatbot_schema.conversations FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_conversations_update' AND tablename = 'conversations' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_conversations_update ON chatbot_schema.conversations FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: document_strategies rls_doc_strategies_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_doc_strategies_delete ON chatbot_schema.document_strategies FOR DELETE USING ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_doc_strategies_delete' AND tablename = 'document_strategies' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_doc_strategies_delete ON chatbot_schema.document_strategies FOR DELETE USING ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: document_strategies rls_doc_strategies_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_doc_strategies_insert ON chatbot_schema.document_strategies FOR INSERT WITH CHECK ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_doc_strategies_insert' AND tablename = 'document_strategies' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_doc_strategies_insert ON chatbot_schema.document_strategies FOR INSERT WITH CHECK ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: document_strategies rls_doc_strategies_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_doc_strategies_select ON chatbot_schema.document_strategies FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_doc_strategies_select' AND tablename = 'document_strategies' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_doc_strategies_select ON chatbot_schema.document_strategies FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: document_strategies rls_doc_strategies_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_doc_strategies_update ON chatbot_schema.document_strategies FOR UPDATE USING ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_doc_strategies_update' AND tablename = 'document_strategies' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_doc_strategies_update ON chatbot_schema.document_strategies FOR UPDATE USING ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: document_chunks rls_document_chunks_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_document_chunks_delete ON chatbot_schema.document_chunks FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_document_chunks_delete' AND tablename = 'document_chunks' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_document_chunks_delete ON chatbot_schema.document_chunks FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: document_chunks rls_document_chunks_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_document_chunks_insert ON chatbot_schema.document_chunks FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_document_chunks_insert' AND tablename = 'document_chunks' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_document_chunks_insert ON chatbot_schema.document_chunks FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: document_chunks rls_document_chunks_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_document_chunks_select ON chatbot_schema.document_chunks FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_document_chunks_select' AND tablename = 'document_chunks' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_document_chunks_select ON chatbot_schema.document_chunks FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: documents rls_documents_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_documents_delete ON chatbot_schema.documents FOR DELETE USING ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_documents_delete' AND tablename = 'documents' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_documents_delete ON chatbot_schema.documents FOR DELETE USING ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: documents rls_documents_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_documents_insert ON chatbot_schema.documents FOR INSERT WITH CHECK ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_documents_insert' AND tablename = 'documents' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_documents_insert ON chatbot_schema.documents FOR INSERT WITH CHECK ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: documents rls_documents_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_documents_select ON chatbot_schema.documents FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_documents_select' AND tablename = 'documents' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_documents_select ON chatbot_schema.documents FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: documents rls_documents_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_documents_update ON chatbot_schema.documents FOR UPDATE USING ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_documents_update' AND tablename = 'documents' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_documents_update ON chatbot_schema.documents FOR UPDATE USING ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: leads rls_leads_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_leads_delete ON chatbot_schema.leads FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_leads_delete' AND tablename = 'leads' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_leads_delete ON chatbot_schema.leads FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: leads rls_leads_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_leads_insert ON chatbot_schema.leads FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_leads_insert' AND tablename = 'leads' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_leads_insert ON chatbot_schema.leads FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: leads rls_leads_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_leads_select ON chatbot_schema.leads FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_leads_select' AND tablename = 'leads' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_leads_select ON chatbot_schema.leads FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: leads rls_leads_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_leads_update ON chatbot_schema.leads FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_leads_update' AND tablename = 'leads' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_leads_update ON chatbot_schema.leads FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: magic_links rls_magic_links_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_magic_links_delete ON chatbot_schema.magic_links FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_magic_links_delete' AND tablename = 'magic_links' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_magic_links_delete ON chatbot_schema.magic_links FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: magic_links rls_magic_links_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_magic_links_insert ON chatbot_schema.magic_links FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_magic_links_insert' AND tablename = 'magic_links' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_magic_links_insert ON chatbot_schema.magic_links FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: magic_links rls_magic_links_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_magic_links_select ON chatbot_schema.magic_links FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_magic_links_select' AND tablename = 'magic_links' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_magic_links_select ON chatbot_schema.magic_links FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: magic_links rls_magic_links_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_magic_links_update ON chatbot_schema.magic_links FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_magic_links_update' AND tablename = 'magic_links' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_magic_links_update ON chatbot_schema.magic_links FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: messages rls_messages_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_messages_delete ON chatbot_schema.messages FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_messages_delete' AND tablename = 'messages' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_messages_delete ON chatbot_schema.messages FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: messages rls_messages_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_messages_insert ON chatbot_schema.messages FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_messages_insert' AND tablename = 'messages' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_messages_insert ON chatbot_schema.messages FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: messages rls_messages_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_messages_select ON chatbot_schema.messages FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_messages_select' AND tablename = 'messages' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_messages_select ON chatbot_schema.messages FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: document_page_index rls_page_index_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_page_index_delete ON chatbot_schema.document_page_index FOR DELETE USING ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_page_index_delete' AND tablename = 'document_page_index' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_page_index_delete ON chatbot_schema.document_page_index FOR DELETE USING ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: document_page_index rls_page_index_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_page_index_insert ON chatbot_schema.document_page_index FOR INSERT WITH CHECK ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_page_index_insert' AND tablename = 'document_page_index' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_page_index_insert ON chatbot_schema.document_page_index FOR INSERT WITH CHECK ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: document_page_index rls_page_index_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_page_index_select ON chatbot_schema.document_page_index FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_page_index_select' AND tablename = 'document_page_index' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_page_index_select ON chatbot_schema.document_page_index FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: document_page_index rls_page_index_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_page_index_update ON chatbot_schema.document_page_index FOR UPDATE USING ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_page_index_update' AND tablename = 'document_page_index' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_page_index_update ON chatbot_schema.document_page_index FOR UPDATE USING ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: quick_answers rls_quick_answers_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_quick_answers_delete ON chatbot_schema.quick_answers FOR DELETE USING ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_quick_answers_delete' AND tablename = 'quick_answers' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_quick_answers_delete ON chatbot_schema.quick_answers FOR DELETE USING ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: quick_answers rls_quick_answers_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_quick_answers_insert ON chatbot_schema.quick_answers FOR INSERT WITH CHECK ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_quick_answers_insert' AND tablename = 'quick_answers' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_quick_answers_insert ON chatbot_schema.quick_answers FOR INSERT WITH CHECK ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: quick_answers rls_quick_answers_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_quick_answers_select ON chatbot_schema.quick_answers FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_quick_answers_select' AND tablename = 'quick_answers' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_quick_answers_select ON chatbot_schema.quick_answers FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: quick_answers rls_quick_answers_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_quick_answers_update ON chatbot_schema.quick_answers FOR UPDATE USING ((admin_id = chatbot_schema.current_admin_id()));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_quick_answers_update' AND tablename = 'quick_answers' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_quick_answers_update ON chatbot_schema.quick_answers FOR UPDATE USING ((admin_id = chatbot_schema.current_admin_id()));
+    END IF;
+    END $$;
 
 --
 -- Name: sessions rls_sessions_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_sessions_delete ON chatbot_schema.sessions FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_sessions_delete' AND tablename = 'sessions' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_sessions_delete ON chatbot_schema.sessions FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: sessions rls_sessions_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_sessions_insert ON chatbot_schema.sessions FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_sessions_insert' AND tablename = 'sessions' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_sessions_insert ON chatbot_schema.sessions FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: sessions rls_sessions_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_sessions_select ON chatbot_schema.sessions FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_sessions_select' AND tablename = 'sessions' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_sessions_select ON chatbot_schema.sessions FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: sessions rls_sessions_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_sessions_update ON chatbot_schema.sessions FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_sessions_update' AND tablename = 'sessions' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_sessions_update ON chatbot_schema.sessions FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: user_permissions rls_user_permissions_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_user_permissions_delete ON chatbot_schema.user_permissions FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (user_id IN ( SELECT users.id
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_user_permissions_delete' AND tablename = 'user_permissions' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_user_permissions_delete ON chatbot_schema.user_permissions FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR (user_id IN ( SELECT users.id
    FROM chatbot_schema.users
   WHERE (users.admin_id = chatbot_schema.current_admin_id())
 UNION
  SELECT chatbot_schema.current_admin_id() AS current_admin_id))));
+    END IF;
+END $$;
 
 --
 -- Name: user_permissions rls_user_permissions_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_user_permissions_insert ON chatbot_schema.user_permissions FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (user_id IN ( SELECT users.id
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_user_permissions_insert' AND tablename = 'user_permissions' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_user_permissions_insert ON chatbot_schema.user_permissions FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (user_id IN ( SELECT users.id
    FROM chatbot_schema.users
   WHERE (users.admin_id = chatbot_schema.current_admin_id())
 UNION
  SELECT chatbot_schema.current_admin_id() AS current_admin_id))));
+    END IF;
+END $$;
 
 --
 -- Name: user_permissions rls_user_permissions_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_user_permissions_select ON chatbot_schema.user_permissions FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (user_id IN ( SELECT users.id
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_user_permissions_select' AND tablename = 'user_permissions' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_user_permissions_select ON chatbot_schema.user_permissions FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (user_id IN ( SELECT users.id
    FROM chatbot_schema.users
   WHERE (users.admin_id = chatbot_schema.current_admin_id())
 UNION
  SELECT chatbot_schema.current_admin_id() AS current_admin_id))));
+    END IF;
+END $$;
 
 --
 -- Name: user_permissions rls_user_permissions_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_user_permissions_update ON chatbot_schema.user_permissions FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (user_id IN ( SELECT users.id
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_user_permissions_update' AND tablename = 'user_permissions' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_user_permissions_update ON chatbot_schema.user_permissions FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (user_id IN ( SELECT users.id
    FROM chatbot_schema.users
   WHERE (users.admin_id = chatbot_schema.current_admin_id())
 UNION
  SELECT chatbot_schema.current_admin_id() AS current_admin_id))));
+    END IF;
+END $$;
 
 --
 -- Name: users rls_users_delete; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_users_delete ON chatbot_schema.users FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR ((admin_id = chatbot_schema.current_admin_id()) AND ((role)::text = 'user'::text) AND (id <> chatbot_schema.current_admin_id()))));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_users_delete' AND tablename = 'users' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_users_delete ON chatbot_schema.users FOR DELETE USING (((chatbot_schema.current_admin_id() IS NULL) OR ((admin_id = chatbot_schema.current_admin_id()) AND ((role)::text = 'user'::text) AND (id <> chatbot_schema.current_admin_id()))));
+    END IF;
+    END $$;
 
 --
 -- Name: users rls_users_insert; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_users_insert ON chatbot_schema.users FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_users_insert' AND tablename = 'users' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_users_insert ON chatbot_schema.users FOR INSERT WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: users rls_users_select; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_users_select ON chatbot_schema.users FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (id = chatbot_schema.current_admin_id()) OR (admin_id = chatbot_schema.current_admin_id())));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_users_select' AND tablename = 'users' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_users_select ON chatbot_schema.users FOR SELECT USING (((chatbot_schema.current_admin_id() IS NULL) OR (id = chatbot_schema.current_admin_id()) OR (admin_id = chatbot_schema.current_admin_id())));
+    END IF;
+    END $$;
 
 --
 -- Name: users rls_users_update; Type: POLICY; Schema: chatbot_schema; Owner: -
 --
 
-CREATE POLICY rls_users_update ON chatbot_schema.users FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (id = chatbot_schema.current_admin_id()) OR ((admin_id = chatbot_schema.current_admin_id()) AND ((role)::text = 'user'::text)))) WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (id = chatbot_schema.current_admin_id()) OR ((admin_id = chatbot_schema.current_admin_id()) AND ((role)::text = 'user'::text))));
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'rls_users_update' AND tablename = 'users' AND schemaname = 'chatbot_schema') THEN
+        CREATE POLICY rls_users_update ON chatbot_schema.users FOR UPDATE USING (((chatbot_schema.current_admin_id() IS NULL) OR (id = chatbot_schema.current_admin_id()) OR ((admin_id = chatbot_schema.current_admin_id()) AND ((role)::text = 'user'::text)))) WITH CHECK (((chatbot_schema.current_admin_id() IS NULL) OR (id = chatbot_schema.current_admin_id()) OR ((admin_id = chatbot_schema.current_admin_id()) AND ((role)::text = 'user'::text))));
+    END IF;
+    END $$;
 
 --
 -- Name: sessions; Type: ROW SECURITY; Schema: chatbot_schema; Owner: -
