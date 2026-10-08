@@ -40,9 +40,10 @@ class RetrievalEngine
     /** @var array<string, RetrievalStrategy> Cached strategy instances */
     private array $strategies = [];
 
-    public function __construct(OpenAIClient $openai)
+    public function __construct(FailoverChat|OpenAIClient $openai)
     {
-        $this->openai = $openai;
+        // Embeddings ride the first configured provider when failover is set.
+        $this->openai = $openai instanceof FailoverChat ? $openai->primaryClient() : $openai;
     }
 
     /**

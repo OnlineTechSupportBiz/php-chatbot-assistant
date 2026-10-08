@@ -40,6 +40,7 @@ use App\Model\Message;
 use App\Model\QuickAnswer;
 use App\Model\Admin;
 use App\Model\UserPermission;
+use App\Service\FailoverChat;
 use App\Service\OpenAIClient;
 use App\Service\RetrievalEngine;
 use App\Util\PromptScanner;
@@ -671,7 +672,7 @@ class ChatController
      * @param  array         $modelConfig Chatbot model configuration (model, temperature, max_tokens)
      * @return array{name: ?string, email: ?string, phone: ?string}
      */
-    private function extractLeadInfo(array $messages, OpenAIClient $openai, array $modelConfig): array
+    private function extractLeadInfo(array $messages, FailoverChat|OpenAIClient $openai, array $modelConfig): array
     {
         $allUserText = '';
         foreach ($messages as $msg) {

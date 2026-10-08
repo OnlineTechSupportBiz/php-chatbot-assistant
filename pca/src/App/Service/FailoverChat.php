@@ -44,6 +44,18 @@ class FailoverChat
     }
 
     /**
+     * The first configured client — used where a single OpenAI-compatible
+     * client is needed (e.g. embeddings for retrieval strategies).
+     */
+    public function primaryClient(): OpenAIClient
+    {
+        if ($this->entries === []) {
+            throw new \RuntimeException('No LLM providers configured');
+        }
+        return $this->entries[0]['client'];
+    }
+
+    /**
      * Run a chat completion, falling through the configured models in order.
      *
      * @param  array $messages  OpenAI message array
