@@ -1102,16 +1102,16 @@ function include_component(string $component): void
             </div>
         </div>
         <p class="hint" style="font-size:.85rem;color:#6b7280;margin:.25rem 0 .5rem;">
-            The migrator role owns the database tables so the app role (DB User) stays
-            subject to Row-Level Security — tenant isolation is then enforced by
-            PostgreSQL, not just application queries. Leave both blank only to accept
-            app-layer-only isolation.
+            This second user owns the database tables. The website itself uses
+            the regular DB User above, which has less power — so if a bug ever
+            slipped through, one customer's data still couldn't reach another
+            customer. The database itself enforces this, not just the code.
         </p>
         <div class="form-group">
             <label style="display:flex;align-items:center;gap:.5rem;font-weight:400;">
                 <input type="checkbox" name="allow_single_role_db" value="true"
                        <?= isset($_POST['allow_single_role_db']) ? 'checked' : '' ?>>
-                ALLOW_SINGLE_ROLE_DB — accept app-layer-only tenant isolation (no separate migrator role)
+                Skip the second user (less safe — the code alone keeps customers' data separate)
             </label>
         </div>
         <hr>
