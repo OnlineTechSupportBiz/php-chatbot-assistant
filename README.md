@@ -103,6 +103,19 @@ php run.php
 
 `php run.php --fresh` drops all tables and rebuilds. The command refuses to run without the migrator role.
 
+**Starting over?** To wipe everything and begin again, do the drop AND the recreate — dropping alone leaves nothing for the next run to connect with:
+
+```bash
+sudo -u postgres psql << 'SQL'
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='chatbot_assistant' AND pid <> pg_backend_pid();
+DROP DATABASE IF EXISTS chatbot_assistant;
+DROP ROLE IF EXISTS chatbot_user;
+DROP ROLE IF EXISTS chatbot_migrator;
+SQL
+```
+
+…then re-run steps 2 and 3 above.
+
 **5. Write the settings file**
 
 ```bash
