@@ -50,7 +50,7 @@ ob_start(); ?>
             &middot; <?= $conversation['rating'] !== null ? 'Rating: ' . (int) $conversation['rating'] . '/5' : 'Rating: -/5' ?>
         </p>
     </div>
-    <a href="/chatbots/<?= (int) $chatbot['id'] ?>/conversations" class="btn">Back to Sessions</a>
+    <a href="/chatbots/<?= (int) $chatbot['id'] ?>/conversations" class="btn">Back to Conversations</a>
 </div>
 
 <?php if ($lead): ?>
