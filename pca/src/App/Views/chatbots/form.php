@@ -473,29 +473,21 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
                 <input type="text" class="input" id="bot_name" name="bot_name" value="<?= $botName ?>" maxlength="100">
             </div>
             <div class="field">
-                <label class="label" for="primary_color">
-                    Primary &nbsp;<span class="preview-color" id="color-preview" style="display:inline-block;width:1.25rem;height:1.25rem;border-radius:50%;vertical-align:middle;background-color: <?= $primaryColor ?>;"></span>
-                </label>
+                <label class="label" for="primary_color">Primary</label>
                 <input type="color" class="input" id="primary_color" name="primary_color" value="<?= $primaryColor ?>">
             </div>
             <div class="field">
-                <label class="label" for="header_gradient_to">
-                    Gradient &nbsp;<span class="preview-color" id="gradient-preview" style="display:inline-block;width:1.25rem;height:1.25rem;border-radius:50%;vertical-align:middle;background-color: <?= $headerGradientTo ?: $primaryColor ?>;"></span>
-                </label>
+                <label class="label" for="header_gradient_to">Gradient</label>
                 <input type="color" class="input" id="header_gradient_to" name="header_gradient_to" value="<?= $headerGradientTo ?: $primaryColor ?>">
                 <div class="muted" style="font-size:0.8rem;">Leave same as Primary for solid header.</div>
             </div>
             <div class="field">
-                <label class="label" for="accent_color">
-                    Accent &nbsp;<span class="preview-color" id="accent-preview" style="display:inline-block;width:1.25rem;height:1.25rem;border-radius:50%;vertical-align:middle;background-color: <?= $accentColor ?: $primaryColor ?>;"></span>
-                </label>
+                <label class="label" for="accent_color">Accent</label>
                 <input type="color" class="input" id="accent_color" name="accent_color" value="<?= $accentColor ?: $primaryColor ?>">
                 <div class="muted" style="font-size:0.8rem;">Send button, links, hover effects. Leave blank to match Primary.</div>
             </div>
             <div class="field">
-                <label class="label" for="header_text_color">
-                    Header text &nbsp;<span class="preview-color" id="header-text-preview" style="display:inline-block;width:1.25rem;height:1.25rem;border-radius:50%;vertical-align:middle;background-color: <?= $headerTextColor ?>;"></span>
-                </label>
+                <label class="label" for="header_text_color">Header text</label>
                 <input type="color" class="input" id="header_text_color" name="header_text_color" value="<?= $headerTextColor ?>">
             </div>
         </div>
@@ -683,11 +675,6 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
         accentInput.value      = accent || primary;
         headerTextInput.value  = hdrText || '#ffffff';
 
-        document.getElementById('color-preview').style.backgroundColor        = primary;
-        document.getElementById('gradient-preview').style.backgroundColor     = gradient || primary;
-        document.getElementById('accent-preview').style.backgroundColor       = accent || primary;
-        document.getElementById('header-text-preview').style.backgroundColor  = headerTextInput.value;
-
         if (themeDesc) {
             themeDesc.textContent = opt.textContent;
         }
@@ -704,12 +691,6 @@ $currentStatus = $isEdit ? ($chatbot['status'] ?? 'active') : 'active';
 
     ['primary_color', 'header_gradient_to', 'accent_color', 'header_text_color'].forEach(function (id) {
         document.getElementById(id)?.addEventListener('input', function () {
-            var swatchId = id === 'primary_color' ? 'color-preview'
-                : id === 'header_gradient_to' ? 'gradient-preview'
-                : id === 'accent_color' ? 'accent-preview'
-                : 'header-text-preview';
-            var swatch = document.getElementById(swatchId);
-            if (swatch) swatch.style.backgroundColor = this.value;
             resetTheme();
             updateWidgetPreview();
         });
