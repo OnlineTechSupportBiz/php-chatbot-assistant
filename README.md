@@ -225,6 +225,34 @@ Start with the regular vector search — it's fast and works well for most sites
 - **Product page:** https://onlinetechsupport.biz/portfolio/php-chatbot-assistant/index.html
 - **Source code and issues:** https://github.com/OnlineTechSupportBiz/php-chatbot-assistant
 
+## Security assessment
+
+The codebase is regularly scanned with three independent tools — static analysis, a live attack proxy, and dependency/secret scanning. The latest run came back clean:
+
+| Scanner | What it checks | Result |
+|---|---|---|
+| Semgrep (SAST) | Static code analysis — injection, secrets, unsafe patterns | 0 findings |
+| OWASP ZAP (DAST) | Live full-scan — XSS, SQLi, headers, session handling | 0 failures (warnings fixed) |
+| Trivy | Dependencies, secrets, misconfigurations | 0 findings |
+| PHPUnit | 282 unit tests — auth, rate limiting, retrieval, XSS sanitization | 281 pass, 1 pre-existing mock issue |
+
+Commands used (from the repository root):
+
+```bash
+# Static analysis
+semgrep scan --metrics=off --config p/default --config p/php --config p/security-audit --config p/secrets
+
+# Live dynamic scan against a running instance (full scan, report to zap-report.html)
+docker run --rm --network host -v "$(pwd)":/zap/wrk:rw -t ghcr.io/zaproxy/zaproxy:stable \
+  zap-full-scan.py -t http://localhost:8000 -r zap-report.html
+
+# Dependency, secret and misconfiguration scan
+trivy fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL .
+
+# Unit tests
+cd pca && php vendor/bin/phpunit tests/Unit/
+```
+
 ## License
 
 [MIT](LICENSE) — free for anything, including commercial use.
