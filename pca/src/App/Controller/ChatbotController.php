@@ -106,19 +106,6 @@ class ChatbotController
     }
 
     /**
-     * GET /chatbots/create — show creation form.
-     */
-    public function create(Request $req, Response $res): void
-    {
-        $user = Auth::requireAuth();
-        Auth::requireRole($user, ['admin', 'user']);
-        Auth::requirePermission($user, 'manage_chatbots');
-
-        $industryPresetsGrouped = IndustryTemplate::allGrouped();
-        require __DIR__ . '/../Views/chatbots/form.php';
-    }
-
-    /**
      * POST /chatbots — store a new chatbot.
      */
     public function store(Request $req, Response $res): void
@@ -132,7 +119,7 @@ class ChatbotController
         $csrf = (string) $req->get('_csrf');
         if (!Session::validateCsrf($csrf)) {
             Session::flash('error', 'Invalid form token. Please try again.');
-            $res->redirect('/chatbots/create')->send();
+            $res->redirect('/chatbots?new=1')->send();
             return;
         }
 
@@ -153,7 +140,7 @@ class ChatbotController
                 'industry'      => $industry,
                 'system_prompt' => $prompt,
             ]);
-            $res->redirect('/chatbots/create')->send();
+            $res->redirect('/chatbots?new=1')->send();
             return;
         }
 

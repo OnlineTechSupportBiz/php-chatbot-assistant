@@ -199,7 +199,6 @@ $router->get('/dashboard', [$userUi, 'dashboard']);
 
 // ── Chatbots ─────────────────────────────────────────────────────────────
 $router->get('/chatbots', [$chatbot, 'index']);
-$router->get('/chatbots/create', [$chatbot, 'create']);
 $router->get('/chatbots/{id}', [$chatbot, 'show']);
 // Legacy bookmark support: the edit page merged into the Settings tab.
 $router->get('/chatbots/{id}/edit', function (Request $req, Response $res, array $params) {

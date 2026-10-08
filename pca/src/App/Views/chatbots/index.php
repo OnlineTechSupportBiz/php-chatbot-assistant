@@ -29,6 +29,8 @@
  * @var array $chatbots   List of chatbot records
  */
 $pageTitle = 'Chatbots - ' . ($user['brand_name'] ?? 'Chatbot Assistant');
+// Submitted values from a failed create, so the inline form keeps the input.
+$old = \App\Auth\Session::getFlash('old') ?? [];
 
 ob_start(); ?>
 <div class="page-head">
@@ -36,7 +38,36 @@ ob_start(); ?>
         <h1>Chatbots</h1>
         <p class="subtitle">Create and manage your customer-facing assistants.</p>
     </div>
-    <a href="/chatbots/create" class="btn btn-primary">+ New chatbot</a>
+    <button type="button" class="btn btn-primary" id="newChatbotBtn">New chatbot</button>
+</div>
+
+<div class="card" id="newChatbotCard" hidden>
+    <h2>New chatbot</h2>
+    <?php foreach ((\App\Auth\Session::getFlash('errors') ?? []) as $err): ?>
+        <div class="alert alert-error"><?= htmlspecialchars($err) ?></div>
+    <?php endforeach; ?>
+    <form method="POST" action="/chatbots">
+        <input type="hidden" name="_csrf" value="<?= \App\Auth\Session::csrfToken() ?>">
+        <div class="field">
+            <label class="label" for="name">Name</label>
+            <input class="input" id="name" name="name" required placeholder="Support Bot"
+                   value="<?= htmlspecialchars($old['name'] ?? '') ?>">
+        </div>
+        <div class="field">
+            <label class="label" for="industry">Industry</label>
+            <input class="input" id="industry" name="industry" placeholder="e.g. SaaS, healthcare, retail"
+                   value="<?= htmlspecialchars($old['industry'] ?? '') ?>">
+        </div>
+        <div class="field">
+            <label class="label" for="system_prompt">System prompt</label>
+            <textarea class="textarea" id="system_prompt" name="system_prompt"
+                      placeholder="Instructions for how the assistant should behave"><?= htmlspecialchars($old['system_prompt'] ?? '') ?></textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="button" class="btn" id="cancelNewChatbot">Cancel</button>
+        </div>
+    </form>
 </div>
 
 <?php if ($msg = \App\Auth\Session::getFlash('success')): ?>
@@ -107,7 +138,33 @@ ob_start(); ?>
 <?php
 $pageContent = ob_get_clean();
 
-$pageScripts = <<<'JS'
+$pageScripts = ($pageScripts ?? '') . <<<'JS'
+<script>
+(function () {
+    var btn = document.getElementById('newChatbotBtn');
+    var card = document.getElementById('newChatbotCard');
+    var cancel = document.getElementById('cancelNewChatbot');
+    if (!btn || !card) return;
+    function open() {
+        card.hidden = false;
+        btn.hidden = true;
+        var first = card.querySelector('input');
+        if (first) first.focus();
+    }
+    btn.addEventListener('click', open);
+    // A failed create redirects back with ?new=1 — reopen the form.
+    if (new URLSearchParams(location.search).get('new') === '1' || card.querySelector('.alert-error')) {
+        open();
+    }
+    if (cancel) cancel.addEventListener('click', function () {
+        card.hidden = true;
+        btn.hidden = false;
+    });
+})();
+</script>
+JS;
+
+$pageScripts .= <<<'JS'
 <script>
 document.querySelectorAll('.clone-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
