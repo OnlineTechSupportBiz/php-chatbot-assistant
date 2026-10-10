@@ -8,3 +8,6 @@ strix_runs/
 .codegraph
 .hermes/
 public_html/test.html
+graphify-out/
+pca/storage/uploads/*
+!pca/storage/uploads/.gitkeep

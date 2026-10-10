@@ -633,7 +633,7 @@ class DocumentController
      * current strategy/embedding config. Throws on failure; never re-parses
      * with LlamaCloud.
      */
-    private function retrainDocument(int $adminId, int $chatbotId, int $userId, array $chatbot, array $document): int
+    public function retrainDocument(int $adminId, int $chatbotId, int $userId, array $chatbot, array $document): int
     {
         $documentId = (int) $document['id'];
         $parsedText = (string) ($document['parsed_text'] ?? '');
