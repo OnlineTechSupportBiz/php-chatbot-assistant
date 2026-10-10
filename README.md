@@ -173,7 +173,7 @@ php-chatbot-assistant/
 └── pca/           ← the application code (never web-visible)
 ```
 
-Built with plain PHP 8.2+ (no framework), PostgreSQL 16 with pgvector, and a small JavaScript widget. No Docker and no Node.js tools needed.
+Built with plain PHP 8.2+ (no framework), PostgreSQL 16 with pgvector, and a small JavaScript widget.
 
 ## Tests
 
