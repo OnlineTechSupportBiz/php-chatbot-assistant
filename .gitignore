@@ -1,4 +1,4 @@
-vendor/
+/pca/vendor/
 .env
 .phpunit.cache/
 *.log

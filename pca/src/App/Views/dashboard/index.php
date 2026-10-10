@@ -96,7 +96,7 @@ ob_start(); ?>
     </div>
 </div>
 <?php $pageScripts = ($pageScripts ?? '') . <<<'HTML'
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
+<script src="/assets/vendor/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
 <script>
 (function () {
     var el = document.getElementById('messages-chart');

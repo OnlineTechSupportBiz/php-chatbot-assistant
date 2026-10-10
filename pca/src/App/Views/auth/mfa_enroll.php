@@ -49,7 +49,7 @@ $qrCodeUrl = 'otpauth://totp/' . $escapedBrand . ':' . urlencode($_SESSION['user
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Setup Two-Factor Auth - <?= htmlspecialchars($brandName ?? 'Chatbot Assistant') ?></title>
     <link href="/assets/css/theme.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="/assets/vendor/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
